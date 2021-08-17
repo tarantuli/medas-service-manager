@@ -1,0 +1,19 @@
+{
+    "name": "morphp/medas-service-container",
+    "description": "Medas service container",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Medas\\ServiceContainer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Patrick Morpey",
+            "email": "patrick@morphp.nl"
+        }
+    ]
+}

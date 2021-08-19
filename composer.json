@@ -15,5 +15,8 @@
             "name": "Patrick Morpey",
             "email": "patrick@morphp.nl"
         }
-    ]
+    ],
+    "require": {
+        "symfony/string": "^5.3"
+    }
 }

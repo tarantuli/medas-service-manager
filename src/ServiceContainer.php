@@ -2,6 +2,7 @@
 
 namespace Medas\ServiceContainer;
 
+use Medas\ServiceContainer\Attributes\PreferredClass;
 use Medas\ServiceContainer\Attributes\Service;
 
 class ServiceContainer
@@ -33,10 +34,14 @@ class ServiceContainer
     private array $sourceDirectories = [];
     private bool $sourcesHaveBeenLoaded = false;
 
-    public function resolve(string $type): object
+    public function resolve(string $type, string $preferredClass = null): object
     {
-        if (!array_key_exists($type, $this->mapping) && !$this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypeException($type);
+        if (null !== $preferredClass && $this->findService($preferredClass)) {
+            $type = $preferredClass;
+        }
+
+        if (!$this->findService($type)) {
+            throw new Exceptions\ServiceNotFoundByTypeException([$type]);
         }
 
         $service = $this->mapping[$type];
@@ -50,21 +55,14 @@ class ServiceContainer
 
     private function findService(string $type): bool
     {
-        $this->loadSources();
-
-        foreach (get_declared_classes() as $className) {
-            $class = new \ReflectionClass($className);
-
-            if ($class->getAttributes(Service::class)) {
-                $this->registerService($class);
-
-                if (array_key_exists($type, $this->mapping)) {
-                    return true;
-                }
-            }
+        if (array_key_exists($type, $this->mapping)) {
+            return true;
         }
 
-        return false;
+        $this->loadSources();
+        $this->findServices();
+
+        return array_key_exists($type, $this->mapping);
     }
 
     private function loadSources(): void
@@ -81,6 +79,17 @@ class ServiceContainer
         }
 
         $this->sourcesHaveBeenLoaded = true;
+    }
+
+    private function findServices(): void
+    {
+        foreach (get_declared_classes() as $className) {
+            $class = new \ReflectionClass($className);
+
+            if (!$class->isInternal() && $class->getAttributes(Service::class)) {
+                $this->registerService($class);
+            }
+        }
     }
 
     private function registerService(\ReflectionClass $class)
@@ -104,12 +113,52 @@ class ServiceContainer
         $arguments = [];
 
         if ($constructor = $reflectionClass->getConstructor()) {
+            $preferredClassMap = [];
+            foreach ($constructor->getAttributes(PreferredClass::class) as $preferredClass) {
+                /** @var PreferredClass $preferredClassData */
+                $preferredClassData = $preferredClass->newInstance();
+                $preferredClassMap[$preferredClassData->type] = $preferredClassData->className;
+            }
+
             foreach ($constructor->getParameters() as $parameter) {
-                $arguments[] = $this->resolve($parameter);
+                $paramService = null;
+                $types = $this->getParameterTypes($parameter);
+
+                foreach ($types as $type) {
+                    $type = $type->getName();
+                    if (array_key_exists($type, $preferredClassMap)) {
+                        $type = $preferredClassMap[$type];
+                    }
+
+                    if ($this->findService($type)) {
+                        $paramService = $type;
+                        break;
+                    }
+                }
+
+                if (null === $paramService) {
+                    throw new Exceptions\ServiceNotFoundByTypeException($types);
+                }
+
+                $arguments[] = $this->resolve($paramService);
             }
         }
 
         return new $service(... $arguments);
+    }
+
+    /**
+     * @return \ReflectionNamedType[]
+     */
+    private function getParameterTypes(\ReflectionParameter $parameter): array
+    {
+        $reflectionType = $parameter->getType();
+
+        if (!$reflectionType) return [];
+
+        return $reflectionType instanceof \ReflectionUnionType
+            ? $reflectionType->getTypes()
+            : [$reflectionType];
     }
 
     public function addSourceDirectory(string $sourceDirectory): void

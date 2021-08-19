@@ -2,10 +2,15 @@
 
 namespace Medas\ServiceContainer\Exceptions;
 
-class ServiceNotFoundByTypeException extends \Exception
+class ServiceNotFoundByTypeException extends BaseException
 {
-    public function __construct($message, $code = 0, \Throwable $previous = null)
+    public function __construct(array $types)
     {
-        parent::__construct(sprintf('service not found with type %s', $message), $code, $previous);
+        parent::__construct($types);
+    }
+
+    public function getPattern(): string
+    {
+        return 'service not found with types %s';
     }
 }

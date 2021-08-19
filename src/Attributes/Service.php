@@ -2,7 +2,7 @@
 
 namespace Medas\ServiceContainer\Attributes;
 
-#[\Attribute]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class Service
 {
 

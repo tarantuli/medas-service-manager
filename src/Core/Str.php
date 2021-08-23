@@ -15,17 +15,17 @@ class Str extends UnicodeString
         elseif (is_object($argument)) {
             $argument = self::objectToString($argument);
         }
-        elseif ($argument === null) {
+        elseif (null === $argument) {
             $argument = 'NULL';
         }
-        elseif ($argument === true) {
+        elseif (true === $argument) {
             $argument = 'TRUE';
         }
-        elseif ($argument === false) {
+        elseif (false === $argument) {
             $argument = 'FALSE';
         }
         elseif (is_resource($argument)) {
-            $argument = sprintf('Resource:%s(%u)', get_resource_type($argument), (int)$argument);
+            $argument = sprintf('resource:%s(%u)', get_resource_type($argument), (int)$argument);
         }
 
         return new self($argument);
@@ -61,12 +61,8 @@ class Str extends UnicodeString
         return $retval;
     }
 
-    public static function objectToString($argument): string
+    public static function objectToString(object $argument): string
     {
-        if (!is_object($argument)) {
-            return $argument;
-        }
-
         $retval = get_class($argument);
         $retval .= '(';
         $firstValue = true;

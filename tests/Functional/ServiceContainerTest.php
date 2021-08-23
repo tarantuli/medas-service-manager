@@ -2,7 +2,7 @@
 
 namespace Medas\Test\Functional;
 
-use Medas\ServiceContainer\Exceptions\ServiceNotFoundByTypeException;
+use Medas\ServiceContainer\Exceptions\ServiceNotFoundByTypesException;
 use Medas\ServiceContainer\Interfaces\Logger;
 use Medas\ServiceContainer\ServiceContainer;
 use Medas\Test\MockUps\MockLogger1;
@@ -24,7 +24,7 @@ final class ServiceContainerTest extends TestCase
     {
         $container = ServiceContainer::get();
 
-        $this->expectException(ServiceNotFoundByTypeException::class);
+        $this->expectException(ServiceNotFoundByTypesException::class);
         $container->resolve(Logger::class);
     }
 
@@ -42,14 +42,6 @@ final class ServiceContainerTest extends TestCase
         $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
 
         return $container;
-    }
-
-    public function testPreferredServiceIsFound(): void
-    {
-        $container = $this->loadMockUps();
-        $service = $container->resolve(Logger::class, MockLogger1::class);
-
-        $this->assertInstanceOf(MockLogger1::class, $service);
     }
 
     public function testServiceInstantiatedWithDefaultInjection(): void

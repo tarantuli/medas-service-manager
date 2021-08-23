@@ -2,7 +2,6 @@
 
 namespace Medas\ServiceContainer;
 
-use Medas\ServiceContainer\Attributes\PreferredClass;
 use Medas\ServiceContainer\Attributes\Service;
 
 class ServiceContainer
@@ -34,14 +33,16 @@ class ServiceContainer
     private array $sourceDirectories = [];
     private bool $sourcesHaveBeenLoaded = false;
 
-    public function resolve(string $type, string $preferredClass = null): object
+    public function addSourceDirectory(string $sourceDirectory): void
     {
-        if (null !== $preferredClass && $this->findService($preferredClass)) {
-            $type = $preferredClass;
-        }
+        $this->sourceDirectories[] = $sourceDirectory;
+        $this->sourcesHaveBeenLoaded = false;
+    }
 
+    public function resolve(string $type): object
+    {
         if (!$this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypeException([$type]);
+            throw new Exceptions\ServiceNotFoundByTypesException([$type]);
         }
 
         $service = $this->mapping[$type];
@@ -132,46 +133,45 @@ class ServiceContainer
     private function getMethodArgumentValues(\ReflectionMethod $reflectionMethod): array
     {
         $arguments = [];
-
-        $preferredClassMap = $this->getPreferredClassMap($reflectionMethod);
+        $preferredClassMap = new PreferredClassMap($reflectionMethod);
 
         foreach ($reflectionMethod->getParameters() as $parameter) {
-            $paramService = null;
-            $types = $this->getParameterTypes($parameter);
-
-            foreach ($types as $type) {
-                $type = $type->getName();
-                if (array_key_exists($type, $preferredClassMap)) {
-                    $type = $preferredClassMap[$type];
-                }
-
-                if ($this->findService($type)) {
-                    $paramService = $type;
-                    break;
-                }
-            }
-
-            if (null === $paramService) {
-                throw new Exceptions\ServiceNotFoundByTypeException($types);
-            }
-
-            $arguments[] = $this->resolve($paramService);
+            $arguments[] = $this->getMethodArgumentValue($parameter, $preferredClassMap);
         }
 
         return $arguments;
     }
 
-    private function getPreferredClassMap(\ReflectionMethod $reflectionMethod): array
+    private function getMethodArgumentValue(\ReflectionParameter $reflectionParameter, PreferredClassMap $preferredClassMap): object
     {
-        $preferredClassMap = [];
+        $paramService = null;
+        $types = $this->getParameterTypes($reflectionParameter);
+        $checkedTypes = [];
 
-        foreach ($reflectionMethod->getAttributes(PreferredClass::class) as $preferredClass) {
-            /** @var PreferredClass $preferredClassData */
-            $preferredClassData = $preferredClass->newInstance();
-            $preferredClassMap[$preferredClassData->type] = $preferredClassData->className;
+        foreach ($types as $type) {
+            $type = $type->getName();
+
+            if ($preferredClass = $preferredClassMap->forType($type)) {
+                $checkedTypes[] = $preferredClass;
+
+                if ($this->findService($preferredClass)) {
+                    $paramService = $preferredClass;
+                    break;
+                }
+            }
+
+            $checkedTypes[] = $type;
+            if ($this->findService($type)) {
+                $paramService = $type;
+                break;
+            }
         }
 
-        return $preferredClassMap;
+        if (null === $paramService) {
+            throw new Exceptions\ServiceNotFoundByTypesException($checkedTypes);
+        }
+
+        return $this->resolve($paramService);
     }
 
     /**
@@ -186,11 +186,5 @@ class ServiceContainer
         return $reflectionType instanceof \ReflectionUnionType
             ? $reflectionType->getTypes()
             : [$reflectionType];
-    }
-
-    public function addSourceDirectory(string $sourceDirectory): void
-    {
-        $this->sourceDirectories[] = $sourceDirectory;
-        $this->sourcesHaveBeenLoaded = false;
     }
 }

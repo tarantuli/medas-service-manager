@@ -2,7 +2,7 @@
 
 namespace Medas\ServiceContainer\Exceptions;
 
-class ServiceNotFoundByTypeException extends BaseException
+class ServiceNotFoundByTypesException extends BaseException
 {
     public function __construct(array $types)
     {

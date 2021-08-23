@@ -100,52 +100,52 @@ class ServiceContainer
 
     private function registerService(\ReflectionClass $class)
     {
-        $serviceClass = $class->name;
+        $serviceName = $class->name;
 
         do {
-            $this->mapping[$class->name] = $serviceClass;
+            $this->mapping[$class->name] = $serviceName;
 
             foreach ($class->getInterfaces() as $interface) {
-                $this->mapping[$interface->name] = $serviceClass;
+                $this->mapping[$interface->name] = $serviceName;
             }
         } while ($class = $class->getParentClass());
 
     }
 
-    private function instantiate(string $service): object
+    private function instantiate(string $className): object
     {
-        $reflectionClass = new \ReflectionClass($service);
+        $class = new \ReflectionClass($className);
 
-        $arguments = $this->getConstructorArgumentValues($reflectionClass);
+        $arguments = $this->getConstructorArgumentValues($class);
 
-        return new $service(... $arguments);
+        return new $className(... $arguments);
     }
 
-    private function getConstructorArgumentValues(\ReflectionClass $reflectionClass): array
+    private function getConstructorArgumentValues(\ReflectionClass $class): array
     {
-        if (!$constructor = $reflectionClass->getConstructor()) {
+        if (!$constructor = $class->getConstructor()) {
             return [];
         }
 
         return $this->getMethodArgumentValues($constructor);
     }
 
-    private function getMethodArgumentValues(\ReflectionMethod $reflectionMethod): array
+    private function getMethodArgumentValues(\ReflectionMethod $method): array
     {
         $arguments = [];
-        $preferredClassMap = new PreferredClassMap($reflectionMethod);
+        $preferredClassMap = new PreferredClassMap($method);
 
-        foreach ($reflectionMethod->getParameters() as $parameter) {
+        foreach ($method->getParameters() as $parameter) {
             $arguments[] = $this->getMethodArgumentValue($parameter, $preferredClassMap);
         }
 
         return $arguments;
     }
 
-    private function getMethodArgumentValue(\ReflectionParameter $reflectionParameter, PreferredClassMap $preferredClassMap): object
+    private function getMethodArgumentValue(\ReflectionParameter $parameter, PreferredClassMap $preferredClassMap): object
     {
         $paramService = null;
-        $types = $this->getParameterTypes($reflectionParameter);
+        $types = $this->getParameterTypes($parameter);
         $checkedTypes = [];
 
         foreach ($types as $type) {
@@ -179,12 +179,12 @@ class ServiceContainer
      */
     private function getParameterTypes(\ReflectionParameter $parameter): array
     {
-        $reflectionType = $parameter->getType();
+        $type = $parameter->getType();
 
-        if (!$reflectionType) return [];
+        if (!$type) return [];
 
-        return $reflectionType instanceof \ReflectionUnionType
-            ? $reflectionType->getTypes()
-            : [$reflectionType];
+        return $type instanceof \ReflectionUnionType
+            ? $type->getTypes()
+            : [$type];
     }
 }

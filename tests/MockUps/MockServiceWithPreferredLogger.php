@@ -9,7 +9,7 @@ use Medas\ServiceContainer\Interfaces\Logger;
 #[Service]
 class MockServiceWithPreferredLogger
 {
-    #[PreferredClass(Logger::class, MockLogger1::class)]
+    #[PreferredClass(Logger::class, AnotherLogger::class)]
     public function __construct(private Logger $logger)
     {
     }

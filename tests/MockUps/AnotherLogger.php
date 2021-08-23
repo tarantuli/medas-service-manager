@@ -6,7 +6,7 @@ use Medas\ServiceContainer\Attributes\Service;
 use Medas\ServiceContainer\Interfaces\Logger;
 
 #[Service]
-class MockLogger2 implements Logger
+class AnotherLogger implements Logger
 {
 
 }

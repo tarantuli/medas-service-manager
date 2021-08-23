@@ -5,8 +5,8 @@ namespace Medas\Test\Functional;
 use Medas\ServiceContainer\Exceptions\ServiceNotFoundByTypesException;
 use Medas\ServiceContainer\Interfaces\Logger;
 use Medas\ServiceContainer\ServiceContainer;
-use Medas\Test\MockUps\MockLogger1;
-use Medas\Test\MockUps\MockLogger2;
+use Medas\Test\MockUps\AnotherLogger;
+use Medas\Test\MockUps\DefaultLogger;
 use Medas\Test\MockUps\MockServiceWithDefaultLogger;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
 use PHPUnit\Framework\TestCase;
@@ -33,13 +33,18 @@ final class ServiceContainerTest extends TestCase
         $container = $this->loadMockUps();
         $service = $container->resolve(Logger::class);
 
-        $this->assertInstanceOf(MockLogger2::class, $service);
+        $this->assertInstanceOf(DefaultLogger::class, $service);
     }
 
     private function loadMockUps(): ServiceContainer
     {
         $container = ServiceContainer::get();
         $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
+
+        /*
+         * DefaultLogger sorts later than AnotherLogger, and thus is registered as the default handler
+         * for Logger interfaces
+         */
 
         return $container;
     }
@@ -51,7 +56,7 @@ final class ServiceContainerTest extends TestCase
         /** @var $service MockServiceWithDefaultLogger */
         $service = $container->resolve(MockServiceWithDefaultLogger::class);
 
-        $this->assertInstanceOf(MockLogger2::class, $service->getLogger());
+        $this->assertInstanceOf(DefaultLogger::class, $service->getLogger());
     }
 
     public function testServiceInstantiatedWithPreferredInjection(): void
@@ -61,6 +66,6 @@ final class ServiceContainerTest extends TestCase
         /** @var $service MockServiceWithPreferredLogger */
         $service = $container->resolve(MockServiceWithPreferredLogger::class);
 
-        $this->assertInstanceOf(MockLogger1::class, $service->getLogger());
+        $this->assertInstanceOf(AnotherLogger::class, $service->getLogger());
     }
 }

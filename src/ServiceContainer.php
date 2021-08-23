@@ -70,8 +70,13 @@ class ServiceContainer
         if ($this->sourcesHaveBeenLoaded) {
             return;
         }
+
         foreach ($this->sourceDirectories as $sourceDirectory) {
-            $iterator = new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory)), '/^.+\.php$/i', \RegexIterator::GET_MATCH);
+            $iterator = new \RegexIterator(
+                new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory)),
+                '/^.+\.php$/i',
+                \RegexIterator::GET_MATCH
+            );
 
             foreach ($iterator as $filePath => $file) {
                 require_once $filePath;
@@ -110,41 +115,63 @@ class ServiceContainer
     {
         $reflectionClass = new \ReflectionClass($service);
 
-        $arguments = [];
-
-        if ($constructor = $reflectionClass->getConstructor()) {
-            $preferredClassMap = [];
-            foreach ($constructor->getAttributes(PreferredClass::class) as $preferredClass) {
-                /** @var PreferredClass $preferredClassData */
-                $preferredClassData = $preferredClass->newInstance();
-                $preferredClassMap[$preferredClassData->type] = $preferredClassData->className;
-            }
-
-            foreach ($constructor->getParameters() as $parameter) {
-                $paramService = null;
-                $types = $this->getParameterTypes($parameter);
-
-                foreach ($types as $type) {
-                    $type = $type->getName();
-                    if (array_key_exists($type, $preferredClassMap)) {
-                        $type = $preferredClassMap[$type];
-                    }
-
-                    if ($this->findService($type)) {
-                        $paramService = $type;
-                        break;
-                    }
-                }
-
-                if (null === $paramService) {
-                    throw new Exceptions\ServiceNotFoundByTypeException($types);
-                }
-
-                $arguments[] = $this->resolve($paramService);
-            }
-        }
+        $arguments = $this->getConstructorArgumentValues($reflectionClass);
 
         return new $service(... $arguments);
+    }
+
+    private function getConstructorArgumentValues(\ReflectionClass $reflectionClass): array
+    {
+        if (!$constructor = $reflectionClass->getConstructor()) {
+            return [];
+        }
+
+        return $this->getMethodArgumentValues($constructor);
+    }
+
+    private function getMethodArgumentValues(\ReflectionMethod $reflectionMethod): array
+    {
+        $arguments = [];
+
+        $preferredClassMap = $this->getPreferredClassMap($reflectionMethod);
+
+        foreach ($reflectionMethod->getParameters() as $parameter) {
+            $paramService = null;
+            $types = $this->getParameterTypes($parameter);
+
+            foreach ($types as $type) {
+                $type = $type->getName();
+                if (array_key_exists($type, $preferredClassMap)) {
+                    $type = $preferredClassMap[$type];
+                }
+
+                if ($this->findService($type)) {
+                    $paramService = $type;
+                    break;
+                }
+            }
+
+            if (null === $paramService) {
+                throw new Exceptions\ServiceNotFoundByTypeException($types);
+            }
+
+            $arguments[] = $this->resolve($paramService);
+        }
+
+        return $arguments;
+    }
+
+    private function getPreferredClassMap(\ReflectionMethod $reflectionMethod): array
+    {
+        $preferredClassMap = [];
+
+        foreach ($reflectionMethod->getAttributes(PreferredClass::class) as $preferredClass) {
+            /** @var PreferredClass $preferredClassData */
+            $preferredClassData = $preferredClass->newInstance();
+            $preferredClassMap[$preferredClassData->type] = $preferredClassData->className;
+        }
+
+        return $preferredClassMap;
     }
 
     /**

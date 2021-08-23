@@ -7,7 +7,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Medas\\ServiceContainer\\": "src/"
+            "Medas\\ServiceContainer\\": "src/",
+            "Medas\\Test\\": "tests/"
         }
     },
     "authors": [

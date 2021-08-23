@@ -5,10 +5,10 @@ namespace Medas\Test\Functional;
 use Medas\ServiceContainer\Exceptions\ServiceNotFoundByTypeException;
 use Medas\ServiceContainer\Interfaces\Logger;
 use Medas\ServiceContainer\ServiceContainer;
-use Medas\Test\MockUps\MockLogger;
+use Medas\Test\MockUps\MockLogger1;
+use Medas\Test\MockUps\MockLogger2;
 use Medas\Test\MockUps\MockServiceWithDefaultLogger;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
-use Medas\Test\MockUps\SecondLevel\SecondLevelMockLogger;
 use PHPUnit\Framework\TestCase;
 
 final class ServiceContainerTest extends TestCase
@@ -30,47 +30,45 @@ final class ServiceContainerTest extends TestCase
 
     public function testServiceIsFound(): void
     {
+        $container = $this->loadMockUps();
+        $service = $container->resolve(Logger::class);
+
+        $this->assertInstanceOf(MockLogger2::class, $service);
+    }
+
+    private function loadMockUps(): ServiceContainer
+    {
         $container = ServiceContainer::get();
         $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
 
-        $service = $container->resolve(Logger::class);
-
-        $this->assertInstanceOf(SecondLevelMockLogger::class, $service);
+        return $container;
     }
 
     public function testPreferredServiceIsFound(): void
     {
-        $container = ServiceContainer::get();
-        $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
+        $container = $this->loadMockUps();
+        $service = $container->resolve(Logger::class, MockLogger1::class);
 
-        $service = $container->resolve(Logger::class, MockLogger::class);
-
-        $this->assertInstanceOf(MockLogger::class, $service);
+        $this->assertInstanceOf(MockLogger1::class, $service);
     }
 
     public function testServiceInstantiatedWithDefaultInjection(): void
     {
-        $container = ServiceContainer::get();
-        $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
+        $container = $this->loadMockUps();
 
-        /**
-         * @var $service MockServiceWithDefaultLogger
-         */
+        /** @var $service MockServiceWithDefaultLogger */
         $service = $container->resolve(MockServiceWithDefaultLogger::class);
 
-        $this->assertInstanceOf(SecondLevelMockLogger::class, $service->getLogger());
+        $this->assertInstanceOf(MockLogger2::class, $service->getLogger());
     }
 
     public function testServiceInstantiatedWithPreferredInjection(): void
     {
-        $container = ServiceContainer::get();
-        $container->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
+        $container = $this->loadMockUps();
 
-        /**
-         * @var $service MockServiceWithDefaultLogger
-         */
+        /** @var $service MockServiceWithPreferredLogger */
         $service = $container->resolve(MockServiceWithPreferredLogger::class);
 
-        $this->assertInstanceOf(MockLogger::class, $service->getLogger());
+        $this->assertInstanceOf(MockLogger1::class, $service->getLogger());
     }
 }

@@ -1,7 +1,16 @@
 {
     "name": "morphp/medas-service-container",
     "description": "Medas service container",
+    "authors": [
+        {
+            "name": "Patrick Morpey",
+            "email": "patrick@morphp.nl"
+        }
+    ],
     "type": "library",
+    "require": {
+        "symfony/string": "^5.3"
+    },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
     },
@@ -10,14 +19,5 @@
             "Medas\\ServiceContainer\\": "src/",
             "Medas\\Test\\": "tests/"
         }
-    },
-    "authors": [
-        {
-            "name": "Patrick Morpey",
-            "email": "patrick@morphp.nl"
-        }
-    ],
-    "require": {
-        "symfony/string": "^5.3"
     }
 }

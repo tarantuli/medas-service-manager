@@ -1,38 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Medas\ServiceContainer\Core;
 
 use Symfony\Component\String\UnicodeString;
 
 class Str extends UnicodeString
 {
-
-    public static function fromVariable(mixed $argument): self
-    {
-        if (is_array($argument)) {
-            $argument = self::arrayToString($argument);
-        }
-        elseif (is_object($argument)) {
-            $argument = self::objectToString($argument);
-        }
-        elseif (null === $argument) {
-            $argument = 'NULL';
-        }
-        elseif (true === $argument) {
-            $argument = 'TRUE';
-        }
-        elseif (false === $argument) {
-            $argument = 'FALSE';
-        }
-        elseif (is_resource($argument)) {
-            $argument = sprintf('resource:%s(%u)', get_resource_type($argument), (int)$argument);
-        }
-
-        return new self($argument);
-
-    }
-
-    public static function arrayToString(array $argument): string
+    public static function fromArray(array $argument): string
     {
         if (count(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)) >= 25) {
             return '[... snipped ...]';
@@ -61,7 +37,7 @@ class Str extends UnicodeString
         return $retval;
     }
 
-    public static function objectToString(object $argument): string
+    public static function fromObject(object $argument): string
     {
         $retval = get_class($argument);
         $retval .= '(';
@@ -86,6 +62,31 @@ class Str extends UnicodeString
         $retval .= ')';
 
         return $retval;
+    }
+
+    public static function fromVariable(mixed $argument): self
+    {
+        if (is_array($argument)) {
+            $argument = self::fromArray($argument);
+        }
+        elseif (is_object($argument)) {
+            $argument = self::fromObject($argument);
+        }
+        elseif (null === $argument) {
+            $argument = 'NULL';
+        }
+        elseif (true === $argument) {
+            $argument = 'TRUE';
+        }
+        elseif (false === $argument) {
+            $argument = 'FALSE';
+        }
+        elseif (is_resource($argument)) {
+            $argument = sprintf('resource:%s(%u)', get_resource_type($argument), (int)$argument);
+        }
+
+        return new self($argument);
+
     }
 
     public function truncateToByteLength(int $maxByteLength): self

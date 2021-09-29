@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Medas\Test\Functional;
 
 use Medas\ServiceContainer\Exceptions\ServiceNotFoundByTypesException;

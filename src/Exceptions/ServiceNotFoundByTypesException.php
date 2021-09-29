@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Medas\ServiceContainer\Exceptions;
 
 class ServiceNotFoundByTypesException extends BaseException

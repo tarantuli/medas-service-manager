@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Medas\ServiceContainer;
 
 use Medas\ServiceContainer\Attributes\Service;
@@ -18,17 +20,17 @@ class ServiceContainer
     }
 
     /**
-     * @var array{object}
+     * @var object[]
      */
     private array $services = [];
 
     /**
-     * @var array{string}
+     * @var string[]
      */
     private array $mapping = [];
 
     /**
-     * @var array{string}
+     * @var string[]
      */
     private array $sourceDirectories = [];
     private bool $sourcesHaveBeenLoaded = false;
@@ -41,11 +43,9 @@ class ServiceContainer
 
     public function resolve(string $type): object
     {
-        if (!$this->findService($type)) {
+        if (null === $service = $this->findService($type)) {
             throw new Exceptions\ServiceNotFoundByTypesException([$type]);
         }
-
-        $service = $this->mapping[$type];
 
         if (!array_key_exists($service, $this->services)) {
             $this->services[$service] = $this->instantiate($service);
@@ -54,16 +54,16 @@ class ServiceContainer
         return $this->services[$service];
     }
 
-    private function findService(string $type): bool
+    private function findService(string $type): ?string
     {
         if (array_key_exists($type, $this->mapping)) {
-            return true;
+            return $this->mapping[$type];
         }
 
         $this->loadSources();
         $this->findServices();
 
-        return array_key_exists($type, $this->mapping);
+        return $this->mapping[$type] ?? null;
     }
 
     private function loadSources(): void
@@ -142,7 +142,9 @@ class ServiceContainer
         return $arguments;
     }
 
-    private function getMethodArgumentValue(\ReflectionParameter $parameter, PreferredClassMap $preferredClassMap): object
+    private function getMethodArgumentValue(
+        \ReflectionParameter $parameter,
+        PreferredClassMap    $preferredClassMap): object
     {
         $paramService = null;
         $types = $this->getParameterTypes($parameter);
@@ -154,14 +156,14 @@ class ServiceContainer
             if ($preferredClass = $preferredClassMap->forType($type)) {
                 $checkedTypes[] = $preferredClass;
 
-                if ($this->findService($preferredClass)) {
+                if (null !== $this->findService($preferredClass)) {
                     $paramService = $preferredClass;
                     break;
                 }
             }
 
             $checkedTypes[] = $type;
-            if ($this->findService($type)) {
+            if (null !== $this->findService($type)) {
                 $paramService = $type;
                 break;
             }

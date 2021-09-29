@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceContainer\Exceptions;
 
-use Medas\ServiceContainer\Core\Str;
+use Medas\Core\Str;
 
 abstract class BaseException extends \Exception
 {

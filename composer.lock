@@ -4,14 +4,14 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7e1b6f4ac2aee1791fe529fbea98e6eb",
+    "content-hash": "270f432423677a1d5b496ec7b2e59b4c",
     "packages": [
         {
             "name": "morphp/medas-core",
             "version": "dev-master",
             "dist": {
                 "type": "path",
-                "url": "W:/MorPHP/Medas/core",
+                "url": "../core",
                 "reference": "aa7e4e0a410829e55a347d8c061b9976ac2d91c6"
             },
             "require": {
@@ -35,7 +35,7 @@
             ],
             "description": "Medas core",
             "transport-options": {
-                "relative": false
+                "relative": true
             }
         },
         {

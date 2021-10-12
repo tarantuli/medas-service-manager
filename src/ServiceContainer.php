@@ -33,12 +33,22 @@ class ServiceContainer
      * @var string[]
      */
     private array $sourceDirectories = [];
-    private bool $sourcesHaveBeenLoaded = false;
+    /**
+     * @var string[]
+     */
+    private array $unloadedSourceDirectories = [];
+
+    private ServiceInstantiator $instantiator;
+
+    public function __construct()
+    {
+        $this->instantiator = new ServiceInstantiator($this);
+    }
 
     public function addSourceDirectory(string $sourceDirectory): void
     {
         $this->sourceDirectories[] = $sourceDirectory;
-        $this->sourcesHaveBeenLoaded = false;
+        $this->unloadedSourceDirectories[] = $sourceDirectory;
     }
 
     public function resolve(string $type): object
@@ -48,13 +58,13 @@ class ServiceContainer
         }
 
         if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = $this->instantiate($service);
+            $this->services[$service] = $this->instantiator->instantiate($service);
         }
 
         return $this->services[$service];
     }
 
-    private function findService(string $type): ?string
+    public function findService(string $type): ?string
     {
         if (array_key_exists($type, $this->mapping)) {
             return $this->mapping[$type];
@@ -68,11 +78,7 @@ class ServiceContainer
 
     private function loadSources(): void
     {
-        if ($this->sourcesHaveBeenLoaded) {
-            return;
-        }
-
-        foreach ($this->sourceDirectories as $sourceDirectory) {
+        foreach ($this->unloadedSourceDirectories as $sourceDirectory) {
             $iterator = new \RegexIterator(
                 new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory)),
                 '/^.+\.php$/i',
@@ -84,7 +90,7 @@ class ServiceContainer
             }
         }
 
-        $this->sourcesHaveBeenLoaded = true;
+        $this->unloadedSourceDirectories = [];
     }
 
     private function findServices(): void
@@ -109,84 +115,5 @@ class ServiceContainer
                 $this->mapping[$interface->name] = $serviceName;
             }
         } while ($class = $class->getParentClass());
-
-    }
-
-    private function instantiate(string $className): object
-    {
-        $class = new \ReflectionClass($className);
-
-        $arguments = $this->getConstructorArgumentValues($class);
-
-        return new $className(... $arguments);
-    }
-
-    private function getConstructorArgumentValues(\ReflectionClass $class): array
-    {
-        if (!$constructor = $class->getConstructor()) {
-            return [];
-        }
-
-        return $this->getMethodArgumentValues($constructor);
-    }
-
-    private function getMethodArgumentValues(\ReflectionMethod $method): array
-    {
-        $arguments = [];
-        $preferredClassMap = new PreferredClassMap($method);
-
-        foreach ($method->getParameters() as $parameter) {
-            $arguments[] = $this->getMethodArgumentValue($parameter, $preferredClassMap);
-        }
-
-        return $arguments;
-    }
-
-    private function getMethodArgumentValue(
-        \ReflectionParameter $parameter,
-        PreferredClassMap    $preferredClassMap): object
-    {
-        $paramService = null;
-        $types = $this->getParameterTypes($parameter);
-        $checkedTypes = [];
-
-        foreach ($types as $type) {
-            $type = $type->getName();
-
-            if ($preferredClass = $preferredClassMap->forType($type)) {
-                $checkedTypes[] = $preferredClass;
-
-                if (null !== $this->findService($preferredClass)) {
-                    $paramService = $preferredClass;
-                    break;
-                }
-            }
-
-            $checkedTypes[] = $type;
-            if (null !== $this->findService($type)) {
-                $paramService = $type;
-                break;
-            }
-        }
-
-        if (null === $paramService) {
-            throw new Exceptions\ServiceNotFoundByTypesException($checkedTypes);
-        }
-
-        return $this->resolve($paramService);
-    }
-
-    /**
-     * @return \ReflectionNamedType[]
-     */
-    private function getParameterTypes(\ReflectionParameter $parameter): array
-    {
-        $type = $parameter->getType();
-
-        if (!$type) return [];
-
-        return $type instanceof \ReflectionUnionType
-            ? $type->getTypes()
-            : [$type];
     }
 }

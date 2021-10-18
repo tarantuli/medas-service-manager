@@ -22,7 +22,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Medas\\ServiceManager\\": "ServiceManager/",
+            "Medas\\ServiceManager\\": "src/",
             "Medas\\Test\\": "tests/"
         }
     }

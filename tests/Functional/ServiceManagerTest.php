@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Medas\Test\Functional;
 
 use Medas\ServiceManager\Exceptions\ServiceNotFoundByTypesException;
-use Medas\ServiceManager\Interfaces\Logger;
 use Medas\ServiceManager\ServiceManager;
 use Medas\Test\MockUps\AnotherLogger;
 use Medas\Test\MockUps\DefaultLogger;
+use Medas\Test\MockUps\Logger;
 use Medas\Test\MockUps\MockServiceWithDefaultLogger;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
 use PHPUnit\Framework\TestCase;

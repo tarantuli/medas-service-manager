@@ -6,7 +6,6 @@ namespace Medas\Test\MockUps;
 
 use Medas\ServiceManager\Attributes\PreferredClass;
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Interfaces\Logger;
 
 #[Service]
 class MockServiceWithPreferredLogger

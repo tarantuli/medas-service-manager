@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceContainer;
+namespace Medas\ServiceManager;
 
-use Medas\ServiceContainer\Attributes\Service;
+use Medas\ServiceManager\Attributes\Service;
 
-class ServiceContainer
+class ServiceManager
 {
     private static self $instance;
 
@@ -33,6 +33,7 @@ class ServiceContainer
      * @var string[]
      */
     private array $sourceDirectories = [];
+
     /**
      * @var string[]
      */
@@ -40,7 +41,7 @@ class ServiceContainer
 
     private ServiceInstantiator $instantiator;
 
-    public function __construct()
+    private function __construct()
     {
         $this->instantiator = new ServiceInstantiator($this);
     }
@@ -71,13 +72,14 @@ class ServiceContainer
         }
 
         $this->loadSources();
-        $this->findServices();
 
         return $this->mapping[$type] ?? null;
     }
 
     private function loadSources(): void
     {
+        $loadedFile = false;
+
         foreach ($this->unloadedSourceDirectories as $sourceDirectory) {
             $iterator = new \RegexIterator(
                 new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory)),
@@ -87,7 +89,12 @@ class ServiceContainer
 
             foreach ($iterator as $filePath => $file) {
                 require_once $filePath;
+                $loadedFile = true;
             }
+        }
+
+        if ($loadedFile) {
+            $this->findServices();
         }
 
         $this->unloadedSourceDirectories = [];

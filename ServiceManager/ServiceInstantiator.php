@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceContainer;
+namespace Medas\ServiceManager;
 
 class ServiceInstantiator
 {
-    public function __construct(private ServiceContainer $container)
+    public function __construct(private ServiceManager $manager)
     {
     }
 
@@ -54,14 +54,14 @@ class ServiceInstantiator
             if ($preferredClass = $preferredClassMap->forType($type)) {
                 $checkedTypes[] = $preferredClass;
 
-                if (null !== $this->container->findService($preferredClass)) {
+                if (null !== $this->manager->findService($preferredClass)) {
                     $paramService = $preferredClass;
                     break;
                 }
             }
 
             $checkedTypes[] = $type;
-            if (null !== $this->container->findService($type)) {
+            if (null !== $this->manager->findService($type)) {
                 $paramService = $type;
                 break;
             }
@@ -71,7 +71,7 @@ class ServiceInstantiator
             throw new Exceptions\ServiceNotFoundByTypesException($checkedTypes);
         }
 
-        return $this->container->resolve($paramService);
+        return $this->manager->resolve($paramService);
     }
 
     /**

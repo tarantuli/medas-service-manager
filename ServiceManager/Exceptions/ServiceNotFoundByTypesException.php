@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceContainer\Exceptions;
+namespace Medas\ServiceManager\Exceptions;
 
 class ServiceNotFoundByTypesException extends BaseException
 {

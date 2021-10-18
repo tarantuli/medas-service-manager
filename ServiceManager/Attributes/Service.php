@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceContainer\Attributes;
+namespace Medas\ServiceManager\Attributes;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class Service

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\Test\MockUps;
 
-use Medas\ServiceContainer\Attributes\PreferredClass;
-use Medas\ServiceContainer\Attributes\Service;
-use Medas\ServiceContainer\Interfaces\Logger;
+use Medas\ServiceManager\Attributes\PreferredClass;
+use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\Interfaces\Logger;
 
 #[Service]
 class MockServiceWithPreferredLogger

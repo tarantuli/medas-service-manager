@@ -1,6 +1,6 @@
 {
-    "name": "morphp/medas-service-container",
-    "description": "Medas service container",
+    "name": "morphp/medas-service-manager",
+    "description": "Medas service manager",
     "authors": [
         {
             "name": "Patrick Morpey",
@@ -22,7 +22,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Medas\\ServiceContainer\\": "src/",
+            "Medas\\ServiceManager\\": "ServiceManager/",
             "Medas\\Test\\": "tests/"
         }
     }

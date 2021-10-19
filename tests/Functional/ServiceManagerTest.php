@@ -41,7 +41,7 @@ final class ServiceManagerTest extends TestCase
     private function loadMockUps(): ServiceManager
     {
         $manager = ServiceManager::get();
-        $manager->addSourceDirectory(sprintf('%s/../MockUps', __DIR__));
+        $manager->addSourceDirectory(realpath(__DIR__ .'/../MockUps'));
 
         /*
          * DefaultLogger sorts later than AnotherLogger, and thus is registered as the default handler

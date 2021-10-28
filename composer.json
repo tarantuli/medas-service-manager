@@ -9,7 +9,8 @@
     ],
     "type": "library",
     "require": {
-        "morphp/medas-core": "@dev"
+        "morphp/medas-core": "@dev",
+        "morphp/medas-env-manager": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5"
@@ -18,6 +19,10 @@
         {
             "type": "path",
             "url": "../core"
+        },
+        {
+            "type": "path",
+            "url": "../env-manager"
         }
     ],
     "autoload": {

@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Medas\Test\Functional;
+
+use Medas\ServiceManager\DataTree;
+use Medas\ServiceManager\Exceptions\ValueNotFoundException;
+use PHPUnit\Framework\TestCase;
+
+class DataTreeTest extends TestCase
+{
+    public function testScalar(): void
+    {
+        $dataTree = new DataTree();
+
+        // String
+        $dataTree->set('env', 'test');
+        $this->assertEquals('test', $dataTree->get('env'));
+
+        // Integer value
+        $dataTree->set('int', 1);
+        $this->assertEquals('integer', gettype($dataTree->get('int')));
+    }
+
+    public function testUnset(): void
+    {
+        $dataTree = new DataTree();
+
+        $this->expectException(ValueNotFoundException::class);
+        $dataTree->get('env');
+    }
+
+    public function testUnsetWithDefaults(): void
+    {
+        $dataTree = new DataTree(['env' => 'test']);
+
+        $this->assertEquals('test', $dataTree->get('env'));
+    }
+
+    public function testOverwriteDefaults(): void
+    {
+        $dataTree = new DataTree(['env' => 'test']);
+        $dataTree->set('env', 'dev');
+
+        $this->assertEquals('dev', $dataTree->get('env'));
+
+        // Value history
+        $expectedHistory = [
+            ['source' => 'default', 'value' => 'test'],
+            ['source' => 'runtime', 'value' => 'dev'],
+        ];
+
+        $this->assertEquals($expectedHistory, $dataTree->getHistory('env'));
+    }
+
+    public function testUnsetWithFallback(): void
+    {
+        $dataTree = new DataTree();
+
+        self::assertEquals('dev', $dataTree->getElse('env', 'dev'));
+    }
+
+    public function testPath(): void
+    {
+        $dataTree = new DataTree();
+
+        $dataTree->set('db.user', 'test');
+
+        $this->assertEquals('test', $dataTree->get('db.user'));
+        $this->assertEquals(['user' => 'test'], $dataTree->get('db'));
+
+        // The history of a node is also a tree
+        $this->assertArrayHasKey('user', $dataTree->getHistory('db'));
+    }
+
+    public function testSetRecursive(): void
+    {
+        $dataTree = new DataTree();
+
+        $dataTree->setRecursively(['db' => ['user' => 'root']]);
+
+        $this->assertEquals('root', $dataTree->get('db.user'));
+    }
+}

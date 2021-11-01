@@ -46,6 +46,19 @@ class ServiceManager
         $this->instantiator = new ServiceInstantiator($this);
     }
 
+    public function addSources(array $sourceClasses): void
+    {
+        foreach ($sourceClasses as $sourceClass) {
+            $this->addSource($sourceClass);
+        }
+    }
+
+    public function addSource(string $sourceClass): void
+    {
+        $class = new \ReflectionClass($sourceClass);
+        $this->addSourceDirectory(dirname($class->getFileName()));
+    }
+
     public function addSourceDirectory(string $sourceDirectory): void
     {
         $this->sourceDirectories[] = $sourceDirectory;

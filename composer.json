@@ -9,11 +9,11 @@
     ],
     "type": "library",
     "require": {
-        "morphp/medas-core": "@dev",
-        "morphp/medas-env-manager": "@dev"
+        "morphp/medas-core": "@dev"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "morphp/medas-env-manager": "@dev"
     },
     "repositories": [
         {

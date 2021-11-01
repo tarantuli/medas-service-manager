@@ -9,9 +9,11 @@ use Medas\ServiceManager\Exceptions\ValueNotFoundException;
 class DataTree
 {
     private array $values = [];
+    /** @var DataTree\History[] */
     private array $history = [];
 
     private mixed $lastFoundValue;
+    /** @var DataTree\History[] */
     private array $lastFoundHistory;
 
     public function __construct(array $defaults = [])
@@ -41,7 +43,7 @@ class DataTree
         }
 
         $values[$lastPath] = $value;
-        $history[$lastPath][] = ['source' => $source, 'value' => $value];
+        $history[$lastPath][] = new DataTree\History($source, $value);
 
         return $this;
     }
@@ -98,6 +100,7 @@ class DataTree
         return true;
     }
 
+    /** @return DataTree\History[] */
     public function getHistory(string $index): array
     {
         if (!$this->has($index)) {
@@ -105,6 +108,15 @@ class DataTree
         }
 
         return $this->lastFoundHistory;
+    }
+
+    public function getSource(string $index): string
+    {
+        if (!$this->has($index)) {
+            throw new ValueNotFoundException($index);
+        }
+
+        return $this->lastFoundHistory[count($this->lastFoundHistory) - 1]->source;
     }
 
     public function getElse(string $index, mixed $fallback): mixed

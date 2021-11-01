@@ -23,7 +23,7 @@ class DataTreeTest extends TestCase
         $this->assertEquals('integer', gettype($dataTree->get('int')));
     }
 
-    public function testUnset(): void
+    public function testUnknownPath(): void
     {
         $dataTree = new DataTree();
 
@@ -31,30 +31,31 @@ class DataTreeTest extends TestCase
         $dataTree->get('env');
     }
 
-    public function testUnsetWithDefaults(): void
+    public function testUnknownPathWithDefaults(): void
     {
         $dataTree = new DataTree(['env' => 'test']);
 
         $this->assertEquals('test', $dataTree->get('env'));
     }
 
-    public function testOverwriteDefaults(): void
+    public function testOverwriteDefaultsAtRuntime(): void
     {
         $dataTree = new DataTree(['env' => 'test']);
         $dataTree->set('env', 'dev');
 
         $this->assertEquals('dev', $dataTree->get('env'));
+        $this->assertEquals('runtime', $dataTree->getSource('env'));
 
         // Value history
         $expectedHistory = [
-            ['source' => 'default', 'value' => 'test'],
-            ['source' => 'runtime', 'value' => 'dev'],
+            new DataTree\History('default', 'test'),
+            new DataTree\History('runtime', 'dev'),
         ];
 
         $this->assertEquals($expectedHistory, $dataTree->getHistory('env'));
     }
 
-    public function testUnsetWithFallback(): void
+    public function testUnknownPathWithFallback(): void
     {
         $dataTree = new DataTree();
 

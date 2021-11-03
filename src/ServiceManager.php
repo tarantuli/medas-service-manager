@@ -44,22 +44,34 @@ class ServiceManager
     private function __construct()
     {
         $this->instantiator = new ServiceInstantiator($this);
+        $this->declareGlobalFunctions();
     }
 
-    public function addSources(array $sourceClasses): void
+    private function declareGlobalFunctions(): void
     {
-        foreach ($sourceClasses as $sourceClass) {
-            $this->addSource($sourceClass);
+        require_once 'GlobalFunctions.php';
+    }
+
+    public function addPackages(array $classes): void
+    {
+        foreach ($classes as $class) {
+            $this->addPackage($class);
         }
     }
 
-    public function addSource(string $sourceClass): void
+    public function addPackage(string $byClass = null, string $byDirectory = null): void
     {
-        $class = new \ReflectionClass($sourceClass);
-        $this->addSourceDirectory(dirname($class->getFileName()));
+        if (null !== $byClass) {
+            $class = new \ReflectionClass($byClass);
+            $this->addSourceDirectory(dirname($class->getFileName()));
+        }
+
+        if (null !== $byDirectory) {
+            $this->addSourceDirectory($byDirectory);
+        }
     }
 
-    public function addSourceDirectory(string $sourceDirectory): void
+    private function addSourceDirectory(string $sourceDirectory): void
     {
         $this->sourceDirectories[] = $sourceDirectory;
         $this->unloadedSourceDirectories[] = $sourceDirectory;
@@ -119,21 +131,40 @@ class ServiceManager
             $class = new \ReflectionClass($className);
 
             if (!$class->isInternal() && $class->getAttributes(Service::class)) {
-                $this->registerService($class);
+                $this->registerClass($class);
             }
         }
     }
 
-    private function registerService(\ReflectionClass $class)
+    private function registerClass(\ReflectionClass $class, array $forTypes = []): void
     {
-        $serviceName = $class->name;
+        if (!$forTypes) {
+            $forTypes = $this->getSelfParentsAndInterfaces($class);
+        }
+
+        foreach ($forTypes as $forType) {
+            $this->mapping[$forType] = $class->name;
+        }
+    }
+
+    private function getSelfParentsAndInterfaces(\ReflectionClass $class): array
+    {
+        $classes = [];
 
         do {
-            $this->mapping[$class->name] = $serviceName;
+            $classes[] = $class->name;
 
             foreach ($class->getInterfaces() as $interface) {
-                $this->mapping[$interface->name] = $serviceName;
+                $classes[] = $interface->name;
             }
         } while ($class = $class->getParentClass());
+
+        return $classes;
+    }
+
+    public function bindService(object $service, array $forTypes): void
+    {
+        $this->services[get_class($service)] = $service;
+        $this->registerClass(new \ReflectionClass($service), $forTypes);
     }
 }

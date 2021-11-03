@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Attributes;
 
-#[\Attribute(\Attribute::TARGET_PARAMETER)]
+/**
+ * Allow both to allow the attribute to be assigned to parameters in constructors
+ * with property promotion.
+ */
+#[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::TARGET_PROPERTY)]
 class EnvValue
 {
     public function __construct(public string $path)

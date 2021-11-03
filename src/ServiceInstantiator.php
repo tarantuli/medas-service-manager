@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\ServiceManager\Attributes\EnvValue;
+use Medas\ServiceManager\Interfaces\EnvManager;
+
 class ServiceInstantiator
 {
+    private mixed $foundEnvValue;
+
     public function __construct(private ServiceManager $manager)
     {
     }
@@ -42,8 +47,12 @@ class ServiceInstantiator
 
     private function getMethodArgumentValue(
         \ReflectionParameter $parameter,
-        PreferredClassMap    $preferredClassMap): object
+        PreferredClassMap    $preferredClassMap): mixed
     {
+        if ($this->foundEnvValue($parameter)) {
+            return $this->foundEnvValue;
+        }
+
         $paramService = null;
         $types = $this->getParameterTypes($parameter);
         $checkedTypes = [];
@@ -74,9 +83,19 @@ class ServiceInstantiator
         return $this->manager->resolve($paramService);
     }
 
-    /**
-     * @return \ReflectionNamedType[]
-     */
+    private function foundEnvValue(\ReflectionParameter $parameter): bool
+    {
+        if (!$attributes = $parameter->getAttributes(EnvValue::class)) {
+            return false;
+        }
+
+        $path = $attributes[0]->newInstance()->path;
+        $this->foundEnvValue = $this->manager->resolve(EnvManager::class)->getValue($path);
+
+        return true;
+    }
+
+    /** @return \ReflectionNamedType[] */
     private function getParameterTypes(\ReflectionParameter $parameter): array
     {
         $type = $parameter->getType();

@@ -80,7 +80,7 @@ class ServiceManager
     public function resolve(string $type): object
     {
         if (null === $service = $this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypesException([$type]);
+            throw new Exceptions\ServiceNotFoundByTypeException($type);
         }
 
         if (!array_key_exists($service, $this->services)) {
@@ -162,9 +162,9 @@ class ServiceManager
         return $classes;
     }
 
-    public function bindService(object $service, array $forTypes): void
+    public function bindService(object $service, string ...$forTypes): void
     {
-        $this->services[get_class($service)] = $service;
+        $this->services[$service::class] = $service;
         $this->registerClass(new \ReflectionClass($service), $forTypes);
     }
 }

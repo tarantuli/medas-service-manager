@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\Test\Functional;
 
-use Medas\ServiceManager\Exceptions\ServiceNotFoundByTypesException;
+use Medas\ServiceManager\Exceptions\ServiceNotFoundByTypeException;
 use Medas\ServiceManager\ServiceManager;
 use Medas\Test\MockUps\AnotherLogger;
 use Medas\Test\MockUps\DefaultLogger;
@@ -27,7 +27,7 @@ final class ServiceManagerTest extends TestCase
     {
         $manager = ServiceManager::get();
 
-        $this->expectException(ServiceNotFoundByTypesException::class);
+        $this->expectException(ServiceNotFoundByTypeException::class);
         $manager->resolve(Logger::class);
     }
 

@@ -9,7 +9,7 @@ namespace Medas\ServiceManager\Attributes;
  * with property promotion.
  */
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::TARGET_PROPERTY)]
-class EnvValue
+class ConfigValue
 {
     public function __construct(public string $path)
     {

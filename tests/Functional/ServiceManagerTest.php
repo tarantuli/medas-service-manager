@@ -10,7 +10,7 @@ use Medas\Test\MockUps\AnotherLogger;
 use Medas\Test\MockUps\DefaultLogger;
 use Medas\Test\MockUps\Logger;
 use Medas\Test\MockUps\MockServiceWithDefaultLogger;
-use Medas\Test\MockUps\MockServiceWithEnvInjection;
+use Medas\Test\MockUps\MockServiceWithConfigInjection;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
 use PHPUnit\Framework\TestCase;
 
@@ -72,13 +72,13 @@ final class ServiceManagerTest extends TestCase
         $this->assertInstanceOf(AnotherLogger::class, $service->getLogger());
     }
 
-    public function testServiceWithEnvInjection(): void
+    public function testServiceWithConfigInjection(): void
     {
         $manager = $this->loadMockUps();
 
-        /** @var $service MockServiceWithEnvInjection */
-        $service = $manager->resolve(MockServiceWithEnvInjection::class);
+        /** @var $service MockServiceWithConfigInjection */
+        $service = $manager->resolve(MockServiceWithConfigInjection::class);
 
-        $this->assertEquals('test', $service->getEnv());
+        $this->assertEquals('service-manager', $service->getProject());
     }
 }

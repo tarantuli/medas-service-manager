@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 // This file should be in the global namespace
 
-use Medas\ServiceManager\Interfaces\EnvManager;
+use Medas\ServiceManager\Interfaces\ConfigManager;
 use Medas\ServiceManager\ServiceManager;
 
-function env(string $path): mixed
+function config(string $path): mixed
 {
-    static $em;
+    static $config;
 
-    if (!isset($em)) {
-        /** @var EnvManager $em */
-        $em = sm()->resolve(EnvManager::class);
+    if (!isset($config)) {
+        /** @var ConfigManager $config */
+        $config = sm()->resolve(ConfigManager::class);
     }
 
-    return $em->getValue($path);
+    return $config->getValue($path);
 }
 
 function sm(): ServiceManager

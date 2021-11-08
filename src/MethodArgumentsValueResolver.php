@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Attributes\EnvValue;
+use Medas\ServiceManager\Attributes\ConfigValue;
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Interfaces\EnvManager;
+use Medas\ServiceManager\Interfaces\ConfigManager;
 
 #[Service]
 class MethodArgumentsValueResolver
 {
     private PreferredClassMap $preferredClassMap;
 
-    private mixed $foundEnvValue;
+    private mixed $foundConfigValue;
     private object $foundClassValue;
 
     public function __construct(private ServiceManager $serviceManager)
@@ -35,8 +35,8 @@ class MethodArgumentsValueResolver
 
     private function getMethodArgumentValue(\ReflectionParameter $parameter): mixed
     {
-        if ($this->findEnvValue($parameter)) {
-            return $this->foundEnvValue;
+        if ($this->findConfigValue($parameter)) {
+            return $this->foundConfigValue;
         }
 
         if ($this->findClassValue($parameter)) {
@@ -46,14 +46,14 @@ class MethodArgumentsValueResolver
         throw new Exceptions\CouldNotResolveMethodArgumentException($parameter);
     }
 
-    private function findEnvValue(\ReflectionParameter $parameter): bool
+    private function findConfigValue(\ReflectionParameter $parameter): bool
     {
-        if (!$attributes = $parameter->getAttributes(EnvValue::class)) {
+        if (!$attributes = $parameter->getAttributes(ConfigValue::class)) {
             return false;
         }
 
         $path = $attributes[0]->newInstance()->path;
-        $this->foundEnvValue = $this->serviceManager->resolve(EnvManager::class)->getValue($path);
+        $this->foundConfigValue = $this->serviceManager->resolve(ConfigManager::class)->getValue($path);
 
         return true;
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\Core\Directory;
 use Medas\ServiceManager\Attributes\Service;
 
 class ServiceManager
@@ -106,14 +107,10 @@ class ServiceManager
         $loadedFile = false;
 
         foreach ($this->unloadedSourceDirectories as $sourceDirectory) {
-            $iterator = new \RegexIterator(
-                new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($sourceDirectory)),
-                '/^.+\.php$/i',
-                \RegexIterator::GET_MATCH
-            );
+            $files = Directory::recursiveFindByExtension($sourceDirectory, 'php');
 
-            foreach ($iterator as $filePath => $file) {
-                require_once $filePath;
+            foreach ($files as $file) {
+                require_once $file;
                 $loadedFile = true;
             }
         }

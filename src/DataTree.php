@@ -53,29 +53,27 @@ class DataTree
         return explode('.', $index);
     }
 
-    public function setRecursively(array $values, string $source = 'runtime', string $path = ''): self
+    public function mergeArray(array $values, string $source = 'runtime'): self
+    {
+        return $this->setRecursively($values, $source);
+    }
+
+    private function setRecursively(array  $values, string $source = 'runtime',
+                                    string $path = '', bool $doOverwrite = true): self
+
     {
         foreach ($values as $index => $value) {
             $index = $path === '' ? $index : $path . '.' . $index;
 
             if (is_array($value)) {
-                $this->setRecursively($value, $source, $index);
+                $this->setRecursively($value, $source, $index, $doOverwrite);
             }
-            else {
+            elseif ($doOverwrite || !$this->has($index)) {
                 $this->set($index, $value, $source);
             }
         }
 
         return $this;
-    }
-
-    public function get(string $index): mixed
-    {
-        if (!$this->has($index)) {
-            throw new ValueNotFoundException($index);
-        }
-
-        return $this->lastFoundValue;
     }
 
     public function has(string $index): bool
@@ -98,6 +96,20 @@ class DataTree
         $this->lastFoundHistory = $history;
 
         return true;
+    }
+
+    public function mergeDefaults(array $values): self
+    {
+        return $this->setRecursively($values, source: 'defaults', doOverwrite: false);
+    }
+
+    public function get(string $index): mixed
+    {
+        if (!$this->has($index)) {
+            throw new ValueNotFoundException($index);
+        }
+
+        return $this->lastFoundValue;
     }
 
     /** @return DataTree\History[] */

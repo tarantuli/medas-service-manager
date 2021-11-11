@@ -28,7 +28,7 @@ final class ServiceManagerTest extends TestCase
         $manager = ServiceManager::get();
 
         $this->expectException(ServiceNotFoundByTypeException::class);
-        $manager->resolve(Logger::class);
+        $clas = $manager->resolve(Logger::class);
     }
 
     public function testServiceIsFound(): void

@@ -20,27 +20,20 @@ class ServiceManager
         return self::$instance;
     }
 
-    /**
-     * @var object[]
-     */
+    /** @var object[] */
     private array $services = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $mapping = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $sourceDirectories = [];
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private array $unloadedSourceDirectories = [];
 
     private ServiceInstantiator $instantiator;
+    private int $mostRecentFileModtime;
 
     private function __construct()
     {
@@ -56,11 +49,13 @@ class ServiceManager
     public function addPackages(array $classes): void
     {
         foreach ($classes as $class) {
-            $this->addPackage($class);
+            $this->addPackage(byClass: $class, scanImmediately: false);
         }
+
+        $this->loadSources();
     }
 
-    public function addPackage(string $byClass = null, string $byDirectory = null): void
+    public function addPackage(string $byClass = null, string $byDirectory = null, bool $scanImmediately = true): void
     {
         if (null !== $byClass) {
             $class = new \ReflectionClass($byClass);
@@ -70,36 +65,16 @@ class ServiceManager
         if (null !== $byDirectory) {
             $this->addSourceDirectory($byDirectory);
         }
+
+        if ($scanImmediately) {
+            $this->loadSources();
+        }
     }
 
     private function addSourceDirectory(string $sourceDirectory): void
     {
         $this->sourceDirectories[] = $sourceDirectory;
         $this->unloadedSourceDirectories[] = $sourceDirectory;
-    }
-
-    public function resolve(string $type): object
-    {
-        if (null === $service = $this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypeException($type);
-        }
-
-        if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = $this->instantiator->instantiate($service);
-        }
-
-        return $this->services[$service];
-    }
-
-    public function findService(string $type): ?string
-    {
-        if (array_key_exists($type, $this->mapping)) {
-            return $this->mapping[$type];
-        }
-
-        $this->loadSources();
-
-        return $this->mapping[$type] ?? null;
     }
 
     private function loadSources(): void
@@ -112,6 +87,11 @@ class ServiceManager
             foreach ($files as $file) {
                 require_once $file;
                 $loadedFile = true;
+                $modtime = filemtime($file);
+
+                if (!isset($this->mostRecentFileModtime) || $this->mostRecentFileModtime < $modtime) {
+                    $this->mostRecentFileModtime = $modtime;
+                }
             }
         }
 
@@ -159,9 +139,38 @@ class ServiceManager
         return $classes;
     }
 
+    public function resolve(string $type): object
+    {
+        if (null === $service = $this->findService($type)) {
+            throw new Exceptions\ServiceNotFoundByTypeException($type);
+        }
+
+        if (!array_key_exists($service, $this->services)) {
+            $this->services[$service] = $this->instantiator->instantiate($service);
+        }
+
+        return $this->services[$service];
+    }
+
+    public function findService(string $type): ?string
+    {
+        if (array_key_exists($type, $this->mapping)) {
+            return $this->mapping[$type];
+        }
+
+        $this->loadSources();
+
+        return $this->mapping[$type] ?? null;
+    }
+
     public function bindService(object $service, string ...$forTypes): void
     {
         $this->services[$service::class] = $service;
         $this->registerClass(new \ReflectionClass($service), $forTypes);
+    }
+
+    public function getMostRecentFileModtime(): int
+    {
+        return $this->mostRecentFileModtime;
     }
 }

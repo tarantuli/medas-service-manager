@@ -6,11 +6,7 @@ namespace Medas\ServiceManager\Interfaces\Storage;
 
 interface Database
 {
-    public function createTable(TableBlueprint $blueprint): void;
-
-    public function updateTable(TableBlueprint $blueprint): void;
-
-    public function deleteTable(string $name): void;
+    public function createTable(TableBlueprint $blueprint): Table;
 
     public function getTable(string $name): Table;
 }

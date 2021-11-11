@@ -79,7 +79,7 @@ class DataTreeTest extends TestCase
     {
         $dataTree = new DataTree();
 
-        $dataTree->setRecursively(['db' => ['user' => 'root']]);
+        $dataTree->mergeArray(['db' => ['user' => 'root']]);
 
         $this->assertEquals('root', $dataTree->get('db.user'));
     }

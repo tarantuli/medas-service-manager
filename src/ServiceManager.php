@@ -139,6 +139,9 @@ class ServiceManager
         return $classes;
     }
 
+    /**
+     * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
+     */
     public function resolve(string $type): object
     {
         if (null === $service = $this->findService($type)) {

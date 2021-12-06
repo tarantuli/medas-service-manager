@@ -28,5 +28,12 @@ function sm(): ServiceManager
     }
 
     return $sm;
+}
 
+/**
+ * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
+ */
+function service(string $type): object
+{
+    return sm()->resolve($type);
 }

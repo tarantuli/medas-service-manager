@@ -176,4 +176,9 @@ class ServiceManager
     {
         return $this->mostRecentFileModtime;
     }
+
+    public function instantiate(string $className): object
+    {
+        return $this->instantiator->instantiate($className);
+    }
 }

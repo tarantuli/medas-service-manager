@@ -7,6 +7,10 @@ namespace PHPSTORM_META {
         '' => '@',
     ]));
 
+    override(ServiceManager::instantiate(), map([
+        '' => '@',
+    ]));
+
     override(\service(), map([
         '' => '@',
     ]));

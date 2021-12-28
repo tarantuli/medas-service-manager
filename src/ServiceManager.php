@@ -6,6 +6,7 @@ namespace Medas\ServiceManager;
 
 use Medas\Core\Directory;
 use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\Interfaces\Package;
 
 class ServiceManager
 {
@@ -21,7 +22,7 @@ class ServiceManager
     }
 
     /** @var object[] */
-    private array $services = [];
+    public array $services = [];
 
     /** @var string[] */
     private array $mapping = [];
@@ -35,6 +36,8 @@ class ServiceManager
     private ServiceInstantiator $instantiator;
     private int $mostRecentFileModtime;
 
+    private array $registeredPackages = [];
+
     private function __construct()
     {
         $this->instantiator = new ServiceInstantiator($this);
@@ -46,25 +49,26 @@ class ServiceManager
         require_once 'GlobalFunctions.php';
     }
 
-    public function addPackages(array $classes): void
+    public function addPackages(array $packages, bool $scanImmediately = true): void
     {
-        foreach ($classes as $class) {
-            $this->addPackage(byClass: $class, scanImmediately: false);
+        foreach ($packages as $package) {
+            $this->addPackage(package: $package, scanImmediately: false);
         }
 
-        $this->loadSources();
+        if ($scanImmediately) {
+            $this->loadSources();
+        }
     }
 
-    public function addPackage(string $byClass = null, string $byDirectory = null, bool $scanImmediately = true): void
+    public function addPackage(Package $package, bool $scanImmediately = true): void
     {
-        if (null !== $byClass) {
-            $class = new \ReflectionClass($byClass);
-            $this->addSourceDirectory(dirname($class->getFileName()));
+        if (in_array($package::class, $this->registeredPackages, true)) {
+            return;
         }
 
-        if (null !== $byDirectory) {
-            $this->addSourceDirectory($byDirectory);
-        }
+        $this->addSourceDirectory($package->sourceDirectory());
+
+        $this->addPackages($package->dependencies(), false);
 
         if ($scanImmediately) {
             $this->loadSources();

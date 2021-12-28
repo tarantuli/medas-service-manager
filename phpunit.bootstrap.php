@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use Medas\ConfigManager\ConfigManager;
 use Medas\ServiceManager\ServiceManager;
+use Medas\ServiceManager\ServiceManagerPackage;
 
 $sm = ServiceManager::get();
-$sm->addPackage(ServiceManager::class);
-$sm->addPackage(ConfigManager::class);
+$sm->addPackage(new ServiceManagerPackage());
 
 /** @var $config ConfigManager */
 $config = $sm->resolve(ConfigManager::class);

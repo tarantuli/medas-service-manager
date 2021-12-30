@@ -14,7 +14,7 @@ class ValueNotFoundException extends BaseException
         parent::__construct($index);
     }
 
-    public function getPattern(): string
+    public function pattern(): string
     {
         return 'no value found for index %s';
     }

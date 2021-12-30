@@ -13,7 +13,7 @@ class ServiceNotFoundByTypeException extends BaseException
         parent::__construct($type);
     }
 
-    public function getPattern(): string
+    public function pattern(): string
     {
         return 'service not found with type %s';
     }

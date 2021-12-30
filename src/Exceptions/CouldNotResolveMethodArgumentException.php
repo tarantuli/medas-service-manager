@@ -17,7 +17,7 @@ class CouldNotResolveMethodArgumentException extends BaseException
         );
     }
 
-    public function getPattern(): string
+    public function pattern(): string
     {
         return 'could not resolve value of %s::%s parameter $%s';
     }

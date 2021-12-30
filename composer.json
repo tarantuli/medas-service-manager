@@ -25,6 +25,10 @@
         {
             "type": "path",
             "url": "../config-manager"
+        },
+        {
+            "type": "path",
+            "url": "../file-system"
         }
     ],
     "autoload": {

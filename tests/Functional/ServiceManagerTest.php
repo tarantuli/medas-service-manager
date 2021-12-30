@@ -9,9 +9,10 @@ use Medas\ServiceManager\ServiceManager;
 use Medas\Test\MockUps\AnotherLogger;
 use Medas\Test\MockUps\DefaultLogger;
 use Medas\Test\MockUps\Logger;
-use Medas\Test\MockUps\MockServiceWithDefaultLogger;
 use Medas\Test\MockUps\MockServiceWithConfigInjection;
+use Medas\Test\MockUps\MockServiceWithDefaultLogger;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
+use Medas\Test\MockUps\MockUpPackage;
 use PHPUnit\Framework\TestCase;
 
 final class ServiceManagerTest extends TestCase
@@ -42,7 +43,7 @@ final class ServiceManagerTest extends TestCase
     private function loadMockUps(): ServiceManager
     {
         $manager = ServiceManager::get();
-        $manager->addPackage(AnotherLogger::class);
+        $manager->addPackage(new MockUpPackage());
 
         /*
          * DefaultLogger sorts later than AnotherLogger, and thus is registered as the default handler

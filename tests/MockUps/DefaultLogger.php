@@ -9,5 +9,7 @@ use Medas\ServiceManager\Attributes\Service;
 #[Service]
 class DefaultLogger implements Logger
 {
-
+    public function test()
+    {
+    }
 }

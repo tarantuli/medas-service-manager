@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\Directory;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Interfaces\Package;
 
@@ -21,8 +20,10 @@ class ServiceManager
         return self::$instance;
     }
 
+    private FileFinder $fileFinder;
+
     /** @var object[] */
-    public array $services = [];
+    private array $services = [];
 
     /** @var string[] */
     private array $mapping = [];
@@ -40,6 +41,7 @@ class ServiceManager
 
     private function __construct()
     {
+        $this->fileFinder = new FileFinder();
         $this->instantiator = new ServiceInstantiator($this);
         $this->declareGlobalFunctions();
     }
@@ -86,7 +88,7 @@ class ServiceManager
         $loadedFile = false;
 
         foreach ($this->unloadedSourceDirectories as $sourceDirectory) {
-            $files = Directory::recursiveFindByExtension($sourceDirectory, 'php');
+            $files = $this->fileFinder->recursiveFindByExtension($sourceDirectory, 'php');
 
             foreach ($files as $file) {
                 require_once $file;

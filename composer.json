@@ -8,8 +8,6 @@
         }
     ],
     "type": "library",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "require": {
         "morphp/medas-core": "@dev"
     },
@@ -17,20 +15,6 @@
         "phpunit/phpunit": "^9.5",
         "morphp/medas-config-manager": "@dev"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../core"
-        },
-        {
-            "type": "path",
-            "url": "../config-manager"
-        },
-        {
-            "type": "path",
-            "url": "../file-system"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Medas\\ServiceManager\\": "src/",

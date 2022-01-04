@@ -11,6 +11,7 @@ use Medas\Test\MockUps\DefaultLogger;
 use Medas\Test\MockUps\Logger;
 use Medas\Test\MockUps\MockServiceWithConfigInjection;
 use Medas\Test\MockUps\MockServiceWithDefaultLogger;
+use Medas\Test\MockUps\MockServiceWithNullOption;
 use Medas\Test\MockUps\MockServiceWithPreferredLogger;
 use Medas\Test\MockUps\MockUpPackage;
 use PHPUnit\Framework\TestCase;
@@ -81,5 +82,15 @@ final class ServiceManagerTest extends TestCase
         $service = $manager->resolve(MockServiceWithConfigInjection::class);
 
         $this->assertEquals('service-manager', $service->getProject());
+    }
+
+    public function testServiceWithNullOption(): void
+    {
+        $manager = $this->loadMockUps();
+
+        /** @var $service MockServiceWithNullOption */
+        $service = $manager->resolve(MockServiceWithNullOption::class);
+
+        $this->assertInstanceOf(MockServiceWithNullOption::class, $service);
     }
 }

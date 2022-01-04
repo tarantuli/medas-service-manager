@@ -43,6 +43,10 @@ class MethodArgumentsValueResolver
             return $this->foundClassValue;
         }
 
+        if ($parameter->allowsNull()) {
+            return null;
+        }
+
         throw new Exceptions\CouldNotResolveMethodArgumentException($parameter);
     }
 
@@ -99,4 +103,5 @@ class MethodArgumentsValueResolver
             ? $type->getTypes()
             : [$type];
     }
+
 }

@@ -75,6 +75,8 @@ class ServiceManager
         if ($scanImmediately) {
             $this->loadSources();
         }
+
+        $this->registeredPackages[] = $package::class;
     }
 
     private function addSourceDirectory(string $sourceDirectory): void

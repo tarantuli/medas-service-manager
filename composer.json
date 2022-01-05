@@ -17,6 +17,11 @@
         "phpunit/phpunit": "^9.5",
         "morphp/medas-config-manager": "@dev"
     },
+    "extra": {
+        "branch-alias": {
+            "dev-dev": "0.x-dev"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Medas\\ServiceManager\\": "src/",

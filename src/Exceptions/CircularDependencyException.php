@@ -10,11 +10,14 @@ class CircularDependencyException extends BaseException
 {
     public function __construct(array $trace, string $current)
     {
-        parent::__construct(implode(' > ', array_merge($trace, [$current])));
+        $currentInTrace = array_search($current, $trace);
+        $circle = array_merge(array_slice($trace, $currentInTrace), [$current]);
+
+        parent::__construct(implode("\n*  ", $circle));
     }
 
     public function pattern(): string
     {
-        return 'circular dependency found: %s';
+        return "circular dependency found:\n*  %s";
     }
 }

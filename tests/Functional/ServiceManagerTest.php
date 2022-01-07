@@ -29,7 +29,8 @@ final class ServiceManagerTest extends BaseTest
         $manager = ServiceManager::get();
 
         $this->expectException(ServiceNotFoundByTypeException::class);
-        $manager->resolve(Logger::class);
+        /** @noinspection PhpUndefinedClassInspection */
+        $manager->resolve(NonExistingClass::class);
     }
 
     public function testServiceIsFound(): void

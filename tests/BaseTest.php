@@ -8,7 +8,7 @@ use Medas\ServiceManager\ServiceManager;
 use Medas\Test\MockUps\MockUpPackage;
 use PHPUnit\Framework\TestCase;
 
-class BaseTest extends TestCase
+abstract class BaseTest extends TestCase
 {
     protected function loadMockUps(): ServiceManager
     {

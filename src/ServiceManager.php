@@ -44,6 +44,9 @@ class ServiceManager
         $this->fileFinder = new FileFinder();
         $this->instantiator = new ServiceInstantiator($this);
         $this->declareGlobalFunctions();
+
+        // Register itself
+        $this->addPackage(new ServiceManagerPackage());
     }
 
     private function declareGlobalFunctions(): void

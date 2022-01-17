@@ -2,18 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test\Functional;
+namespace Medas\ServiceManagerTest\Functional;
 
+use Medas\ServiceManager\Exceptions\ConfigValueDoesNotImplementOptionException;
 use Medas\ServiceManager\Exceptions\ServiceNotFoundByTypeException;
 use Medas\ServiceManager\ServiceManager;
-use Medas\Test\BaseTest;
-use Medas\Test\MockUps\AnotherLogger;
-use Medas\Test\MockUps\DefaultLogger;
-use Medas\Test\MockUps\Logger;
-use Medas\Test\MockUps\MockServiceWithConfigInjection;
-use Medas\Test\MockUps\MockServiceWithDefaultLogger;
-use Medas\Test\MockUps\MockServiceWithNullOption;
-use Medas\Test\MockUps\MockServiceWithPreferredLogger;
+use Medas\ServiceManagerTest\BaseTest;
+use Medas\ServiceManagerTest\MockUps\AnotherLogger;
+use Medas\ServiceManagerTest\MockUps\DefaultLogger;
+use Medas\ServiceManagerTest\MockUps\Logger;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithConfigInjection;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithDefaultLogger;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithInvalidConfigInjection;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithNullOption;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithPreferredLogger;
 
 final class ServiceManagerTest extends BaseTest
 {
@@ -69,6 +71,14 @@ final class ServiceManagerTest extends BaseTest
         $service = $manager->resolve(MockServiceWithConfigInjection::class);
 
         $this->assertEquals('service-manager', $service->getProject());
+    }
+
+    public function testServiceWithInvalidConfigInjection(): void
+    {
+        $manager = $this->loadMockUps();
+
+        $this->expectException(ConfigValueDoesNotImplementOptionException::class);
+        $manager->resolve(MockServiceWithInvalidConfigInjection::class);
     }
 
     public function testServiceWithNullOption(): void

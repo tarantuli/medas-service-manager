@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test;
+namespace Medas\ServiceManagerTest;
 
 use Medas\ServiceManager\ServiceManager;
-use Medas\Test\MockUps\MockUpPackage;
+use Medas\ServiceManagerTest\MockUps\MockUpPackage;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseTest extends TestCase

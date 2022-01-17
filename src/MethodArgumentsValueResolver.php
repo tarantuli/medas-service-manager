@@ -6,6 +6,9 @@ namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Attributes\ConfigValue;
 use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\ConfigOptions\ConfigOption;
+use Medas\ServiceManager\ConfigOptions\OptionController;
+use Medas\ServiceManager\Exceptions\ConfigValueDoesNotImplementOptionException;
 use Medas\ServiceManager\Interfaces\ConfigManager;
 
 #[Service]
@@ -18,6 +21,8 @@ class MethodArgumentsValueResolver
 
     public function __construct(private ServiceManager $serviceManager)
     {
+        // This service is *not* instantiated automatically, so don't add more dependencies,
+        // expecting them to be injected.
         $this->serviceManager->bindService($this, MethodArgumentsValueResolver::class);
     }
 
@@ -56,10 +61,29 @@ class MethodArgumentsValueResolver
             return false;
         }
 
-        $path = $attributes[0]->newInstance()->path;
-        $this->foundConfigValue = $this->serviceManager->resolve(ConfigManager::class)->getValue($path);
+        $path = $this->serviceManager->resolve(OptionController::class)
+            ->getPath($this->getConfigOption($attributes[0]));
+
+        $this->foundConfigValue = $this->serviceManager->resolve(ConfigManager::class)
+            ->getValue($path);
 
         return true;
+    }
+
+    private function getConfigOption(\ReflectionAttribute $attribute): ConfigOption
+    {
+        $configOptionClass = $attribute->newInstance()->configOption;
+
+        if (!class_exists($configOptionClass)) {
+            throw new ConfigValueDoesNotImplementOptionException($configOptionClass);
+        }
+        /** @var ConfigOption $configOption */
+        $configOption = $configOptionClass::instance();
+
+        if (!$configOption instanceof ConfigOption) {
+            throw new ConfigValueDoesNotImplementOptionException($configOptionClass);
+        }
+        return $configOption;
     }
 
     private function findClassValue(\ReflectionParameter $parameter): bool

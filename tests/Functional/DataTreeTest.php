@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test\Functional;
+namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\DataTree;
 use Medas\ServiceManager\Exceptions\ValueNotFoundException;

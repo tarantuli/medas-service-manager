@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test\MockUps;
+namespace Medas\ServiceManagerTest\MockUps;
 
 use Medas\ServiceManager\Attributes\Service;
 

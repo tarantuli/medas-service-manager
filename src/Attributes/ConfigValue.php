@@ -11,7 +11,7 @@ namespace Medas\ServiceManager\Attributes;
 #[\Attribute(\Attribute::TARGET_PARAMETER | \Attribute::TARGET_PROPERTY)]
 class ConfigValue
 {
-    public function __construct(public string $path)
+    public function __construct(public string $configOption)
     {
     }
 }

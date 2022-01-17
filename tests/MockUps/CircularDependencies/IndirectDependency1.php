@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test\MockUps\CircularDependencies;
+namespace Medas\ServiceManagerTest\MockUps\CircularDependencies;
 
 use Medas\ServiceManager\Attributes\Service;
 

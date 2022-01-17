@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Medas\Test\Functional;
+namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\CircularDependencyException;
-use Medas\Test\BaseTest;
-use Medas\Test\MockUps\CircularDependencies\DirectDependency1;
-use Medas\Test\MockUps\CircularDependencies\IndirectDependency1;
+use Medas\ServiceManagerTest\BaseTest;
+use Medas\ServiceManagerTest\MockUps\CircularDependencies\DirectDependency1;
+use Medas\ServiceManagerTest\MockUps\CircularDependencies\IndirectDependency1;
 
 class CircularDependenciesTest extends BaseTest
 {

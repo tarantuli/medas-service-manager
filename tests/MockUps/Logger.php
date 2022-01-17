@@ -1,6 +1,6 @@
 <?php
 
-namespace Medas\Test\MockUps;
+namespace Medas\ServiceManagerTest\MockUps;
 
 interface Logger
 {

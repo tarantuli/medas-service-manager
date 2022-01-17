@@ -1,1 +1,2 @@
-project: $env(PROJECT)
+mock-group:
+  project: $env(PROJECT)

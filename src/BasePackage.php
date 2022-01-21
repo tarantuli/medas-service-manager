@@ -19,7 +19,7 @@ abstract class BasePackage implements Package
             }
 
             $class = new \ReflectionClass($className);
-            $results[dirname($class->getFileName())] = new $className;
+            $results[dirname($class->getFileName())] = $className::instance();
         }
 
         return $results;

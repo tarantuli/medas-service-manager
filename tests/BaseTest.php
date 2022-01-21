@@ -13,12 +13,7 @@ abstract class BaseTest extends TestCase
     protected function loadMockUps(): ServiceManager
     {
         $manager = ServiceManager::get();
-        $manager->addPackage(new MockUpPackage());
-
-        /*
-         * DefaultLogger sorts later than AnotherLogger, and thus is registered as the default handler
-         * for Logger interfaces
-         */
+        $manager->addPackage(MockUpPackage::instance());
 
         return $manager;
     }

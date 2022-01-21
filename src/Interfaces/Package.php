@@ -6,6 +6,8 @@ namespace Medas\ServiceManager\Interfaces;
 
 interface Package
 {
+    public static function instance(): self;
+
     /** @return Package[] */
     public function dependencies(): array;
 

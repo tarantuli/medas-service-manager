@@ -8,6 +8,8 @@ use Medas\ConfigManager\ConfigManagerPackage;
 
 class ServiceManagerPackage extends BasePackage
 {
+    use AsSingleton;
+
     public function dependencies(): array
     {
         return $this->dependenciesByClass([

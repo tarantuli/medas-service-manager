@@ -7,7 +7,7 @@ use Medas\ServiceManager\ServiceManager;
 use Medas\ServiceManager\ServiceManagerPackage;
 
 $sm = ServiceManager::get();
-$sm->addPackage(new ServiceManagerPackage());
+$sm->addPackage(ServiceManagerPackage::instance());
 
 /** @var $config ConfigManager */
 $config = $sm->resolve(ConfigManager::class);

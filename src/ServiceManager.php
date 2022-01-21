@@ -46,7 +46,7 @@ class ServiceManager
         $this->declareGlobalFunctions();
 
         // Register itself
-        $this->addPackage(new ServiceManagerPackage());
+        $this->addPackage(ServiceManagerPackage::instance());
     }
 
     private function declareGlobalFunctions(): void

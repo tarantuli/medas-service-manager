@@ -41,6 +41,7 @@ class ServiceManager
 
     private function __construct()
     {
+        $this->services[self::class] = $this;
         $this->fileFinder = new FileFinder();
         $this->instantiator = new ServiceInstantiator($this);
         $this->declareGlobalFunctions();

@@ -37,3 +37,12 @@ function service(string $type): object
 {
     return sm()->resolve($type);
 }
+
+function getPropertyValue(object $object, string $propertyName): mixed
+{
+    $class = new ReflectionClass($object);
+    $property = $class->getProperty($propertyName);
+    $property->setAccessible(true);
+
+    return $property->getValue($object);
+}

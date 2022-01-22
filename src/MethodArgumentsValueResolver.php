@@ -64,7 +64,13 @@ class MethodArgumentsValueResolver
         $path = $this->serviceManager->resolve(OptionController::class)
             ->getPath($this->getConfigOption($attributes[0]));
 
-        $this->foundConfigValue = $this->serviceManager->resolve(ConfigManager::class)
+        $configManager = $this->serviceManager->resolve(ConfigManager::class);
+
+        if (!$configManager->hasValue($path)) {
+            return false;
+        }
+
+        $this->foundConfigValue = $configManager
             ->getValue($path);
 
         return true;

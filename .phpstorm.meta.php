@@ -14,4 +14,8 @@ namespace PHPSTORM_META {
     override(\service(), map([
         '' => '@',
     ]));
+
+    override(\attribute(), map([
+        '' => '@',
+    ]));
 }

@@ -38,6 +38,21 @@ function service(string $type): object
     return sm()->resolve($type);
 }
 
+/**
+ * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
+ */
+function attribute(
+    string                                                                                                    $type,
+    ReflectionClassConstant|ReflectionClass|ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty $reflector
+): ?object
+{
+    if (!$attributes = $reflector->getAttributes($type, \ReflectionAttribute::IS_INSTANCEOF)) {
+        return null;
+    }
+
+    return $attributes[0]->newInstance();
+}
+
 function getPropertyValue(object $object, string $propertyName): mixed
 {
     $class = new ReflectionClass($object);

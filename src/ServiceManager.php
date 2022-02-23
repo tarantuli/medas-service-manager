@@ -65,6 +65,7 @@ class ServiceManager
         }
 
         $this->registeredPackages[] = $package::class;
+        $package->initialize();
     }
 
     public function addPackages(array $packages, bool $analyseImmediately = true): void

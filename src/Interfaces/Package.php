@@ -12,4 +12,6 @@ interface Package
     public function dependencies(): array;
 
     public function sourceDirectory(): string;
+
+    public function initialize(): void;
 }

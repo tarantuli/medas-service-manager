@@ -24,4 +24,9 @@ abstract class BasePackage implements Package
 
         return $results;
     }
+
+    public function initialize(): void
+    {
+        // Do nothing
+    }
 }

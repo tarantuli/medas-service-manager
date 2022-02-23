@@ -11,6 +11,13 @@ class ServiceManager
 {
     private static self $instance;
 
+    public static function postComposerInstall(): void
+    {
+        foreach (self::get()->registeredPackages as $package) {
+            $package->postComposerInstall();
+        }
+    }
+
     public static function get(): self
     {
         if (!isset(self::$instance)) {
@@ -19,17 +26,13 @@ class ServiceManager
 
         return self::$instance;
     }
-
     /** @var object[] */
     private array $services = [];
-
     private ServiceMapping $mapping;
-
     /** @var string[] */
     private array $unloadedSourceDirectories = [];
-
     private ServiceInstantiator $instantiator;
-
+    /** @var Package[] */
     private array $registeredPackages = [];
     private ServiceFinder $serviceFinder;
 
@@ -52,7 +55,7 @@ class ServiceManager
 
     public function addPackage(Package $package, bool $analyseImmediately = true): void
     {
-        if (in_array($package::class, $this->registeredPackages, true)) {
+        if (array_key_exists($package::class, $this->registeredPackages)) {
             return;
         }
 
@@ -64,7 +67,7 @@ class ServiceManager
             $this->analyseSources();
         }
 
-        $this->registeredPackages[] = $package::class;
+        $this->registeredPackages[$package::class] = $package;
         $package->initialize();
     }
 

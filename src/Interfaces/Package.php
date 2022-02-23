@@ -14,4 +14,6 @@ interface Package
     public function sourceDirectory(): string;
 
     public function initialize(): void;
+
+    public function postComposerInstall(): void;
 }

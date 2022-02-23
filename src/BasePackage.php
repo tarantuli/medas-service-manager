@@ -9,6 +9,16 @@ use Medas\ServiceManager\Interfaces\Package;
 
 abstract class BasePackage implements Package
 {
+    public function initialize(): void
+    {
+        // Do nothing
+    }
+
+    public function postComposerInstall(): void
+    {
+        // Do nothing
+    }
+
     protected function dependenciesByClass(array $classNames): array
     {
         $results = [];
@@ -23,10 +33,5 @@ abstract class BasePackage implements Package
         }
 
         return $results;
-    }
-
-    public function initialize(): void
-    {
-        // Do nothing
     }
 }

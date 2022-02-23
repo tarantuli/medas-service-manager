@@ -139,4 +139,9 @@ class ServiceManager
     {
         return $this->instantiator->instantiate($className);
     }
+
+    public function getServiceClassNames(): array
+    {
+        return $this->mapping->getAll();
+    }
 }

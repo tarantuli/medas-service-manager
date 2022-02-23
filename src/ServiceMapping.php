@@ -30,4 +30,9 @@ class ServiceMapping
             $this->mapping[$type] = $className;
         }
     }
+
+    public function getAll(): array
+    {
+        return array_unique($this->mapping);
+    }
 }

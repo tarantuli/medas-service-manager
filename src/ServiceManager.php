@@ -12,10 +12,12 @@ class ServiceManager
 {
     private static self $instance;
 
-    public static function postComposerInstall(): void
+    public static function postInstall(): void
     {
+        service(CacheManager::class)->clearAll();
+
         foreach (self::get()->registeredPackages as $package) {
-            $package->postComposerInstall();
+            $package->postInstall();
         }
     }
 
@@ -73,6 +75,13 @@ class ServiceManager
 
         $this->registeredPackages[$package::class] = $package;
         $package->initialize();
+    }
+
+    public function primeCache(): void
+    {
+        foreach ($this->registeredPackages as $package) {
+            $this->serviceFinder->find($package->sourceDirectory());
+        }
     }
 
     public function addPackages(array $packages, bool $analyseImmediately = true): void

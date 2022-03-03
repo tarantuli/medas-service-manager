@@ -18,4 +18,9 @@ class ServiceManagerPackage extends BasePackage
     {
         return __DIR__;
     }
+
+    public function postInstall(): void
+    {
+        sm()->primeCache();
+    }
 }

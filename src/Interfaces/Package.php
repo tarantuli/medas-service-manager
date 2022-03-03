@@ -15,5 +15,5 @@ interface Package
 
     public function initialize(): void;
 
-    public function postComposerInstall(): void;
+    public function postInstall(): void;
 }

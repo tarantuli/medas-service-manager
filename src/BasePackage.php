@@ -14,7 +14,7 @@ abstract class BasePackage implements Package
         // Do nothing
     }
 
-    public function postComposerInstall(): void
+    public function postInstall(): void
     {
         // Do nothing
     }

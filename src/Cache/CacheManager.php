@@ -7,43 +7,13 @@ namespace Medas\ServiceManager\Cache;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions\CacheNameAlreadyUsedException;
 use Medas\ServiceManager\Exceptions\CacheNotFoundByNameException;
-use Medas\ServiceManager\Interfaces\Cache;
-use Medas\ServiceManager\Interfaces\Clearable;
-use Medas\ServiceManager\Interfaces\Serializer;
+use Medas\ServiceManager\Interfaces\{Cache, Clearable};
 
 #[Service]
 class CacheManager
 {
     /** @var Cache[] */
     private array $caches = [];
-
-    private Serializer $serializer;
-
-    public function __construct()
-    {
-        $this->serializer = new \Medas\ServiceManager\Serialization\Serializer();
-    }
-
-    /**
-     * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
-     */
-    public function create(string $type, string $namespace, string $name = 'default'): object
-    {
-        $cache = new $type($namespace, $this->serializer);
-
-        $this->register($cache, $name);
-
-        return $cache;
-    }
-
-    public function register(Cache $cache, string $name = 'default'): void
-    {
-        if (array_key_exists($name, $this->caches)) {
-            throw new CacheNameAlreadyUsedException($name);
-        }
-
-        $this->caches[$name] = $cache;
-    }
 
     public function get(string $name = 'default'): Cache
     {
@@ -56,6 +26,15 @@ class CacheManager
         }
 
         return $this->caches[$name];
+    }
+
+    public function register(Cache $cache, string $name = 'default'): void
+    {
+        if (array_key_exists($name, $this->caches)) {
+            throw new CacheNameAlreadyUsedException($name);
+        }
+
+        $this->caches[$name] = $cache;
     }
 
     public function clearAll(): void

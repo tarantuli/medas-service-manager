@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Interfaces\Cache;
 use Medas\ServiceManager\Interfaces\Package;
 
@@ -26,11 +27,13 @@ class ServiceManager
 
         return self::$instance;
     }
+
     /** @var object[] */
     private array $services = [];
     private ServiceMapping $mapping;
     /** @var string[] */
     private array $unloadedSourceDirectories = [];
+    private CacheManager $cacheManager;
     private ServiceInstantiator $instantiator;
     /** @var Package[] */
     private array $registeredPackages = [];
@@ -40,6 +43,7 @@ class ServiceManager
     {
         $this->services[self::class] = $this;
         $this->mapping = new ServiceMapping();
+        $this->cacheManager = new CacheManager();
         $this->instantiator = new ServiceInstantiator($this);
         $this->serviceFinder = new ServiceFinder();
         $this->declareGlobalFunctions();
@@ -93,11 +97,12 @@ class ServiceManager
 
     public function setCache(?Cache $cache, bool $bindAsWell = true): self
     {
+        $this->cacheManager->register($cache);
+        $this->serviceFinder->setCache($cache);
+
         if ($bindAsWell) {
             $this->bindService($cache, Cache::class);
         }
-
-        $this->serviceFinder->setCache($cache);
 
         return $this;
     }

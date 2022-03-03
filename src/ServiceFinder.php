@@ -18,7 +18,7 @@ class ServiceFinder
         $this->fileFinder = new FileFinder();
     }
 
-    public function find(string $directory)
+    public function find(string $directory): array
     {
         return $this->cache
             ? $this->cache->get([$this::class, $directory], fn() => $this->findServices($directory))

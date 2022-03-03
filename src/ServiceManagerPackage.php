@@ -21,6 +21,6 @@ class ServiceManagerPackage extends BasePackage
 
     public function postInstall(): void
     {
-        sm()->primeCache();
+        sm()->primeCaches();
     }
 }

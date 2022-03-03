@@ -7,8 +7,9 @@ namespace Medas\ServiceManager;
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Interfaces\Cache;
 use Medas\ServiceManager\Interfaces\Package;
+use Medas\ServiceManager\Interfaces\PrimesCache;
 
-class ServiceManager
+class ServiceManager implements PrimesCache
 {
     private static self $instance;
 
@@ -77,13 +78,6 @@ class ServiceManager
         $package->initialize();
     }
 
-    public function primeCache(): void
-    {
-        foreach ($this->registeredPackages as $package) {
-            $this->serviceFinder->find($package->sourceDirectory());
-        }
-    }
-
     public function addPackages(array $packages, bool $analyseImmediately = true): void
     {
         foreach ($packages as $package) {
@@ -104,24 +98,14 @@ class ServiceManager
         $this->unloadedSourceDirectories = [];
     }
 
-    public function setCache(?Cache $cache, bool $bindAsWell = true): self
+    public function primeCaches(): void
     {
-        $this->cacheManager->register($cache);
-        $this->serviceFinder->setCache($cache);
-
-        if ($bindAsWell) {
-            $this->bindService($cache, Cache::class);
-        }
-
-        return $this;
-    }
-
-    public function bindService(object $service, string ...$forTypes): void
-    {
-        $this->services[$service::class] = $service;
-
-        foreach ($forTypes as $forType) {
-            $this->mapping->set($forType, $service::class);
+        foreach ($this->mapping->getAll() as $serviceName) {
+            if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
+                /** @var PrimesCache $service */
+                $service = $this->resolve($serviceName);
+                $service->primeCache();
+            }
         }
     }
 
@@ -150,6 +134,34 @@ class ServiceManager
         $this->analyseSources();
 
         return $this->mapping->has($type) ? $this->mapping->get($type) : null;
+    }
+
+    public function primeCache(): void
+    {
+        foreach ($this->registeredPackages as $package) {
+            $this->serviceFinder->find($package->sourceDirectory());
+        }
+    }
+
+    public function setCache(?Cache $cache, bool $bindAsWell = true): self
+    {
+        $this->cacheManager->register($cache);
+        $this->serviceFinder->setCache($cache);
+
+        if ($bindAsWell) {
+            $this->bindService($cache, Cache::class);
+        }
+
+        return $this;
+    }
+
+    public function bindService(object $service, string ...$forTypes): void
+    {
+        $this->services[$service::class] = $service;
+
+        foreach ($forTypes as $forType) {
+            $this->mapping->set($forType, $service::class);
+        }
     }
 
     public function instantiate(string $className): object

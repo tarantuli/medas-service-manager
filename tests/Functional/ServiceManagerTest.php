@@ -90,4 +90,14 @@ final class ServiceManagerTest extends BaseTest
 
         $this->assertInstanceOf(MockServiceWithNullOption::class, $service);
     }
+
+    public function testCachePriming(): void
+    {
+        $manager = $this->loadMockUps();
+        ob_start();
+        $manager->primeCaches();
+        $output = ob_get_clean();
+
+        self::assertEquals('cache is primed', $output);
+    }
 }

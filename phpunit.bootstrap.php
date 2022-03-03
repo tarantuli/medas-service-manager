@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Medas\ConfigManager\ConfigManager;
+use Medas\ConfigManager\ConfigManagerPackage;
 use Medas\ServiceManager\ServiceManager;
 use Medas\ServiceManager\ServiceManagerPackage;
 
 $sm = ServiceManager::get();
 $sm->addPackage(ServiceManagerPackage::instance());
+$sm->addPackage(ConfigManagerPackage::instance());
 
 /** @var $config ConfigManager */
 $config = $sm->resolve(ConfigManager::class);

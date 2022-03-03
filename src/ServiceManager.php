@@ -45,7 +45,7 @@ class ServiceManager
     {
         $this->services[self::class] = $this;
         $this->mapping = new ServiceMapping();
-        $this->cacheManager = new CacheManager();
+        $this->cacheManager = new CacheManager($this);
         $this->instantiator = new ServiceInstantiator($this);
         $this->serviceFinder = new ServiceFinder();
         $this->declareGlobalFunctions();

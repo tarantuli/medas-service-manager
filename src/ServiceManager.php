@@ -46,9 +46,12 @@ class ServiceManager implements PrimesCache
     {
         $this->services[self::class] = $this;
         $this->mapping = new ServiceMapping();
+        $this->mapping->set(ServiceManager::class, ServiceManager::class);
+
         $this->cacheManager = new CacheManager($this);
         $this->instantiator = new ServiceInstantiator($this);
         $this->serviceFinder = new ServiceFinder();
+
         $this->declareGlobalFunctions();
 
         // Register itself

@@ -13,8 +13,8 @@ use Medas\ServiceManager\Attributes\Service;
 class ListCommand extends BaseConsoleCommand
 {
     public function __construct(
-        private ServicesGroup $group,
-        private Printer       $printer,
+        private Group   $group,
+        private Printer $printer,
     )
     {
     }

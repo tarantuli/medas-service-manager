@@ -23,7 +23,6 @@ class MethodArgumentsValueResolver
     {
         // This service is *not* instantiated automatically, so don't add more dependencies,
         // expecting them to be injected.
-        $this->serviceManager->bindService($this, MethodArgumentsValueResolver::class);
     }
 
     public function resolve(\ReflectionMethod $method): array

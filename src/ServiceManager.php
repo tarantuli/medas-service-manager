@@ -11,6 +11,8 @@ use Medas\ServiceManager\Interfaces\PrimesCache;
 
 class ServiceManager implements PrimesCache
 {
+    const SERVICE_MAPPING_CACHE_KEY = ServiceMapping::class;
+
     private static self $instance;
 
     public static function postInstall(): void
@@ -22,10 +24,10 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    public static function get(): self
+    public static function get(Cache|null $cache = null): self
     {
         if (!isset(self::$instance)) {
-            self::$instance = new self();
+            self::$instance = new self($cache);
         }
 
         return self::$instance;
@@ -33,65 +35,75 @@ class ServiceManager implements PrimesCache
 
     /** @var object[] */
     private array $services = [];
+
     private ServiceMapping $mapping;
-    /** @var string[] */
-    private array $unloadedSourceDirectories = [];
+    private MappingCompiler $mappingCompiler;
+
+    private bool $mappingWasCached = true;
+
     private CacheManager $cacheManager;
     private ServiceInstantiator $instantiator;
+
     /** @var Package[] */
     private array $registeredPackages = [];
-    private ServiceFinder $serviceFinder;
 
-    private function __construct()
+    private function __construct(Cache|null $cache = null)
     {
         $this->services[self::class] = $this;
-        $this->mapping = new ServiceMapping();
-        $this->mapping->set(ServiceManager::class, ServiceManager::class);
 
-        $this->cacheManager = new CacheManager($this);
+        $this->cacheManager = new CacheManager();
+
+        if ($cache) {
+            $this->cacheManager->register($cache);
+        }
+
+        $this->mappingCompiler = new MappingCompiler($this->cacheManager);
         $this->instantiator = new ServiceInstantiator($this);
-        $this->serviceFinder = new ServiceFinder($this->cacheManager);
 
-        // Register itself
-        $this->addPackage(ServiceManagerPackage::instance());
+        $this->mapping = $this->cacheManager->get()->get(
+            self::SERVICE_MAPPING_CACHE_KEY,
+            fn() => $this->initializeMapping()
+        );
     }
 
-    public function addPackage(Package $package, bool $analyseImmediately = true): void
+    private function initializeMapping(): ServiceMapping
+    {
+        $this->mappingWasCached = false;
+        $this->addPackage(ServiceManagerPackage::instance());
+
+        return $this->mappingCompiler->get();
+    }
+
+    public function addPackage(Package $package): void
     {
         if (array_key_exists($package::class, $this->registeredPackages)) {
             return;
         }
 
-        $this->unloadedSourceDirectories[] = $package->sourceDirectory();
-
-        $this->addPackages($package->dependencies(), false);
-
-        if ($analyseImmediately) {
-            $this->analyseSources();
-        }
-
+        $this->addPackages($package->dependencies());
         $this->registeredPackages[$package::class] = $package;
         $package->initialize();
+
+        if (!$this->mappingWasCached) {
+            $this->mappingCompiler->addPackage($package);
+        }
     }
 
-    public function addPackages(array $packages, bool $analyseImmediately = true): void
+    public function addPackages(array $packages): void
     {
         foreach ($packages as $package) {
-            $this->addPackage(package: $package, analyseImmediately: false);
-        }
-
-        if ($analyseImmediately) {
-            $this->analyseSources();
+            $this->addPackage($package);
         }
     }
 
-    private function analyseSources(): void
+    public function __destruct()
     {
-        foreach ($this->unloadedSourceDirectories as $directory) {
-            $this->mapping->add($this->serviceFinder->find($directory));
+        if (!$this->mappingWasCached) {
+            // Delete the temporary initial mapping, and store the current, complete mapping
+            $cache = $this->cacheManager->get();
+            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
+            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
         }
-
-        $this->unloadedSourceDirectories = [];
     }
 
     public function primeCaches(): void
@@ -123,35 +135,21 @@ class ServiceManager implements PrimesCache
 
     public function findService(string $type): ?string
     {
-        if ($this->mapping->has($type)) {
-            return $this->mapping->get($type);
-        }
-
-        $this->analyseSources();
-
         return $this->mapping->has($type) ? $this->mapping->get($type) : null;
     }
 
     public function primeCache(): void
     {
-        foreach ($this->registeredPackages as $package) {
-            $this->serviceFinder->find($package->sourceDirectory());
-        }
-    }
-
-    public function setCache(?Cache $cache, bool $bindAsWell = true): self
-    {
-        $this->cacheManager->register($cache);
-
-        if ($bindAsWell) {
-            $this->bindService($cache, Cache::class);
-        }
-
-        return $this;
+        //$this->mapping();
     }
 
     public function bindService(object $service, string ...$forTypes): void
     {
+        if ($this->mappingWasCached) {
+            // It's already registered
+            return;
+        }
+
         $this->services[$service::class] = $service;
 
         foreach ($forTypes as $forType) {

@@ -17,7 +17,6 @@ class ServiceInstantiator
     public function __construct(ServiceManager $manager)
     {
         $this->methodArgumentsValueFinder = new MethodArgumentsValueResolver($manager);
-        $manager->bindService($this, ServiceInstantiator::class);
     }
 
     public function instantiate(string $className): object

@@ -7,18 +7,12 @@ namespace Medas\ServiceManager\Cache;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions\CacheNotFoundByNameException;
 use Medas\ServiceManager\Interfaces\{Cache, Clearable};
-use Medas\ServiceManager\ServiceManager;
 
 #[Service]
 class CacheManager
 {
     /** @var Cache[] */
     private array $caches = [];
-
-    public function __construct(ServiceManager $manager)
-    {
-        $manager->bindService($this, CacheManager::class);
-    }
 
     public function get(string $name = 'default'): Cache
     {

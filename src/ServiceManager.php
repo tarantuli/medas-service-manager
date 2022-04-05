@@ -52,15 +52,8 @@ class ServiceManager implements PrimesCache
         $this->instantiator = new ServiceInstantiator($this);
         $this->serviceFinder = new ServiceFinder($this->cacheManager);
 
-        $this->declareGlobalFunctions();
-
         // Register itself
         $this->addPackage(ServiceManagerPackage::instance());
-    }
-
-    private function declareGlobalFunctions(): void
-    {
-        require_once 'GlobalFunctions.php';
     }
 
     public function addPackage(Package $package, bool $analyseImmediately = true): void

@@ -23,4 +23,10 @@ class ServiceManagerPackage extends BasePackage
     {
         sm()->primeCaches();
     }
+
+    public function initialize(): void
+    {
+        require_once __DIR__ . '/GlobalFunctions.php';
+        parent::initialize();
+    }
 }

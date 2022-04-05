@@ -64,12 +64,13 @@ class ServiceManager implements PrimesCache
             self::SERVICE_MAPPING_CACHE_KEY,
             fn() => $this->initializeMapping()
         );
+
+        $this->addPackage(ServiceManagerPackage::instance());
     }
 
     private function initializeMapping(): ServiceMapping
     {
         $this->mappingWasCached = false;
-        $this->addPackage(ServiceManagerPackage::instance());
 
         return $this->mappingCompiler->get();
     }

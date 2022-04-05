@@ -50,7 +50,7 @@ class ServiceManager implements PrimesCache
 
         $this->cacheManager = new CacheManager($this);
         $this->instantiator = new ServiceInstantiator($this);
-        $this->serviceFinder = new ServiceFinder();
+        $this->serviceFinder = new ServiceFinder($this->cacheManager);
 
         $this->declareGlobalFunctions();
 
@@ -149,7 +149,6 @@ class ServiceManager implements PrimesCache
     public function setCache(?Cache $cache, bool $bindAsWell = true): self
     {
         $this->cacheManager->register($cache);
-        $this->serviceFinder->setCache($cache);
 
         if ($bindAsWell) {
             $this->bindService($cache, Cache::class);

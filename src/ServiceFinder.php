@@ -5,24 +5,24 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Interfaces\Cache;
+use Medas\ServiceManager\Cache\CacheManager;
 
 #[Service]
 class ServiceFinder
 {
     private FileFinder $fileFinder;
-    private Cache|null $cache = null;
 
-    public function __construct()
+    public function __construct(private CacheManager $cacheManager)
     {
         $this->fileFinder = new FileFinder();
     }
 
     public function find(string $directory): array
     {
-        return $this->cache
-            ? $this->cache->get([$this::class, $directory], fn() => $this->findServices($directory))
-            : $this->findServices($directory);
+        return $this->cacheManager->get()->get(
+            [$this::class, $directory],
+            fn() => $this->findServices($directory)
+        );
     }
 
     private function findServices(string $directory): array
@@ -81,12 +81,5 @@ class ServiceFinder
         } while ($class = $class->getParentClass());
 
         return $classes;
-    }
-
-    public function setCache(?Cache $cache): self
-    {
-        $this->cache = $cache;
-
-        return $this;
     }
 }

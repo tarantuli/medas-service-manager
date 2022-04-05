@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Cache;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Exceptions\CacheNameAlreadyUsedException;
 use Medas\ServiceManager\Exceptions\CacheNotFoundByNameException;
 use Medas\ServiceManager\Interfaces\{Cache, Clearable};
 use Medas\ServiceManager\ServiceManager;
@@ -37,7 +36,7 @@ class CacheManager
     public function register(Cache $cache, string $name = 'default'): void
     {
         if (array_key_exists($name, $this->caches)) {
-            throw new CacheNameAlreadyUsedException($name);
+            unset($this->caches[$name]);
         }
 
         $this->caches[$name] = $cache;

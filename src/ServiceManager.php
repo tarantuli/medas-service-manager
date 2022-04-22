@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Interfaces\Cache;
-use Medas\ServiceManager\Interfaces\Package;
-use Medas\ServiceManager\Interfaces\PrimesCache;
+use Medas\ServiceManager\Interfaces\{Cache, Package, PrimesCache};
 
 class ServiceManager implements PrimesCache
 {

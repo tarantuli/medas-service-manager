@@ -46,7 +46,7 @@ function attribute(
     ReflectionClassConstant|ReflectionClass|ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty $reflector
 ): ?object
 {
-    if (!$attributes = $reflector->getAttributes($type, \ReflectionAttribute::IS_INSTANCEOF)) {
+    if (!$attributes = $reflector->getAttributes($type, ReflectionAttribute::IS_INSTANCEOF)) {
         return null;
     }
 

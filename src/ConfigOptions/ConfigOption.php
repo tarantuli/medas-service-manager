@@ -16,5 +16,7 @@ interface ConfigOption
 
     public function isValid(mixed $value): bool;
 
+    public function hasDefault(): bool;
+
     public function default(): mixed;
 }

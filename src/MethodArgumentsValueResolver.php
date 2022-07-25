@@ -60,17 +60,22 @@ class MethodArgumentsValueResolver
             return false;
         }
 
+        $option = $this->getConfigOption($attributes[0]);
         $path = $this->serviceManager->resolve(OptionController::class)
-            ->getPath($this->getConfigOption($attributes[0]));
+            ->getPath($option);
 
         $configManager = $this->serviceManager->resolve(ConfigManager::class);
 
         if (!$configManager->hasValue($path)) {
+            if ($option->hasDefault()) {
+                $this->foundConfigValue = $option->default();
+                return true;
+            }
+
             return false;
         }
 
-        $this->foundConfigValue = $configManager
-            ->getValue($path);
+        $this->foundConfigValue = $configManager->getValue($path);
 
         return true;
     }

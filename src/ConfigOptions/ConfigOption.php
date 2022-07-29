@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConfigOptions;
 
-interface ConfigOption
-{
-    public static function instance(): ConfigOption;
+use Medas\ServiceManager\Interfaces\IsSingleton;
 
+interface ConfigOption extends IsSingleton
+{
     public function group(): ConfigGroup;
 
     public function name(): string;

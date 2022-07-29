@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Interfaces;
 
-interface Package
+interface Package extends IsSingleton
 {
-    public static function instance(): self;
-
     /** @return Package[] */
     public function dependencies(): array;
 

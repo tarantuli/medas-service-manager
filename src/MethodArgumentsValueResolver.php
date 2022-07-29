@@ -9,7 +9,6 @@ use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\ConfigOptions\ConfigOption;
 use Medas\ServiceManager\ConfigOptions\OptionController;
 use Medas\ServiceManager\Exceptions\ConfigValueDoesNotImplementOptionException;
-use Medas\ServiceManager\Interfaces\ConfigManager;
 
 #[Service]
 class MethodArgumentsValueResolver
@@ -61,21 +60,13 @@ class MethodArgumentsValueResolver
         }
 
         $option = $this->getConfigOption($attributes[0]);
-        $path = $this->serviceManager->resolve(OptionController::class)
-            ->getPath($option);
+        $optionController = $this->serviceManager->resolve(OptionController::class);
 
-        $configManager = $this->serviceManager->resolve(ConfigManager::class);
-
-        if (!$configManager->hasValue($path)) {
-            if ($option->hasDefault()) {
-                $this->foundConfigValue = $option->default();
-                return true;
-            }
-
+        if (!$optionController->hasValue($option)) {
             return false;
         }
 
-        $this->foundConfigValue = $configManager->getValue($path);
+        $this->foundConfigValue = $optionController->getValue($option);
 
         return true;
     }

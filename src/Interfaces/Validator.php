@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Interfaces;
 
-interface Serializer
+interface Validator
 {
-    public function serialize(mixed $value): string;
+    public function isValid(mixed $value): bool;
 }

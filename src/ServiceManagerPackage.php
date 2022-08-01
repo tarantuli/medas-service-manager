@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\ConfigOptions\ConfigOptionResolver;
-
 class ServiceManagerPackage extends BasePackage
 {
     use AsSingleton;

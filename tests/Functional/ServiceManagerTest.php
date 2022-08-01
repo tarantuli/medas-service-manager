@@ -63,23 +63,23 @@ final class ServiceManagerTest extends BaseTest
         $this->assertInstanceOf(AnotherLogger::class, $service->getLogger());
     }
 
-    public function testServiceWithConfigInjection(): void
-    {
-        $manager = $this->loadMockUps();
-
-        /** @var $service MockServiceWithConfigInjection */
-        $service = $manager->resolve(MockServiceWithConfigInjection::class);
-
-        $this->assertEquals('service-manager', $service->getProject());
-    }
-
-    public function testServiceWithInvalidConfigInjection(): void
-    {
-        $manager = $this->loadMockUps();
-
-        $this->expectException(ConfigValueDoesNotImplementOptionException::class);
-        $manager->resolve(MockServiceWithInvalidConfigInjection::class);
-    }
+//    public function testServiceWithConfigInjection(): void
+//    {
+//        $manager = $this->loadMockUps();
+//
+//        /** @var $service MockServiceWithConfigInjection */
+//        $service = $manager->resolve(MockServiceWithConfigInjection::class);
+//
+//        $this->assertEquals('service-manager', $service->getProject());
+//    }
+//
+//    public function testServiceWithInvalidConfigInjection(): void
+//    {
+//        $manager = $this->loadMockUps();
+//
+//        $this->expectException(ConfigValueDoesNotImplementOptionException::class);
+//        $manager->resolve(MockServiceWithInvalidConfigInjection::class);
+//    }
 
     public function testServiceWithNullOption(): void
     {

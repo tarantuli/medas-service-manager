@@ -7,6 +7,7 @@ namespace Medas\ServiceManager;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Interfaces\Package;
+use Medas\ServiceManager\ParameterResolver\ParameterResolveManager;
 
 #[Service]
 class MappingCompiler
@@ -26,7 +27,7 @@ class MappingCompiler
         $defaultMappings = [
             ServiceManager::class,
             ServiceInstantiator::class,
-            MethodArgumentsValueResolver::class,
+            ParameterResolveManager::class,
             CacheManager::class,
         ];
 

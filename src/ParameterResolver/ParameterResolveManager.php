@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\ParameterResolver;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\ParameterResolver\ParameterResolver;
-use Medas\ServiceManager\ParameterResolver\ServiceByType;
+use Medas\ServiceManager\Exceptions;
+use Medas\ServiceManager\ServiceManager;
 
 #[Service]
-class MethodArgumentsValueResolver
+class ParameterResolveManager
 {
     /** @var ParameterResolver[] */
     private array $resolvers = [];
@@ -28,18 +28,18 @@ class MethodArgumentsValueResolver
             fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority()));
     }
 
-    public function resolve(\ReflectionMethod $method): array
+    public function resolveMethod(\ReflectionMethod $method): array
     {
         $arguments = [];
 
         foreach ($method->getParameters() as $parameter) {
-            $arguments[] = $this->getMethodArgumentValue($method, $parameter);
+            $arguments[] = $this->resolveParameter($method, $parameter);
         }
 
         return $arguments;
     }
 
-    private function getMethodArgumentValue(\ReflectionMethod $method, \ReflectionParameter $parameter): mixed
+    public function resolveParameter(\ReflectionMethod $method, \ReflectionParameter $parameter): mixed
     {
         foreach ($this->resolvers as $resolver) {
             if ($resolver->handle($method, $parameter)) {
@@ -50,6 +50,6 @@ class MethodArgumentsValueResolver
             return null;
         }
 
-        throw new Exceptions\CouldNotResolveMethodArgumentException($parameter);
+        throw new Exceptions\CouldNotResolveParameterException($parameter);
     }
 }

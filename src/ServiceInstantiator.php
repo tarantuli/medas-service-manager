@@ -6,17 +6,20 @@ namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions\CircularDependencyException;
+use Medas\ServiceManager\ParameterResolver\ParameterResolveManager;
 
 #[Service]
 class ServiceInstantiator
 {
-    private MethodArgumentsValueResolver $methodArgumentsValueFinder;
+    private ParameterResolveManager $parameterResolveManager;
+
     /** @var string[] */
     private array $instantiating = [];
 
     public function __construct(ServiceManager $manager)
     {
-        $this->methodArgumentsValueFinder = new MethodArgumentsValueResolver($manager);
+        $this->parameterResolveManager = new ParameterResolveManager($manager);
+        $manager->bindService($this, ParameterResolveManager::class);
     }
 
     public function instantiate(string $className): object
@@ -45,6 +48,6 @@ class ServiceInstantiator
             return [];
         }
 
-        return $this->methodArgumentsValueFinder->resolve($constructor);
+        return $this->parameterResolveManager->resolveMethod($constructor);
     }
 }

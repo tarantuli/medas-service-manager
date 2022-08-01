@@ -16,10 +16,9 @@ class ServiceInstantiator
     /** @var string[] */
     private array $instantiating = [];
 
-    public function __construct(ServiceManager $manager)
+    public function __construct(ServiceManager $serviceManager)
     {
-        $this->parameterResolveManager = new ParameterResolveManager($manager);
-        $manager->bindService($this, ParameterResolveManager::class);
+        $this->parameterResolveManager = new ParameterResolveManager($serviceManager);
     }
 
     public function instantiate(string $className): object

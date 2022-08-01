@@ -19,8 +19,6 @@ class ParameterResolveManager
         // This service is *not* instantiated automatically, so don't add more dependencies,
         // expecting them to be injected.
         $this->resolvers[] = new ServiceByType($this->serviceManager);
-
-        $this->serviceManager->bindService($this, ParameterResolveManager::class);
     }
 
     public function addResolver(ParameterResolver $resolver): void

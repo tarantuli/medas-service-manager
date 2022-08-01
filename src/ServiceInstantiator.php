@@ -7,6 +7,7 @@ namespace Medas\ServiceManager;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions\CircularDependencyException;
 use Medas\ServiceManager\ParameterResolver\ParameterResolveManager;
+use Medas\ServiceManager\ParameterResolver\ParameterResolver;
 
 #[Service]
 class ServiceInstantiator
@@ -48,5 +49,10 @@ class ServiceInstantiator
         }
 
         return $this->parameterResolveManager->resolveMethod($constructor);
+    }
+
+    public function addResolver(ParameterResolver $parameterResolver): void
+    {
+        $this->parameterResolveManager->addResolver($parameterResolver);
     }
 }

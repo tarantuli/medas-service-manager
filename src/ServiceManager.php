@@ -6,6 +6,7 @@ namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Interfaces\{Cache, Package, PrimesCache};
+use Medas\ServiceManager\ParameterResolver\ParameterResolver;
 
 class ServiceManager implements PrimesCache
 {
@@ -140,6 +141,11 @@ class ServiceManager implements PrimesCache
     public function primeCache(): void
     {
         //$this->mapping();
+    }
+
+    public function addParameterResolver(ParameterResolver $parameterResolver): void
+    {
+        $this->instantiator->addResolver($parameterResolver);
     }
 
     public function bindService(object $service, string ...$forTypes): void

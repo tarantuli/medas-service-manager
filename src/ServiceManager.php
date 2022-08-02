@@ -65,6 +65,8 @@ class ServiceManager implements PrimesCache
         );
 
         $this->addPackage(ServiceManagerPackage::instance());
+
+        (new ErrorHandler())->set();
     }
 
     private function initializeMapping(): ServiceMapping

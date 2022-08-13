@@ -30,7 +30,7 @@ class ErrorHandler
     {
         $error = error_get_last();
 
-        if ($error["type"] == E_ERROR) {
+        if ($error !== null && $error["type"] === E_ERROR) {
             throw new \ErrorException($error['message'], $error['type'], $error['type'], $error['file'], $error['line']);
         }
     }

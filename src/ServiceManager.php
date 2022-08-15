@@ -142,6 +142,11 @@ class ServiceManager implements PrimesCache
         return $this->mapping->has($type) ? $this->mapping->get($type) : null;
     }
 
+    public function findImplementors(string $interface): array
+    {
+        return $this->resolve(ImplementorFinder::class)->find($interface);
+    }
+
     public function primeCache(): void
     {
         //$this->mapping();

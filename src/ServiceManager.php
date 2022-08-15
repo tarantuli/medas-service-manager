@@ -50,7 +50,9 @@ class ServiceManager implements PrimesCache
     {
         $this->services[self::class] = $this;
 
-        $this->cacheManager = new CacheManager();
+        $this->cacheManager
+            = $this->services[CacheManager::class]
+            = new CacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);

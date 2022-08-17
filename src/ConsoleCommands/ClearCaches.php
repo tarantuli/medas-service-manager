@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
-use Medas\Console\Commands\BaseConsoleCommand;
-use Medas\Console\Commands\ConsoleCommandGroup;
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
+use Medas\ServiceManager\Console\{BaseConsoleCommand, ConsoleCommandGroup};
 
 #[Service]
 class ClearCaches extends BaseConsoleCommand
 {
     public function __construct(
-        private Group        $group,
-        private CacheManager $cacheManager,
+        private readonly Group        $group,
+        private readonly CacheManager $cacheManager,
     )
     {
     }

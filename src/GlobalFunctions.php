@@ -55,9 +55,5 @@ function attribute(
 
 function getPropertyValue(object $object, string $propertyName): mixed
 {
-    $class = new ReflectionClass($object);
-    $property = $class->getProperty($propertyName);
-    $property->setAccessible(true);
-
-    return $property->getValue($object);
+    return (new ReflectionClass($object))->getProperty($propertyName)->getValue($object);
 }

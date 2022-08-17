@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\ServiceManager\DataTree;
+use Medas\ServiceManager\DataTree\{DataTree, History};
 use Medas\ServiceManager\Exceptions\ValueNotFoundException;
 use PHPUnit\Framework\TestCase;
 
@@ -48,8 +48,8 @@ class DataTreeTest extends TestCase
 
         // Value history
         $expectedHistory = [
-            new DataTree\History('default', 'test'),
-            new DataTree\History('runtime', 'dev'),
+            new History('default', 'test'),
+            new History('runtime', 'dev'),
         ];
 
         $this->assertEquals($expectedHistory, $dataTree->getHistory('env'));

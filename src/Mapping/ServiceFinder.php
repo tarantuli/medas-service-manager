@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
@@ -12,7 +12,7 @@ class ServiceFinder
 {
     private FileFinder $fileFinder;
 
-    public function __construct(private CacheManager $cacheManager)
+    public function __construct(private readonly CacheManager $cacheManager)
     {
         $this->fileFinder = new FileFinder();
     }

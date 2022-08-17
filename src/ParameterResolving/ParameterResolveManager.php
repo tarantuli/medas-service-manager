@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager\ParameterResolver;
+namespace Medas\ServiceManager\ParameterResolving;
 
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions;
@@ -14,11 +14,13 @@ class ParameterResolveManager
     /** @var ParameterResolver[] */
     private array $resolvers = [];
 
-    public function __construct(private ServiceManager $serviceManager)
+    public function __construct(
+        private readonly ServiceManager $serviceManager,
+    )
     {
         // This service is *not* instantiated automatically, so don't add more dependencies,
         // expecting them to be injected.
-        $this->resolvers[] = new ServiceByType($this->serviceManager);
+        $this->resolvers[] = new ServiceFinderByType($this->serviceManager);
     }
 
     public function addResolver(ParameterResolver $resolver): void

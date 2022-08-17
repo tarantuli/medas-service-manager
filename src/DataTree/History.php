@@ -6,7 +6,10 @@ namespace Medas\ServiceManager\DataTree;
 
 class History
 {
-    public function __construct(public string $source, public mixed $value)
+    public function __construct(
+        public string $source,
+        public mixed  $value,
+    )
     {
     }
 }

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\DataTree;
 
 use Medas\ServiceManager\Exceptions\ValueNotFoundException;
 
 class DataTree
 {
     private array $values = [];
-    /** @var DataTree\History[] */
+    /** @var History[] */
     private array $history = [];
 
     private mixed $lastFoundValue;
-    /** @var DataTree\History[] */
+    /** @var History[] */
     private array $lastFoundHistory;
 
     public function __construct(array $defaults = [])
@@ -43,7 +43,7 @@ class DataTree
         }
 
         $values[$lastPath] = $value;
-        $history[$lastPath][] = new DataTree\History($source, $value);
+        $history[$lastPath][] = new History($source, $value);
 
         return $this;
     }
@@ -112,7 +112,7 @@ class DataTree
         return $this->lastFoundValue;
     }
 
-    /** @return DataTree\History[] */
+    /** @return History[] */
     public function getHistory(string $index): array
     {
         if (!$this->has($index)) {

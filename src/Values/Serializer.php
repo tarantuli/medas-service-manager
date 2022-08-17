@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager\Serialization;
+namespace Medas\ServiceManager\Values;
 
-class Serializer implements \Medas\ServiceManager\Interfaces\Serializer
+class Serializer implements Interfaces\Serializer
 {
     public function serialize(mixed $value): string
     {

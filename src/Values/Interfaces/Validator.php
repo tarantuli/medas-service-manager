@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager\Interfaces;
+namespace Medas\ServiceManager\Values\Interfaces;
 
 interface Validator
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\Console\Commands\ConsoleCommand;
+use Medas\ServiceManager\Console\ConsoleCommand;
 use PHPUnit\Framework\TestCase;
 
 class ImplementorFinderTest extends TestCase

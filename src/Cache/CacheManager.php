@@ -6,15 +6,14 @@ namespace Medas\ServiceManager\Cache;
 
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Exceptions\CacheNotFoundByNameException;
-use Medas\ServiceManager\Interfaces\{Cache, Clearable};
 
 #[Service]
 class CacheManager
 {
-    /** @var Cache[] */
+    /** @var Interfaces\Cache[] */
     private array $caches = [];
 
-    public function get(string $name = 'default'): Cache
+    public function get(string $name = 'default'): Interfaces\Cache
     {
         if ($name === 'default' && !array_key_exists($name, $this->caches)) {
             $this->register(new NoopCache());
@@ -27,7 +26,7 @@ class CacheManager
         return $this->caches[$name];
     }
 
-    public function register(Cache $cache, string $name = 'default'): void
+    public function register(Interfaces\Cache $cache, string $name = 'default'): void
     {
         if (array_key_exists($name, $this->caches)) {
             unset($this->caches[$name]);
@@ -39,7 +38,7 @@ class CacheManager
     public function clearAll(): void
     {
         foreach ($this->caches as $cache) {
-            if ($cache instanceof Clearable) {
+            if ($cache instanceof Interfaces\Clearable) {
                 $cache->clear();
             }
         }

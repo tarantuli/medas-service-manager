@@ -2,21 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager\ParameterResolver;
+namespace Medas\ServiceManager\ParameterResolving;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\PreferredClassMap;
+use Medas\ServiceManager\Mapping\PreferredClassMap;
 use Medas\ServiceManager\ServiceManager;
 
 #[Service]
-class ServiceByType implements ParameterResolver
+class ServiceFinderByType implements ParameterResolver
 {
     private object $result;
 
     public function __construct(
-        private ServiceManager $serviceManager,
+        private readonly ServiceManager $serviceManager,
     )
     {
+    }
+
+    public function priority(): int
+    {
+        return -200;
     }
 
     public function handle(\ReflectionMethod $method, \ReflectionParameter $parameter): bool
@@ -54,11 +59,6 @@ class ServiceByType implements ParameterResolver
     public function result(): object
     {
         return $this->result;
-    }
-
-    public function priority(): int
-    {
-        return -200;
     }
 
     /** @return \ReflectionNamedType[] */

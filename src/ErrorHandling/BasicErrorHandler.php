@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\ErrorHandling;
 
 use Medas\ServiceManager\Attributes\Service;
 
 #[Service]
-class ErrorHandler
+class BasicErrorHandler implements ErrorHandler
 {
     public function set(): void
     {

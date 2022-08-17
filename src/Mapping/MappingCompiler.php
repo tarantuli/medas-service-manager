@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
+use Medas\ServiceManager\ParameterResolving\ParameterResolveManager;
 use Medas\ServiceManager\Interfaces\Package;
-use Medas\ServiceManager\ParameterResolver\ParameterResolveManager;
+use Medas\ServiceManager\ServiceInstantiator;
+use Medas\ServiceManager\ServiceManager;
 
 #[Service]
 class MappingCompiler

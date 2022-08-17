@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Exceptions\CircularDependencyException;
-use Medas\ServiceManager\Exceptions\DebuggedCircularDependencyException;
-use Medas\ServiceManager\ParameterResolver\ParameterResolveManager;
-use Medas\ServiceManager\ParameterResolver\ParameterResolver;
-
-#[Service]
+#[Attributes\Service]
 class ServiceInstantiator
 {
-    private ParameterResolveManager $parameterResolveManager;
+    private ParameterResolving\ParameterResolveManager $parameterResolveManager;
 
     /** @var string[] */
     private array $instantiating = [];
 
     public function __construct(ServiceManager $serviceManager)
     {
-        $this->parameterResolveManager = new ParameterResolveManager($serviceManager);
+        $this->parameterResolveManager = new ParameterResolving\ParameterResolveManager($serviceManager);
     }
 
     public function instantiate(string $className): object
@@ -29,7 +23,7 @@ class ServiceInstantiator
         $arguments = $this->getConstructorArgumentValues($className);
         unset($this->instantiating[$className]);
 
-        return new $className(... $arguments);
+        return new $className(...$arguments);
     }
 
     private function checkCircularDependencies(string $className): void
@@ -39,7 +33,7 @@ class ServiceInstantiator
         }
         else {
             if (isset($this->instantiating[$className])) {
-                throw new CircularDependencyException(array_keys($this->instantiating), $className);
+                throw new Exceptions\CircularDependencyException(array_keys($this->instantiating), $className);
             }
 
             $this->instantiating[$className] = true;
@@ -54,14 +48,11 @@ class ServiceInstantiator
             }
 
             if (isset($this->instantiating[$className])) {
-                throw new DebuggedCircularDependencyException(
-                    $this->instantiating,
-                    $className,
-                    $trace['file'] . ':' . $trace['line']
-                );
+                throw new Exceptions\DebuggedCircularDependencyException($this->instantiating, $className, $trace['file'] . ':' . $trace['line']);
             }
 
             $this->instantiating[$className] = $trace['file'] . ':' . $trace['line'];
+
             return;
         }
     }
@@ -77,7 +68,7 @@ class ServiceInstantiator
         return $this->parameterResolveManager->resolveMethod($constructor);
     }
 
-    public function addResolver(ParameterResolver $parameterResolver): void
+    public function addResolver(ParameterResolving\ParameterResolver $parameterResolver): void
     {
         $this->parameterResolveManager->addResolver($parameterResolver);
     }

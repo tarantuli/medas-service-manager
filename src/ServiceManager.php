@@ -5,8 +5,15 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Interfaces\{Cache, Package, PrimesCache};
-use Medas\ServiceManager\ParameterResolver\ParameterResolver;
+use Medas\ServiceManager\Cache\Interfaces\Cache;
+use Medas\ServiceManager\Cache\Interfaces\PrimesCache;
+use Medas\ServiceManager\ErrorHandling\BasicErrorHandler;
+use Medas\ServiceManager\ErrorHandling\ErrorHandler;
+use Medas\ServiceManager\ParameterResolving\ParameterResolver;
+use Medas\ServiceManager\Interfaces\{Package};
+use Medas\ServiceManager\Mapping\ImplementorFinder;
+use Medas\ServiceManager\Mapping\MappingCompiler;
+use Medas\ServiceManager\Mapping\ServiceMapping;
 
 class ServiceManager implements PrimesCache
 {
@@ -23,10 +30,13 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    public static function get(Cache|null $cache = null): self
+    public static function get(
+        Cache|null        $cache = null,
+        ErrorHandler|null $errorHandler = null,
+    ): self
     {
         if (!isset(self::$instance)) {
-            self::$instance = new self($cache);
+            self::$instance = new self($cache, $errorHandler);
         }
 
         return self::$instance;
@@ -46,17 +56,14 @@ class ServiceManager implements PrimesCache
     /** @var Package[] */
     private array $registeredPackages = [];
 
-    private function __construct(Cache|null $cache = null)
+    private function __construct(
+        Cache|null        $cache = null,
+        ErrorHandler|null $errorHandler = null,
+    )
     {
         $this->services[self::class] = $this;
 
-        $this->cacheManager
-            = $this->services[CacheManager::class]
-            = new CacheManager();
-
-        if ($cache) {
-            $this->cacheManager->register($cache);
-        }
+        $this->initializeCacheManager($cache);
 
         $this->mappingCompiler = new MappingCompiler($this->cacheManager);
         $this->instantiator = new ServiceInstantiator($this);
@@ -68,7 +75,28 @@ class ServiceManager implements PrimesCache
 
         $this->addPackage(ServiceManagerPackage::instance());
 
-        (new ErrorHandler())->set();
+        ($errorHandler ?? new BasicErrorHandler())->set();
+    }
+
+    public function __destruct()
+    {
+        if (!$this->mappingWasCached) {
+            // Delete the temporary initial mapping, and store the current, complete mapping
+            $cache = $this->cacheManager->get();
+            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
+            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
+        }
+    }
+
+    private function initializeCacheManager(?Cache $cache): void
+    {
+        $this->cacheManager
+            = $this->services[CacheManager::class]
+            = new CacheManager();
+
+        if ($cache) {
+            $this->cacheManager->register($cache);
+        }
     }
 
     private function initializeMapping(): ServiceMapping
@@ -100,14 +128,9 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    public function __destruct()
+    public function getServiceClassNames(): array
     {
-        if (!$this->mappingWasCached) {
-            // Delete the temporary initial mapping, and store the current, complete mapping
-            $cache = $this->cacheManager->get();
-            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
-            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
-        }
+        return $this->mapping->getAll();
     }
 
     public function primeCaches(): void
@@ -121,40 +144,10 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    /**
-     * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
-     */
-    public function resolve(string $type): object
-    {
-        if (null === $service = $this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypeException($type);
-        }
-
-        if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = $this->instantiator->instantiate($service);
-        }
-
-        return $this->services[$service];
-    }
-
-    public function findService(string $type): ?string
-    {
-        return $this->mapping->has($type) ? $this->mapping->get($type) : null;
-    }
-
-    public function findImplementors(string $interface): array
-    {
-        return $this->resolve(ImplementorFinder::class)->find($interface);
-    }
-
     public function primeCache(): void
     {
-        //$this->mapping();
-    }
-
-    public function addParameterResolver(ParameterResolver $parameterResolver): void
-    {
-        $this->instantiator->addResolver($parameterResolver);
+        // Do nothing
+        // TODO: Why does this not prime caches?
     }
 
     public function bindService(object $service, string ...$forTypes): void
@@ -171,13 +164,39 @@ class ServiceManager implements PrimesCache
         }
     }
 
+    public function addParameterResolver(ParameterResolver $parameterResolver): void
+    {
+        $this->instantiator->addResolver($parameterResolver);
+    }
+
+    /**
+     * The return value  is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
+     */
+    public function resolve(string $type): object
+    {
+        if (null === $service = $this->findService($type)) {
+            throw new Exceptions\ServiceNotFoundByTypeException($type);
+        }
+
+        if (!array_key_exists($service, $this->services)) {
+            $this->services[$service] = $this->instantiate($service);
+        }
+
+        return $this->services[$service];
+    }
+
+    public function findService(string $type): ?string
+    {
+        return $this->mapping->has($type) ? $this->mapping->get($type) : null;
+    }
+
     public function instantiate(string $className): object
     {
         return $this->instantiator->instantiate($className);
     }
 
-    public function getServiceClassNames(): array
+    public function findImplementors(string $interface): array
     {
-        return $this->mapping->getAll();
+        return $this->resolve(ImplementorFinder::class)->find($interface);
     }
 }

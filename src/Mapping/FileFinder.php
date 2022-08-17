@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager;
+namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Attributes\Service;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\ServiceManager\Console\ConsoleCommand;
+use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 use PHPUnit\Framework\TestCase;
 
 class ImplementorFinderTest extends TestCase
@@ -12,8 +12,8 @@ class ImplementorFinderTest extends TestCase
     public function testFindImplementors(): void
     {
         self::assertInstanceOf(
-            ConsoleCommand::class,
-            sm()->findImplementors(ConsoleCommand::class)[0]
+            ParameterResolver::class,
+            sm()->findImplementors(ParameterResolver::class)[0]
         );
     }
 }

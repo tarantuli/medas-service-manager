@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
+use Medas\Console\{Commands\BaseConsoleCommand, Commands\ConsoleCommandGroup, Formats\Style, Printer, Text};
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Console\{BaseConsoleCommand,
-    ConsoleCommandGroup,
-    Printer\BashFormat,
-    Printer\Printer,
-    Printer\Text
-};
 
 #[Service]
 class ListCommand extends BaseConsoleCommand
 {
     public function __construct(
-        private readonly Group        $group,
-        private readonly Printer|null $printer,
+        private readonly Group   $group,
+        private readonly Printer $printer,
     )
     {
     }
@@ -37,21 +32,21 @@ class ListCommand extends BaseConsoleCommand
         return 'Prints a list of registered services';
     }
 
-    public function process(array $arguments)
+    public function process(array $arguments): void
     {
         $this->printer
-            ->printLine(
-                new Text('Registered services: ')
+            ->print(
+                Text::create('Registered services: ')
             )
-            ->printLine();
+            ->print();
 
         $services = getPropertyValue(sm(), 'services');
 
         usort($services, fn(object $a, object $b) => strcasecmp($a::class, $b::class));
 
         foreach ($services as $service) {
-            $this->printer->printLine(
-                new Text('   ' . $service::class, BashFormat::LIGHT_BLUE)
+            $this->printer->print(
+                Text::create('   ' . $service::class, Style::Bold)
             );
         }
     }

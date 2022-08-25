@@ -9,11 +9,11 @@ use Medas\ServiceManager\Cache\Interfaces\Cache;
 use Medas\ServiceManager\Cache\Interfaces\PrimesCache;
 use Medas\ServiceManager\ErrorHandling\BasicErrorHandler;
 use Medas\ServiceManager\ErrorHandling\ErrorHandler;
-use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 use Medas\ServiceManager\Interfaces\{Package};
 use Medas\ServiceManager\Mapping\ImplementorFinder;
 use Medas\ServiceManager\Mapping\MappingCompiler;
 use Medas\ServiceManager\Mapping\ServiceMapping;
+use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 
 class ServiceManager implements PrimesCache
 {
@@ -106,10 +106,10 @@ class ServiceManager implements PrimesCache
         return $this->mappingCompiler->get();
     }
 
-    public function addPackage(Package $package): void
+    public function addPackage(Package $package): self
     {
         if (array_key_exists($package::class, $this->registeredPackages)) {
-            return;
+            return $this;
         }
 
         $this->addPackages($package->dependencies());
@@ -119,13 +119,17 @@ class ServiceManager implements PrimesCache
         if (!$this->mappingWasCached) {
             $this->mappingCompiler->addPackage($package);
         }
+
+        return $this;
     }
 
-    public function addPackages(array $packages): void
+    public function addPackages(array $packages): self
     {
         foreach ($packages as $package) {
             $this->addPackage($package);
         }
+
+        return $this;
     }
 
     public function getServiceClassNames(): array
@@ -150,11 +154,11 @@ class ServiceManager implements PrimesCache
         // TODO: Why does this not prime caches?
     }
 
-    public function bindService(object $service, string ...$forTypes): void
+    public function bindService(object $service, string ...$forTypes): self
     {
         if ($this->mappingWasCached) {
             // It's already registered
-            return;
+            return $this;
         }
 
         $this->services[$service::class] = $service;
@@ -162,11 +166,15 @@ class ServiceManager implements PrimesCache
         foreach ($forTypes as $forType) {
             $this->mapping->set($forType, $service::class);
         }
+
+        return $this;
     }
 
-    public function addParameterResolver(ParameterResolver $parameterResolver): void
+    public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
         $this->instantiator->addResolver($parameterResolver);
+
+        return $this;
     }
 
     /**

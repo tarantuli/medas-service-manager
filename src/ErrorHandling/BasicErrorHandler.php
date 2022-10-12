@@ -22,7 +22,6 @@ class BasicErrorHandler implements ErrorHandler
             throw new \ErrorException($message, $severity, $severity, $file, $line);
         });
 
-        ini_set('display_errors', false);
         error_reporting(E_ALL);
     }
 
@@ -31,7 +30,7 @@ class BasicErrorHandler implements ErrorHandler
         $error = error_get_last();
 
         if ($error !== null && $error["type"] === E_ERROR) {
-            throw new \ErrorException($error['message'], $error['type'], $error['type'], $error['file'], $error['line']);
+            echo "[fatal error]\n";
         }
     }
 }

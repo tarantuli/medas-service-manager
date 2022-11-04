@@ -17,10 +17,10 @@ class ServiceInstantiator
         $this->parameterResolveManager = new ParameterResolving\ParameterResolveManager($serviceManager);
     }
 
-    public function instantiate(string $className): object
+    public function instantiate(string $className, array $givenArguments = []): object
     {
         $this->checkCircularDependencies($className);
-        $arguments = $this->getConstructorArgumentValues($className);
+        $arguments = $this->getConstructorArgumentValues($className, $givenArguments);
         unset($this->instantiating[$className]);
 
         return new $className(...$arguments);
@@ -57,7 +57,7 @@ class ServiceInstantiator
         }
     }
 
-    private function getConstructorArgumentValues(string $className): array
+    private function getConstructorArgumentValues(string $className, array $givenArguments): array
     {
         $class = new \ReflectionClass($className);
 
@@ -65,11 +65,16 @@ class ServiceInstantiator
             return [];
         }
 
-        return $this->parameterResolveManager->resolveMethod($constructor);
+        return $this->parameterResolveManager->resolveMethod($constructor, $givenArguments);
     }
 
     public function addResolver(ParameterResolving\ParameterResolver $parameterResolver): void
     {
         $this->parameterResolveManager->addResolver($parameterResolver);
+    }
+
+    public function resetInstantiatingLog(): void
+    {
+        $this->instantiating = [];
     }
 }

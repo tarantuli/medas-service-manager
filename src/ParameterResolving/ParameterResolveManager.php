@@ -30,12 +30,17 @@ class ParameterResolveManager
             fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority()));
     }
 
-    public function resolveMethod(\ReflectionMethod $method): array
+    public function resolveMethod(\ReflectionMethod $method, array $givenArguments): array
     {
         $arguments = [];
 
         foreach ($method->getParameters() as $parameter) {
-            $arguments[] = $this->resolveParameter($method, $parameter);
+            if (array_key_exists($parameter->name, $givenArguments)) {
+                $arguments[] = $givenArguments[$parameter->name];
+            }
+            else {
+                $arguments[] = $this->resolveParameter($method, $parameter);
+            }
         }
 
         return $arguments;

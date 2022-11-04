@@ -78,16 +78,6 @@ class ServiceManager implements PrimesCache
         ($errorHandler ?? new BasicErrorHandler())->set();
     }
 
-    public function __destruct()
-    {
-        if (!$this->mappingWasCached) {
-            // Delete the temporary initial mapping, and store the current, complete mapping
-            $cache = $this->cacheManager->get();
-            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
-            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
-        }
-    }
-
     private function initializeCacheManager(?Cache $cache): void
     {
         $this->cacheManager
@@ -132,6 +122,16 @@ class ServiceManager implements PrimesCache
         return $this;
     }
 
+    public function __destruct()
+    {
+        if (!$this->mappingWasCached) {
+            // Delete the temporary initial mapping, and store the current, complete mapping
+            $cache = $this->cacheManager->get();
+            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
+            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
+        }
+    }
+
     public function getServiceClassNames(): array
     {
         return $this->mapping->getAll();
@@ -146,35 +146,6 @@ class ServiceManager implements PrimesCache
                 $service->primeCache();
             }
         }
-    }
-
-    public function primeCache(): void
-    {
-        // Do nothing
-        // TODO: Why does this not prime caches?
-    }
-
-    public function bindService(object $service, string ...$forTypes): self
-    {
-        if ($this->mappingWasCached) {
-            // It's already registered
-            return $this;
-        }
-
-        $this->services[$service::class] = $service;
-
-        foreach ($forTypes as $forType) {
-            $this->mapping->set($forType, $service::class);
-        }
-
-        return $this;
-    }
-
-    public function addParameterResolver(ParameterResolver $parameterResolver): self
-    {
-        $this->instantiator->addResolver($parameterResolver);
-
-        return $this;
     }
 
     /**
@@ -198,9 +169,43 @@ class ServiceManager implements PrimesCache
         return $this->mapping->has($type) ? $this->mapping->get($type) : null;
     }
 
-    public function instantiate(string $className): object
+    public function instantiate(string $className, array $arguments = []): object
     {
-        return $this->instantiator->instantiate($className);
+        return $this->instantiator->instantiate($className, $arguments);
+    }
+
+    public function primeCache(): void
+    {
+        // Do nothing
+        // TODO: Why does this not prime caches?
+    }
+
+    public function resetInstantiatingLog(): void
+    {
+        $this->instantiator->resetInstantiatingLog();
+    }
+
+    public function bindService(object $service, string ...$forTypes): self
+    {
+        if ($this->mappingWasCached) {
+            // It's already registered
+            return $this;
+        }
+
+        $this->services[$service::class] = $service;
+
+        foreach ($forTypes as $forType) {
+            $this->mapping->set($forType, $service::class);
+        }
+
+        return $this;
+    }
+
+    public function addParameterResolver(ParameterResolver $parameterResolver): self
+    {
+        $this->instantiator->addResolver($parameterResolver);
+
+        return $this;
     }
 
     public function findImplementors(string $interface): array

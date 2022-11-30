@@ -6,5 +6,5 @@ namespace Medas\ServiceManager\Values\Interfaces;
 
 interface Guid extends \Stringable
 {
-
+    public function toBytes(): string;
 }

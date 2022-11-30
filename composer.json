@@ -15,7 +15,7 @@
         "morphp/medas-console": "dev-dev"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9"
     },
     "extra": {
         "branch-alias": {

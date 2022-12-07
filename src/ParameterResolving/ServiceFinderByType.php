@@ -56,11 +56,6 @@ class ServiceFinderByType implements ParameterResolver
         return true;
     }
 
-    public function result(): object
-    {
-        return $this->result;
-    }
-
     /** @return \ReflectionNamedType[] */
     private function getParameterTypes(\ReflectionParameter $parameter): array
     {
@@ -71,5 +66,10 @@ class ServiceFinderByType implements ParameterResolver
         return $type instanceof \ReflectionUnionType
             ? $type->getTypes()
             : [$type];
+    }
+
+    public function result(): object
+    {
+        return $this->result;
     }
 }

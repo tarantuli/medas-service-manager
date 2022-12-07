@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\ServiceManager\ParameterResolving\ArgumentProcessor;
+
 #[Attributes\Service]
 class ServiceInstantiator
 {
@@ -73,7 +75,13 @@ class ServiceInstantiator
         $this->parameterResolveManager->addResolver($parameterResolver);
     }
 
+    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): void
+    {
+        $this->parameterResolveManager->addProcessor($argumentProcessor);
+    }
+
     public function resetInstantiatingLog(): void
+
     {
         $this->instantiating = [];
     }

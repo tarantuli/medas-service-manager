@@ -13,6 +13,7 @@ use Medas\ServiceManager\Interfaces\{Package};
 use Medas\ServiceManager\Mapping\ImplementorFinder;
 use Medas\ServiceManager\Mapping\MappingCompiler;
 use Medas\ServiceManager\Mapping\ServiceMapping;
+use Medas\ServiceManager\ParameterResolving\ArgumentProcessor;
 use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 
 class ServiceManager implements PrimesCache
@@ -204,6 +205,13 @@ class ServiceManager implements PrimesCache
     public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
         $this->instantiator->addResolver($parameterResolver);
+
+        return $this;
+    }
+
+    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
+    {
+        $this->instantiator->addArgumentProcessor($argumentProcessor);
 
         return $this;
     }

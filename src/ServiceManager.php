@@ -105,11 +105,12 @@ class ServiceManager implements PrimesCache
 
         $this->addPackages($package->dependencies());
         $this->registeredPackages[$package::class] = $package;
-        $package->initialize();
 
         if (!$this->mappingWasCached) {
             $this->mappingCompiler->addPackage($package);
         }
+
+        $package->initialize();
 
         return $this;
     }

@@ -52,7 +52,7 @@ class ParameterResolveManager
                 $argument = $this->resolveParameter($method, $parameter);
             }
 
-            $arguments[] = $this->processArgument($method, $parameter, $argument);
+            $arguments[] = $this->processArgument($parameter, $argument);
         }
 
         return $arguments;
@@ -73,10 +73,10 @@ class ParameterResolveManager
         throw new Exceptions\CouldNotResolveParameterException($parameter);
     }
 
-    private function processArgument(\ReflectionMethod $method, \ReflectionParameter $parameter, mixed $argument): mixed
+    private function processArgument(\ReflectionParameter $parameter, mixed $argument): mixed
     {
         foreach ($this->processors as $processor) {
-            $argument = $processor->process($method, $parameter, $argument);
+            $argument = $processor->process($parameter, $argument);
         }
 
         return $argument;

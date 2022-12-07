@@ -182,6 +182,11 @@ class ServiceManager implements PrimesCache
         // TODO: Why does this not prime caches?
     }
 
+    public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
+    {
+        return $this->instantiator->resolveParameter($parameter);
+    }
+
     public function resetInstantiatingLog(): void
     {
         $this->instantiator->resetInstantiatingLog();

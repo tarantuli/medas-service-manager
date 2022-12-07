@@ -6,7 +6,7 @@ namespace Medas\ServiceManager\ParameterResolving;
 
 interface ArgumentProcessor
 {
-    public function process(\ReflectionParameter $parameter, mixed $argument): mixed;
+    public function process(\ReflectionParameter|\ReflectionProperty $parameter, mixed $argument): mixed;
 
     public function priority(): int;
 }

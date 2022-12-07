@@ -24,9 +24,11 @@ class ServiceFinderByType implements ParameterResolver
         return -200;
     }
 
-    public function handle(\ReflectionMethod $method, \ReflectionParameter $parameter): bool
+    public function handle(\ReflectionParameter|\ReflectionProperty $parameter): bool
     {
-        $preferredClassMap = new PreferredClassMap($method);
+        $preferredClassMap = $parameter instanceof \ReflectionParameter
+            ? new PreferredClassMap($parameter->getDeclaringFunction())
+            : [];
 
         $service = null;
         $types = $this->getParameterTypes($parameter);
@@ -57,7 +59,7 @@ class ServiceFinderByType implements ParameterResolver
     }
 
     /** @return \ReflectionNamedType[] */
-    private function getParameterTypes(\ReflectionParameter $parameter): array
+    private function getParameterTypes(\ReflectionParameter|\ReflectionProperty $parameter): array
     {
         $type = $parameter->getType();
 

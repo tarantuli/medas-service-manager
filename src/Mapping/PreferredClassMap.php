@@ -10,7 +10,7 @@ class PreferredClassMap
 {
     private array $map = [];
 
-    public function __construct(\ReflectionMethod $method)
+    public function __construct(\ReflectionFunctionAbstract $method)
     {
         foreach ($method->getAttributes(PreferredClass::class) as $attribute) {
             /** @var PreferredClass $preferredClass */

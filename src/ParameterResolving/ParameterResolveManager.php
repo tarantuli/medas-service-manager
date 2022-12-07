@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ParameterResolving;
 
-use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Exceptions;
-use Medas\ServiceManager\ServiceManager;
+use Medas\ServiceManager\{Attributes\Service, Exceptions, ServiceManager};
 
 #[Service]
 class ParameterResolveManager
@@ -49,7 +47,7 @@ class ParameterResolveManager
                 $argument = $givenArguments[$parameter->name];
             }
             else {
-                $argument = $this->resolveParameter($method, $parameter);
+                $argument = $this->resolveParameter($parameter);
             }
 
             $arguments[] = $this->processArgument($parameter, $argument);
@@ -58,12 +56,16 @@ class ParameterResolveManager
         return $arguments;
     }
 
-    public function resolveParameter(\ReflectionMethod $method, \ReflectionParameter $parameter): mixed
+    public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
     {
         foreach ($this->resolvers as $resolver) {
-            if ($resolver->handle($method, $parameter)) {
+            if ($resolver->handle($parameter)) {
                 return $resolver->result();
             }
+        }
+
+        if ($parameter->hasDefaultValue()) {
+            return $parameter->getDefaultValue();
         }
 
         if ($parameter->allowsNull()) {

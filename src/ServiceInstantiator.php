@@ -80,6 +80,11 @@ class ServiceInstantiator
         $this->parameterResolveManager->addProcessor($argumentProcessor);
     }
 
+    public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
+    {
+        return $this->parameterResolveManager->resolveParameter($parameter);
+    }
+
     public function resetInstantiatingLog(): void
 
     {

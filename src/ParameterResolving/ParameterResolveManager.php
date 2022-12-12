@@ -64,7 +64,11 @@ class ParameterResolveManager
             }
         }
 
-        if ($parameter->hasDefaultValue()) {
+        if ($parameter instanceof \ReflectionProperty && $parameter->hasDefaultValue()) {
+            return $parameter->getDefaultValue();
+        }
+
+        if ($parameter instanceof \ReflectionParameter && $parameter->isDefaultValueAvailable()) {
             return $parameter->getDefaultValue();
         }
 

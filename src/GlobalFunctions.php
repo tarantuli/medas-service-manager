@@ -12,7 +12,6 @@ function config(string $path): mixed
     static $config;
 
     if (!isset($config)) {
-        /** @var ConfigManager $config */
         $config = sm()->resolve(ConfigManager::class);
     }
 

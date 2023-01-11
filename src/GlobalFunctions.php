@@ -56,3 +56,15 @@ function getPropertyValue(object $object, string $propertyName): mixed
 {
     return (new ReflectionClass($object))->getProperty($propertyName)->getValue($object);
 }
+
+/** @return \ReflectionNamedType[] */
+function parameterTypes(\ReflectionParameter|\ReflectionProperty $parameter): array
+{
+    $type = $parameter->getType();
+
+    if (!$type) return [];
+
+    return $type instanceof \ReflectionUnionType
+        ? $type->getTypes()
+        : [$type];
+}

@@ -31,7 +31,7 @@ class ServiceFinderByType implements ParameterResolver
             : [];
 
         $service = null;
-        $types = $this->getParameterTypes($parameter);
+        $types = parameterTypes($parameter);
 
         foreach ($types as $type) {
             $typeName = $type->getName();
@@ -56,18 +56,6 @@ class ServiceFinderByType implements ParameterResolver
         $this->result = $this->serviceManager->resolve($service);
 
         return true;
-    }
-
-    /** @return \ReflectionNamedType[] */
-    private function getParameterTypes(\ReflectionParameter|\ReflectionProperty $parameter): array
-    {
-        $type = $parameter->getType();
-
-        if (!$type) return [];
-
-        return $type instanceof \ReflectionUnionType
-            ? $type->getTypes()
-            : [$type];
     }
 
     public function result(): object

@@ -11,13 +11,13 @@ class CouldNotResolveParameter extends BaseException
     public function __construct(\ReflectionParameter $parameter)
     {
         parent::__construct(
+            '$' . $parameter->name,
             $parameter->getDeclaringClass()->name . '::' . $parameter->getDeclaringFunction()->name,
-            '$' . $parameter->name
         );
     }
 
     public function pattern(): string
     {
-        return 'could not resolve value of %s parameter %s';
+        return 'could not resolve parameter %s in %s';
     }
 }

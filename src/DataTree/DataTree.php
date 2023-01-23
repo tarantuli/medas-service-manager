@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\DataTree;
 
-use Medas\ServiceManager\Exceptions\ValueNotFoundException;
+use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
 
 class DataTree
 {
@@ -106,7 +106,7 @@ class DataTree
     public function get(string $index): mixed
     {
         if (!$this->has($index)) {
-            throw new ValueNotFoundException($index);
+            throw new IndexNotFoundInDataTree($index);
         }
 
         return $this->lastFoundValue;
@@ -116,7 +116,7 @@ class DataTree
     public function getHistory(string $index): array
     {
         if (!$this->has($index)) {
-            throw new ValueNotFoundException($index);
+            throw new IndexNotFoundInDataTree($index);
         }
 
         return $this->lastFoundHistory;
@@ -125,7 +125,7 @@ class DataTree
     public function getSource(string $index): string
     {
         if (!$this->has($index)) {
-            throw new ValueNotFoundException($index);
+            throw new IndexNotFoundInDataTree($index);
         }
 
         return $this->lastFoundHistory[count($this->lastFoundHistory) - 1]->source;

@@ -6,7 +6,7 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class CacheNotFoundByNameException extends BaseException
+class CacheNotFoundByName extends BaseException
 {
     public function __construct(string $name)
     {

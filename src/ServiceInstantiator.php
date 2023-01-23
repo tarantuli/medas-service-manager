@@ -35,7 +35,7 @@ class ServiceInstantiator
         }
         else {
             if (isset($this->instantiating[$className])) {
-                throw new Exceptions\CircularDependencyException(array_keys($this->instantiating), $className);
+                throw new Exceptions\CircularDependencyFound(array_keys($this->instantiating), $className);
             }
 
             $this->instantiating[$className] = true;
@@ -50,7 +50,7 @@ class ServiceInstantiator
             }
 
             if (isset($this->instantiating[$className])) {
-                throw new Exceptions\DebuggedCircularDependencyException($this->instantiating, $className, $trace['file'] . ':' . $trace['line']);
+                throw new Exceptions\DebuggedCircularDependencyFound($this->instantiating, $className, $trace['file'] . ':' . $trace['line']);
             }
 
             $this->instantiating[$className] = $trace['file'] . ':' . $trace['line'];

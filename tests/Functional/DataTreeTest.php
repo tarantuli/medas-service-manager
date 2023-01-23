@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\DataTree\{DataTree, History};
-use Medas\ServiceManager\Exceptions\ValueNotFoundException;
+use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
 use PHPUnit\Framework\TestCase;
 
 class DataTreeTest extends TestCase
@@ -27,7 +27,7 @@ class DataTreeTest extends TestCase
     {
         $dataTree = new DataTree();
 
-        $this->expectException(ValueNotFoundException::class);
+        $this->expectException(IndexNotFoundInDataTree::class);
         $dataTree->get('env');
     }
 

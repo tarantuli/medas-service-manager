@@ -6,7 +6,7 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class CircularDependencyException extends BaseException
+class CircularDependencyFound extends BaseException
 {
     public function __construct(array $trace, string $current)
     {

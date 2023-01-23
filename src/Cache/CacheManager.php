@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Cache;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Exceptions\CacheNotFoundByNameException;
+use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
 #[Service]
 class CacheManager
@@ -20,7 +20,7 @@ class CacheManager
         }
 
         if (!array_key_exists($name, $this->caches)) {
-            throw new CacheNotFoundByNameException($name);
+            throw new CacheNotFoundByName($name);
         }
 
         return $this->caches[$name];

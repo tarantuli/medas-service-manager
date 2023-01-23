@@ -76,7 +76,7 @@ class ParameterResolveManager
             return null;
         }
 
-        throw new Exceptions\CouldNotResolveParameterException($parameter);
+        throw new Exceptions\CouldNotResolveParameter($parameter);
     }
 
     private function processArgument(\ReflectionParameter $parameter, mixed $argument): mixed

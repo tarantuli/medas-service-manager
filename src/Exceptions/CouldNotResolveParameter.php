@@ -6,7 +6,7 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class CouldNotResolveParameterException extends BaseException
+class CouldNotResolveParameter extends BaseException
 {
     public function __construct(\ReflectionParameter $parameter)
     {

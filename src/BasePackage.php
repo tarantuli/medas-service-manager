@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Exceptions\ClassDependsOnUnknownClassException;
+use Medas\ServiceManager\Exceptions\ClassDependsOnUnknownClass;
 use Medas\ServiceManager\Interfaces\Package;
 
 abstract class BasePackage implements Package
@@ -25,7 +25,7 @@ abstract class BasePackage implements Package
 
         foreach ($classNames as $className) {
             if (!class_exists($className)) {
-                throw new ClassDependsOnUnknownClassException($this::class, $className);
+                throw new ClassDependsOnUnknownClass($this::class, $className);
             }
 
             $class = new \ReflectionClass($className);

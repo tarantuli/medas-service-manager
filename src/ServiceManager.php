@@ -156,7 +156,7 @@ class ServiceManager implements PrimesCache
     public function resolve(string $type): object
     {
         if (null === $service = $this->findService($type)) {
-            throw new Exceptions\ServiceNotFoundByTypeException($type);
+            throw new Exceptions\ServiceNotFoundByType($type);
         }
 
         if (!array_key_exists($service, $this->services)) {

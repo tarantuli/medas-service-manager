@@ -6,16 +6,15 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class ValueNotFoundException extends BaseException
+class ServiceNotFoundByType extends BaseException
 {
-
-    public function __construct(string $index)
+    public function __construct(string $type)
     {
-        parent::__construct($index);
+        parent::__construct($type);
     }
 
     public function pattern(): string
     {
-        return 'no value found for index %s';
+        return 'service not found with type %s';
     }
 }

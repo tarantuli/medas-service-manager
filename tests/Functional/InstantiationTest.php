@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\ServiceManager\Exceptions\CouldNotResolveParameterException;
+use Medas\ServiceManager\Exceptions\CouldNotResolveParameter;
 use Medas\ServiceManagerTest\BaseTest;
 use Medas\ServiceManagerTest\MockUps\DefaultLogger;
 use Medas\ServiceManagerTest\MockUps\Instantiation\ClassWithArgument;
@@ -21,7 +21,7 @@ class InstantiationTest extends BaseTest
     public function testNonServiceArgumentFail(): void
     {
         $this->loadMockUps();
-        $this->expectException(CouldNotResolveParameterException::class);
+        $this->expectException(CouldNotResolveParameter::class);
         sm()->instantiate(ClassWithArgument::class);
     }
 

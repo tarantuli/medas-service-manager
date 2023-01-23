@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\ServiceManager\Exceptions\ServiceNotFoundByTypeException;
+use Medas\ServiceManager\Exceptions\ServiceNotFoundByType;
 use Medas\ServiceManager\ServiceManager;
 use Medas\ServiceManagerTest\BaseTest;
 use Medas\ServiceManagerTest\MockUps\{AnotherLogger,
@@ -28,7 +28,7 @@ final class ServiceManagerTest extends BaseTest
     {
         $manager = ServiceManager::get();
 
-        $this->expectException(ServiceNotFoundByTypeException::class);
+        $this->expectException(ServiceNotFoundByType::class);
         /** @noinspection PhpUndefinedClassInspection */
         $manager->resolve(NonExistingClass::class);
     }

@@ -40,7 +40,7 @@ class ParameterResolveManager
             fn(ArgumentProcessor $a, ArgumentProcessor $b) => -($a->priority() <=> $b->priority()));
     }
 
-    public function resolveMethod(\ReflectionMethod $method, array $givenArguments): array
+    public function resolveMethod(\ReflectionMethod|\ReflectionFunction $method, array $givenArguments): array
     {
         $arguments = [];
 

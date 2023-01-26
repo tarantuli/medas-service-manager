@@ -4,17 +4,11 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Cache\Interfaces\Cache;
-use Medas\ServiceManager\Cache\Interfaces\PrimesCache;
-use Medas\ServiceManager\ErrorHandling\BasicErrorHandler;
-use Medas\ServiceManager\ErrorHandling\ErrorHandler;
+use Medas\ServiceManager\Cache\{CacheManager, Interfaces\Cache, Interfaces\PrimesCache};
+use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
 use Medas\ServiceManager\Interfaces\{Package};
-use Medas\ServiceManager\Mapping\ImplementorFinder;
-use Medas\ServiceManager\Mapping\MappingCompiler;
-use Medas\ServiceManager\Mapping\ServiceMapping;
-use Medas\ServiceManager\ParameterResolving\ArgumentProcessor;
-use Medas\ServiceManager\ParameterResolving\ParameterResolver;
+use Medas\ServiceManager\Mapping\{ImplementorFinder, MappingCompiler, ServiceMapping};
+use Medas\ServiceManager\ParameterResolving\{ArgumentProcessor, ParameterResolver};
 
 class ServiceManager implements PrimesCache
 {
@@ -67,12 +61,14 @@ class ServiceManager implements PrimesCache
         $this->initializeCacheManager($cache);
 
         $this->mappingCompiler = new MappingCompiler($this->cacheManager);
-        $this->instantiator = new ServiceInstantiator($this);
 
         $this->mapping = $this->cacheManager->get()->get(
             self::SERVICE_MAPPING_CACHE_KEY,
             fn() => $this->initializeMapping()
         );
+
+        // This should be instantiated *after* fetching the mapping
+        $this->instantiator = new ServiceInstantiator($this);
 
         $this->addPackage(ServiceManagerPackage::instance());
 

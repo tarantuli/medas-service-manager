@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\CircularDependencyFound;
-use Medas\ServiceManagerTest\BaseTest;
+use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\DirectDependency1;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\IndirectDependency1;
 
-class CircularDependenciesTest extends BaseTest
+class CircularDependenciesTestClass extends BaseTestClass
 {
     public function testDirectDependency(): void
     {

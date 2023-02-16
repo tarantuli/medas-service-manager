@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\CouldNotResolveParameter;
-use Medas\ServiceManagerTest\BaseTest;
+use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\DefaultLogger;
 use Medas\ServiceManagerTest\MockUps\Instantiation\ClassWithArgument;
 
-class InstantiationTest extends BaseTest
+class InstantiationTestClass extends BaseTestClass
 {
     public function testBasicInstantiation(): void
     {

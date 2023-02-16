@@ -6,7 +6,7 @@ namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\ServiceNotFoundByType;
 use Medas\ServiceManager\ServiceManager;
-use Medas\ServiceManagerTest\BaseTest;
+use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\{AnotherLogger,
     DefaultLogger,
     Logger,
@@ -15,7 +15,7 @@ use Medas\ServiceManagerTest\MockUps\{AnotherLogger,
     MockServiceWithPreferredLogger
 };
 
-final class ServiceManagerTest extends BaseTest
+final class ServiceManagerTestClass extends BaseTestClass
 {
     public function testCreateManager(): void
     {

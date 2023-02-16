@@ -9,9 +9,14 @@ class ServiceMapping
     /** @var string[] */
     private array $mapping = [];
 
-    public function set(string $type, string $className): void
+    public function set(string $type, string $className): bool
     {
+        if ($this->mapping[$type] ?? null === $className) {
+            return false;
+        }
+
         $this->mapping[$type] = $className;
+        return true;
     }
 
     public function get(string $type): string

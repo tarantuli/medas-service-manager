@@ -123,7 +123,7 @@ class ServiceManager implements PrimesCache
     public function __destruct()
     {
         if (!$this->mappingWasCached) {
-            // Delete the temporary initial mapping, and store the current, complete mapping
+            // Delete any residual cached mapping, and store the current, complete mapping
             $cache = $this->cacheManager->get();
             $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
             $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
@@ -190,15 +190,16 @@ class ServiceManager implements PrimesCache
 
     public function bindService(object $service, string ...$forTypes): self
     {
-        if ($this->mappingWasCached) {
-            // It's already registered
-            return $this;
-        }
-
         $this->services[$service::class] = $service;
 
+        $changedSomething = false;
         foreach ($forTypes as $forType) {
-            $this->mapping->set($forType, $service::class);
+            $changedSomething = $changedSomething || $this->mapping->set($forType, $service::class);
+        }
+
+        if ($changedSomething) {
+            // The mapping has changed and must be saved to cache
+            $this->mappingWasCached = false;
         }
 
         return $this;

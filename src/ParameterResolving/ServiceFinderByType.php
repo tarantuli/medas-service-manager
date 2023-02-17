@@ -19,6 +19,17 @@ class ServiceFinderByType implements ParameterResolver
         // so don't add more dependencies, expecting them to be injected.
     }
 
+    public function __serialize(): array
+    {
+        // This is needed, so $result isn't serialized
+        return [];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        // Do nothing
+    }
+
     public function priority(): int
     {
         return -200;

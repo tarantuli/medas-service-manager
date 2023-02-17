@@ -24,9 +24,9 @@ class ServiceManagerPackage extends BasePackage
         ServiceManager::get()->primeCaches();
     }
 
-    public function initialize(): void
+    public function initialize(ServiceConfig $config): void
     {
         require_once __DIR__ . '/GlobalFunctions.php';
-        parent::initialize();
+        parent::initialize($config);
     }
 }

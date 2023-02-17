@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Interfaces;
 
+use Medas\ServiceManager\ServiceConfig;
+
 interface Package extends IsSingleton
 {
     /** @return Package[] */
@@ -11,7 +13,7 @@ interface Package extends IsSingleton
 
     public function sourceDirectory(): string;
 
-    public function initialize(): void;
+    public function initialize(ServiceConfig $config): void;
 
     public function postInstall(): void;
 }

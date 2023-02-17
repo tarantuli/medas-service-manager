@@ -66,7 +66,7 @@ class ServiceConfig
 
         $this->mappingManager->addPackage($package);
 
-        $package->initialize();
+        $package->initialize($this);
 
         return $this;
     }

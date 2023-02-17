@@ -9,7 +9,7 @@ use Medas\ServiceManager\Interfaces\Package;
 
 abstract class BasePackage implements Package
 {
-    public function initialize(): void
+    public function initialize(ServiceConfig $config): void
     {
         // Do nothing
     }

@@ -13,10 +13,10 @@ class ServiceFinderByType implements ParameterResolver
 {
     private object $result;
 
-    public function __construct(
-        private readonly ServiceManager $serviceManager,
-    )
+    public function __construct()
     {
+        // This service is *not* instantiated automatically,
+        // so don't add more dependencies, expecting them to be injected.
     }
 
     public function priority(): int
@@ -26,6 +26,7 @@ class ServiceFinderByType implements ParameterResolver
 
     public function handle(\ReflectionParameter|\ReflectionProperty $parameter): bool
     {
+        $serviceManager = ServiceManager::get();
         $preferredClassMap = $parameter instanceof \ReflectionParameter
             ? new PreferredClassMap($parameter->getDeclaringFunction())
             : [];
@@ -37,13 +38,13 @@ class ServiceFinderByType implements ParameterResolver
             $typeName = $type->getName();
 
             if ($preferredClass = $preferredClassMap->forType($typeName)) {
-                if (null !== $this->serviceManager->findService($preferredClass)) {
+                if (null !== $serviceManager->findService($preferredClass)) {
                     $service = $preferredClass;
                     break;
                 }
             }
 
-            if (null !== $this->serviceManager->findService($typeName)) {
+            if (null !== $serviceManager->findService($typeName)) {
                 $service = $typeName;
                 break;
             }
@@ -53,7 +54,7 @@ class ServiceFinderByType implements ParameterResolver
             return false;
         }
 
-        $this->result = $this->serviceManager->resolve($service);
+        $this->result = $serviceManager->resolve($service);
 
         return true;
     }

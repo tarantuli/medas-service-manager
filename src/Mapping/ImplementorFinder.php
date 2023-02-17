@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\ServiceManager;
 
 #[Service]
 class ImplementorFinder
@@ -12,9 +13,10 @@ class ImplementorFinder
     /** @return object[] */
     public function find(string $interface): array
     {
+        $serviceManager = ServiceManager::get();
         $implementors = [];
 
-        foreach (sm()->getServiceClassNames() as $className) {
+        foreach ($serviceManager->getServiceClassNames() as $className) {
             $class = new \ReflectionClass($className);
 
             if ($class->isAbstract()) {
@@ -25,7 +27,7 @@ class ImplementorFinder
                 continue;
             }
 
-            $implementors[] = sm()->resolve($className);
+            $implementors[] = $serviceManager->resolve($className);
         }
 
         return $implementors;

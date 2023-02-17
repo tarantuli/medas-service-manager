@@ -9,24 +9,12 @@ use Medas\ServiceManager\ServiceManager;
 
 function config(string $path): mixed
 {
-    static $config;
-
-    if (!isset($config)) {
-        $config = sm()->resolve(ConfigManager::class);
-    }
-
-    return $config->getValue($path);
+    return ServiceManager::get()->resolve(ConfigManager::class)->getValue($path);
 }
 
 function sm(): ServiceManager
 {
-    static $sm;
-
-    if (!isset($sm)) {
-        $sm = ServiceManager::get();
-    }
-
-    return $sm;
+    return ServiceManager::get();
 }
 
 /**
@@ -34,7 +22,7 @@ function sm(): ServiceManager
  */
 function service(string $type): object
 {
-    return sm()->resolve($type);
+    return ServiceManager::get()->resolve($type);
 }
 
 /**
@@ -52,7 +40,7 @@ function attribute(
     return $attributes[0]->newInstance();
 }
 
-function getPropertyValue(object $object, string $propertyName): mixed
+function propertyValue(object $object, string $propertyName): mixed
 {
     return (new ReflectionClass($object))->getProperty($propertyName)->getValue($object);
 }
@@ -62,7 +50,9 @@ function parameterTypes(\ReflectionParameter|\ReflectionProperty $parameter): ar
 {
     $type = $parameter->getType();
 
-    if (!$type) return [];
+    if (!$type) {
+        return [];
+    }
 
     return $type instanceof \ReflectionUnionType
         ? $type->getTypes()

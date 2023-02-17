@@ -40,7 +40,7 @@ class ListCommand extends BaseConsoleCommand
             )
             ->print();
 
-        $services = getPropertyValue(sm(), 'services');
+        $services = propertyValue(sm(), 'services');
 
         usort($services, fn(object $a, object $b) => strcasecmp($a::class, $b::class));
 

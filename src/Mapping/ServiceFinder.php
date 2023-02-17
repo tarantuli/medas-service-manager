@@ -5,27 +5,20 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Cache\CacheManager;
 
-#[Service]
 class ServiceFinder
 {
     private FileFinder $fileFinder;
 
-    public function __construct(private readonly CacheManager $cacheManager)
+    public function __construct()
     {
+        // This should not be a service, it is *not* instantiated automatically,
+        // so don't add more dependencies, expecting them to be injected.
+
         $this->fileFinder = new FileFinder();
     }
 
     public function find(string $directory): array
-    {
-        return $this->cacheManager->get()->get(
-            [$this::class, $directory],
-            fn() => $this->findServices($directory)
-        );
-    }
-
-    private function findServices(string $directory): array
     {
         return $this->loadFiles($directory) ? $this->analyseClasses($directory) : [];
     }
@@ -50,8 +43,11 @@ class ServiceFinder
         foreach (get_declared_classes() as $className) {
             $class = new \ReflectionClass($className);
 
-            if (!$class->isInternal() && $class->getAttributes(Service::class)
-                && str_starts_with($class->getFileName(), $directory)) {
+            if (
+                !$class->isInternal()
+                && str_starts_with($class->getFileName(), $directory)
+                && $class->getAttributes(Service::class)
+            ) {
                 $this->registerClass($class, $services);
             }
         }

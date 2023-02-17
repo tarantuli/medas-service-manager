@@ -13,6 +13,12 @@ class CacheManager
     /** @var Interfaces\Cache[] */
     private array $caches = [];
 
+    public function __construct()
+    {
+        // This service is *not* instantiated automatically,
+        // so don't add more dependencies, expecting them to be injected.
+    }
+
     public function get(string $name = 'default'): Interfaces\Cache
     {
         if ($name === 'default' && !array_key_exists($name, $this->caches)) {

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Console\ConsolePackage;
-
 class ServiceManagerPackage extends BasePackage
 {
     use AsSingleton;
@@ -13,7 +11,6 @@ class ServiceManagerPackage extends BasePackage
     public function dependencies(): array
     {
         return $this->dependenciesByClass([
-            ConsolePackage::class,
         ]);
     }
 
@@ -24,7 +21,7 @@ class ServiceManagerPackage extends BasePackage
 
     public function postInstall(): void
     {
-        sm()->primeCaches();
+        ServiceManager::get()->primeCaches();
     }
 
     public function initialize(): void

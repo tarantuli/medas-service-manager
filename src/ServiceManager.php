@@ -5,77 +5,67 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Cache\{CacheManager, Interfaces\Cache, Interfaces\PrimesCache};
-use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
-use Medas\ServiceManager\Interfaces\{Package};
-use Medas\ServiceManager\Mapping\{ImplementorFinder, MappingCompiler, ServiceMapping};
-use Medas\ServiceManager\ParameterResolving\{ArgumentProcessor, ParameterResolver};
+use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
 
 class ServiceManager implements PrimesCache
 {
-    const SERVICE_MAPPING_CACHE_KEY = ServiceMapping::class;
+    private const CONFIG_CACHE_KEY = ServiceConfig::class;
 
-    private static self $instance;
+    private static self|null $instance;
 
     public static function postInstall(): void
     {
         service(CacheManager::class)->clearAll();
 
-        foreach (self::get()->registeredPackages as $package) {
+        foreach (self::get()->config->registeredPackages() as $package) {
             $package->postInstall();
         }
     }
 
-    public static function get(
-        Cache|null        $cache = null,
-        ErrorHandler|null $errorHandler = null,
-    ): self
+    public static function get(): self
     {
-        if (!isset(self::$instance)) {
-            self::$instance = new self($cache, $errorHandler);
-        }
-
         return self::$instance;
     }
+
+    public static function destroy(): void
+    {
+        self::$instance = null;
+    }
+
+    private readonly ServiceConfig $config;
 
     /** @var object[] */
     private array $services = [];
 
-    private ServiceMapping $mapping;
-    private MappingCompiler $mappingCompiler;
-
-    private bool $mappingWasCached = true;
-
     private CacheManager $cacheManager;
     private ServiceInstantiator $instantiator;
 
-    /** @var Package[] */
-    private array $registeredPackages = [];
-
-    private function __construct(
-        Cache|null        $cache = null,
-        ErrorHandler|null $errorHandler = null,
+    public function __construct(
+        Cache    $cache = null,
+        \Closure $initializer = null,
     )
     {
-        $this->services[self::class] = $this;
+        $this->services[self::class]
+            = self::$instance
+            = $this;
 
         $this->initializeCacheManager($cache);
 
-        $this->mappingCompiler = new MappingCompiler($this->cacheManager);
-
-        $this->mapping = $this->cacheManager->get()->get(
-            self::SERVICE_MAPPING_CACHE_KEY,
-            fn() => $this->initializeMapping()
+        $this->config = $this->cacheManager->get()->get(
+            self::CONFIG_CACHE_KEY,
+            fn() => $this->initializeConfig($initializer)
         );
 
-        // This should be instantiated *after* fetching the mapping
-        $this->instantiator = new ServiceInstantiator($this);
+        // This should be instantiated *after* fetching the mapping through the config
+        $this->instantiator
+            = $this->services[ServiceInstantiator::class]
+            = new ServiceInstantiator();
 
-        $this->addPackage(ServiceManagerPackage::instance());
-
-        ($errorHandler ?? new BasicErrorHandler())->set();
+        $this->config->addPackage(ServiceManagerPackage::instance());
+        $this->config->errorHandler()->set();
     }
 
-    private function initializeCacheManager(?Cache $cache): void
+    private function initializeCacheManager(Cache|null $cache): void
     {
         $this->cacheManager
             = $this->services[CacheManager::class]
@@ -86,58 +76,37 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    private function initializeMapping(): ServiceMapping
+    private function initializeConfig(\Closure|null $initializer): ServiceConfig
     {
-        $this->mappingWasCached = false;
+        $config = $initializer ? $initializer() : new ServiceConfig();
 
-        return $this->mappingCompiler->get();
-    }
-
-    public function addPackage(Package $package): self
-    {
-        if (array_key_exists($package::class, $this->registeredPackages)) {
-            return $this;
+        if (!$config instanceof ServiceConfig) {
+            throw new InitializerDidNotReturnServiceConfig($config);
         }
 
-        $this->addPackages($package->dependencies());
-        $this->registeredPackages[$package::class] = $package;
+        $config->wasNotCached();
 
-        if (!$this->mappingWasCached) {
-            $this->mappingCompiler->addPackage($package);
-        }
-
-        $package->initialize();
-
-        return $this;
-    }
-
-    public function addPackages(array $packages): self
-    {
-        foreach ($packages as $package) {
-            $this->addPackage($package);
-        }
-
-        return $this;
+        return $config;
     }
 
     public function __destruct()
     {
-        if (!$this->mappingWasCached) {
+        if ($this->config->mustBeSavedToCache()) {
             // Delete any residual cached mapping, and store the current, complete mapping
             $cache = $this->cacheManager->get();
-            $cache->remove(self::SERVICE_MAPPING_CACHE_KEY);
-            $cache->get(self::SERVICE_MAPPING_CACHE_KEY, fn() => $this->mapping);
+            $cache->remove(self::CONFIG_CACHE_KEY);
+            $cache->get(self::CONFIG_CACHE_KEY, fn() => $this->config);
         }
     }
 
     public function getServiceClassNames(): array
     {
-        return $this->mapping->getAll();
+        return $this->config->mapping()->getAll();
     }
 
     public function primeCaches(): void
     {
-        foreach ($this->mapping->getAll() as $serviceName) {
+        foreach ($this->getServiceClassNames() as $serviceName) {
             if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
                 /** @var PrimesCache $service */
                 $service = $this->resolve($serviceName);
@@ -162,9 +131,11 @@ class ServiceManager implements PrimesCache
         return $this->services[$service];
     }
 
-    public function findService(string $type): ?string
+    public function findService(string $type): string|null
     {
-        return $this->mapping->has($type) ? $this->mapping->get($type) : null;
+        $mapping = $this->config->mapping();
+
+        return $mapping->has($type) ? $mapping->get($type) : null;
     }
 
     public function instantiate(string $className, array $arguments = []): object
@@ -178,49 +149,25 @@ class ServiceManager implements PrimesCache
         // TODO: Why does this not prime caches?
     }
 
-    public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
-    {
-        return $this->instantiator->resolveParameter($parameter);
-    }
-
-    public function resetInstantiatingLog(): void
-    {
-        $this->instantiator->resetInstantiatingLog();
-    }
-
     public function bindService(object $service, string ...$forTypes): self
     {
         $this->services[$service::class] = $service;
 
         $changedSomething = false;
         foreach ($forTypes as $forType) {
-            $changedSomething = $changedSomething || $this->mapping->set($forType, $service::class);
+            $changedSomething = $changedSomething || $this->config->mapping()->set($forType, $service::class);
         }
 
         if ($changedSomething) {
             // The mapping has changed and must be saved to cache
-            $this->mappingWasCached = false;
+            $this->config->doSaveToCache();
         }
 
         return $this;
     }
 
-    public function addParameterResolver(ParameterResolver $parameterResolver): self
+    public function config(): ServiceConfig
     {
-        $this->instantiator->addResolver($parameterResolver);
-
-        return $this;
-    }
-
-    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
-    {
-        $this->instantiator->addArgumentProcessor($argumentProcessor);
-
-        return $this;
-    }
-
-    public function findImplementors(string $interface): array
-    {
-        return $this->resolve(ImplementorFinder::class)->find($interface);
+        return $this->config;
     }
 }

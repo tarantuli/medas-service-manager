@@ -4,40 +4,23 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ParameterResolving;
 
-use Medas\ServiceManager\{Attributes\Service, Exceptions, ServiceManager};
+use Medas\ServiceManager\{Attributes\Service, Exceptions, ServiceConfig, ServiceManager};
 
 #[Service]
 class ParameterResolveManager
 {
-    /** @var ParameterResolver[] */
-    private array $resolvers = [];
+    private ServiceConfig $config;
 
-    /** @var ArgumentProcessor[] */
-    private array $processors = [];
-
-    public function __construct(
-        private readonly ServiceManager $serviceManager,
-    )
+    public function __construct()
     {
         // This service is *not* instantiated automatically,
         // so don't add more dependencies, expecting them to be injected.
-        $this->resolvers[] = new ServiceFinderByType($this->serviceManager);
 
-        $this->serviceManager->bindService($this, ParameterResolveManager::class);
-    }
+        $serviceManager = ServiceManager::get();
+        $serviceManager->bindService($this, ParameterResolveManager::class);
 
-    public function addResolver(ParameterResolver $resolver): void
-    {
-        $this->resolvers[] = $resolver;
-        usort($this->resolvers,
-            fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority()));
-    }
-
-    public function addProcessor(ArgumentProcessor $processor): void
-    {
-        $this->processors[] = $processor;
-        usort($this->processors,
-            fn(ArgumentProcessor $a, ArgumentProcessor $b) => -($a->priority() <=> $b->priority()));
+        $this->config = $serviceManager->config();
+        $this->config->addParameterResolver(new ServiceFinderByType());
     }
 
     public function resolveMethod(\ReflectionMethod|\ReflectionFunction $method, array $givenArguments): array
@@ -60,7 +43,7 @@ class ParameterResolveManager
 
     public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
     {
-        foreach ($this->resolvers as $resolver) {
+        foreach ($this->config->parameterResolvers() as $resolver) {
             if ($resolver->handle($parameter)) {
                 return $resolver->result();
             }
@@ -83,7 +66,7 @@ class ParameterResolveManager
 
     private function processArgument(\ReflectionParameter $parameter, mixed $argument): mixed
     {
-        foreach ($this->processors as $processor) {
+        foreach ($this->config->argumentProcessors() as $processor) {
             $argument = $processor->process($parameter, $argument);
         }
 

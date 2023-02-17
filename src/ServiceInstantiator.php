@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\ParameterResolving\ArgumentProcessor;
-
 #[Attributes\Service]
 class ServiceInstantiator
 {
@@ -14,9 +12,12 @@ class ServiceInstantiator
     /** @var string[] */
     private array $instantiating = [];
 
-    public function __construct(ServiceManager $serviceManager)
+    public function __construct()
     {
-        $this->parameterResolveManager = new ParameterResolving\ParameterResolveManager($serviceManager);
+        // This service is *not* instantiated automatically,
+        // so don't add more dependencies, expecting them to be injected.
+
+        $this->parameterResolveManager = new ParameterResolving\ParameterResolveManager();
     }
 
     public function instantiate(string $className, array $givenArguments = []): object
@@ -70,23 +71,12 @@ class ServiceInstantiator
         return $this->parameterResolveManager->resolveMethod($constructor, $givenArguments);
     }
 
-    public function addResolver(ParameterResolving\ParameterResolver $parameterResolver): void
-    {
-        $this->parameterResolveManager->addResolver($parameterResolver);
-    }
-
-    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): void
-    {
-        $this->parameterResolveManager->addProcessor($argumentProcessor);
-    }
-
     public function resolveParameter(\ReflectionParameter|\ReflectionProperty $parameter): mixed
     {
         return $this->parameterResolveManager->resolveParameter($parameter);
     }
 
-    public function resetInstantiatingLog(): void
-
+    public function resetInstantiatingStack(): void
     {
         $this->instantiating = [];
     }

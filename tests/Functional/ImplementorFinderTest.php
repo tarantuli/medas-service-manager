@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
+use Medas\ServiceManager\Mapping\ImplementorFinder;
 use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +14,7 @@ class ImplementorFinderTest extends TestCase
     {
         self::assertInstanceOf(
             ParameterResolver::class,
-            sm()->findImplementors(ParameterResolver::class)[0]
+            service(ImplementorFinder::class)->find(ParameterResolver::class)[0]
         );
     }
 }

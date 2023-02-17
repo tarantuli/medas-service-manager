@@ -41,8 +41,8 @@ class ServiceManager implements PrimesCache
     private ServiceInstantiator $instantiator;
 
     public function __construct(
-        Cache    $cache = null,
         \Closure $initializer = null,
+        Cache    $cache = null,
     )
     {
         $this->services[self::class]

@@ -8,11 +8,12 @@ chdir(__DIR__);
 
 require_once 'vendor/autoload.php';
 
-new ServiceManager(
-    function (): ServiceConfig {
-        $config = new ServiceConfig();
-        $config->addPackage(ServiceManagerPackage::instance());
+new ServiceManager(function (): ServiceConfig {
+    $config = new ServiceConfig();
 
-        return $config;
-    }
-);
+    $config->addPackages([
+        ServiceManagerPackage::instance(),
+    ]);
+
+    return $config;
+});

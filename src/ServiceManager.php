@@ -62,6 +62,7 @@ class ServiceManager implements PrimesCache
             = new ServiceInstantiator();
 
         $this->config->errorHandler()->set();
+        $this->config->initializePackages();
     }
 
     private function initializeCacheManager(Cache|null $cache): void

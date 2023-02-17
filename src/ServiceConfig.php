@@ -66,9 +66,14 @@ class ServiceConfig
 
         $this->mappingManager->addPackage($package);
 
-        $package->initialize($this);
-
         return $this;
+    }
+
+    public function initializePackages(): void
+    {
+        foreach ($this->registeredPackages as $package) {
+            $package->initialize($this);
+        }
     }
 
     public function addPackages(array $packages): self

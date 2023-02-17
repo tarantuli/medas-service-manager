@@ -36,6 +36,8 @@ class ServiceConfig
         $this->errorHandler = $errorHandler ?? new BasicErrorHandler();
         $this->mappingManager = new MappingManager();
         $this->mapping = $this->mappingManager->get();
+
+        $this->addPackage(ServiceManagerPackage::instance());
     }
 
     public function wasNotCached(): void

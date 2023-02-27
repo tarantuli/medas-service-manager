@@ -40,6 +40,9 @@ class ServiceManager implements PrimesCache
     private CacheManager $cacheManager;
     private ServiceInstantiator $instantiator;
 
+    /** @var bool[] */
+    private array $initializedPackages = [];
+
     public function __construct(
         \Closure $initializer = null,
         Cache    $cache = null,
@@ -59,7 +62,7 @@ class ServiceManager implements PrimesCache
             = new ServiceInstantiator();
 
         $this->config->errorHandler()->set();
-        $this->config->initializePackages();
+        $this->initializePackages();
     }
 
     private function registerThisInstance(): void
@@ -173,5 +176,17 @@ class ServiceManager implements PrimesCache
         }
 
         return $this;
+    }
+
+    public function initializePackages(): void
+    {
+        foreach ($this->config->registeredPackages() as $package) {
+            if (array_key_exists($package::class, $this->initializedPackages)) {
+                continue;
+            }
+
+            $package->initialize($this->config);
+            $this->initializedPackages[$package::class] = true;
+        }
     }
 }

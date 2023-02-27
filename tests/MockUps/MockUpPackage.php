@@ -6,6 +6,7 @@ namespace Medas\ServiceManagerTest\MockUps;
 
 use Medas\ServiceManager\AsSingleton;
 use Medas\ServiceManager\BasePackage;
+use Medas\ServiceManager\ServiceConfig;
 
 class MockUpPackage extends BasePackage
 {
@@ -19,5 +20,12 @@ class MockUpPackage extends BasePackage
     public function sourceDirectory(): string
     {
         return __DIR__;
+    }
+
+    public function initialize(ServiceConfig $config): void
+    {
+        sm()->bindService(service(DefaultLogger::class), Logger::class);
+
+        parent::initialize($config);
     }
 }

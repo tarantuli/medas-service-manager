@@ -60,7 +60,7 @@ class ServiceFinder
         $forTypes = $this->getSelfParentsAndInterfaces($class);
 
         foreach ($forTypes as $forType) {
-            $services[$forType] = $class->name;
+            $services[] = [$forType, $class->name];
         }
     }
 

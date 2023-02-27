@@ -6,6 +6,7 @@ namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Cache\{CacheManager, Interfaces\Cache, Interfaces\PrimesCache};
 use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
+use Medas\ServiceManager\Exceptions\NoServiceManagerInstanceFound;
 
 class ServiceManager implements PrimesCache
 {
@@ -15,9 +16,13 @@ class ServiceManager implements PrimesCache
 
     public static function postInstall(): void
     {
+        if (!self::$instance) {
+            throw new NoServiceManagerInstanceFound();
+        }
+
         service(CacheManager::class)->clearAll();
 
-        foreach (self::get()->config->registeredPackages() as $package) {
+        foreach (self::$instance->config->registeredPackages() as $package) {
             $package->postInstall();
         }
     }
@@ -25,11 +30,6 @@ class ServiceManager implements PrimesCache
     public static function get(): self
     {
         return self::$instance;
-    }
-
-    public static function destroy(): void
-    {
-        self::$instance = null;
     }
 
     private readonly ServiceConfig $config;
@@ -45,10 +45,7 @@ class ServiceManager implements PrimesCache
         Cache    $cache = null,
     )
     {
-        $this->services[self::class]
-            = self::$instance
-            = $this;
-
+        $this->registerThisInstance();
         $this->initializeCacheManager($cache);
 
         $this->config = $this->cacheManager->get()->get(
@@ -63,6 +60,13 @@ class ServiceManager implements PrimesCache
 
         $this->config->errorHandler()->set();
         $this->config->initializePackages();
+    }
+
+    private function registerThisInstance(): void
+    {
+        $this->services[self::class]
+            = self::$instance
+            = $this;
     }
 
     private function initializeCacheManager(Cache|null $cache): void
@@ -99,9 +103,14 @@ class ServiceManager implements PrimesCache
         }
     }
 
+    public function config(): ServiceConfig
+    {
+        return $this->config;
+    }
+
     public function getServiceClassNames(): array
     {
-        return $this->config->mapping()->getAll();
+        return array_unique($this->config->mapping()->getAll());
     }
 
     public function primeCaches(): void
@@ -164,10 +173,5 @@ class ServiceManager implements PrimesCache
         }
 
         return $this;
-    }
-
-    public function config(): ServiceConfig
-    {
-        return $this->config;
     }
 }

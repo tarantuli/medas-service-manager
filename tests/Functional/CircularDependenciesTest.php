@@ -9,7 +9,7 @@ use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\DirectDependency1;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\IndirectDependency1;
 
-class CircularDependenciesTestClass extends BaseTestClass
+class CircularDependenciesTest extends BaseTestClass
 {
     public function testDirectDependency(): void
     {

@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-console.git",
-                "reference": "b5f417bafc06a6a62b49d7de40ce93cf5be9ea06"
+                "reference": "e25c46655575c7e4494589c9f6e9fc2a99cb2051"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/b5f417bafc06a6a62b49d7de40ce93cf5be9ea06",
-                "reference": "b5f417bafc06a6a62b49d7de40ce93cf5be9ea06",
+                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/e25c46655575c7e4494589c9f6e9fc2a99cb2051",
+                "reference": "e25c46655575c7e4494589c9f6e9fc2a99cb2051",
                 "shasum": ""
             },
             "require": {
@@ -50,7 +50,7 @@
                 "source": "https://github.com/tarantuli/medas-console/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-console/issues"
             },
-            "time": "2023-01-20T10:07:16+00:00"
+            "time": "2023-02-17T13:39:45+00:00"
         },
         {
             "name": "morphp/medas-core",
@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "5a46e2dcacef42c6e228161a9dda15d9b3f0666a"
+                "reference": "eea50a2e1a60be50fc89042ac8a3c83e3cd8d47d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/5a46e2dcacef42c6e228161a9dda15d9b3f0666a",
-                "reference": "5a46e2dcacef42c6e228161a9dda15d9b3f0666a",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/eea50a2e1a60be50fc89042ac8a3c83e3cd8d47d",
+                "reference": "eea50a2e1a60be50fc89042ac8a3c83e3cd8d47d",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-02-15T09:48:20+00:00"
+            "time": "2023-02-22T20:08:23+00:00"
         }
     ],
     "packages-dev": [
@@ -399,23 +399,23 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "9.2.24",
+            "version": "9.2.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "2cf940ebc6355a9d430462811b5aaa308b174bed"
+                "reference": "0e2b40518197a8c0d4b08bc34dfff1c99c508954"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/2cf940ebc6355a9d430462811b5aaa308b174bed",
-                "reference": "2cf940ebc6355a9d430462811b5aaa308b174bed",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/0e2b40518197a8c0d4b08bc34dfff1c99c508954",
+                "reference": "0e2b40518197a8c0d4b08bc34dfff1c99c508954",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
                 "ext-libxml": "*",
                 "ext-xmlwriter": "*",
-                "nikic/php-parser": "^4.14",
+                "nikic/php-parser": "^4.15",
                 "php": ">=7.3",
                 "phpunit/php-file-iterator": "^3.0.3",
                 "phpunit/php-text-template": "^2.0.2",
@@ -464,7 +464,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.24"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.25"
             },
             "funding": [
                 {
@@ -472,7 +472,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-01-26T08:26:55+00:00"
+            "time": "2023-02-25T05:32:00+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",

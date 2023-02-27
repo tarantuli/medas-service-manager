@@ -20,6 +20,9 @@ class ServiceConfig
     /** @var Package[] */
     private array $registeredPackages = [];
 
+    /** @var bool[] */
+    private array $initializedPackages = [];
+
     /** @var ParameterResolver[] */
     private array $parameterResolvers = [];
 
@@ -55,7 +58,7 @@ class ServiceConfig
         return $this->errorHandler;
     }
 
-    public function addPackage(Package $package): self
+    public function addPackage(Package $package, bool $doInitialize = false): self
     {
         if (array_key_exists($package::class, $this->registeredPackages)) {
             return $this;
@@ -66,13 +69,22 @@ class ServiceConfig
 
         $this->mappingManager->addPackage($package);
 
+        if ($doInitialize) {
+            $package->initialize($this);
+        }
+
         return $this;
     }
 
     public function initializePackages(): void
     {
         foreach ($this->registeredPackages as $package) {
+            if (array_key_exists($package::class, $this->initializedPackages)) {
+                continue;
+            }
+
             $package->initialize($this);
+            $this->initializedPackages[$package::class] = true;
         }
     }
 

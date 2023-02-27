@@ -15,7 +15,7 @@ use Medas\ServiceManagerTest\MockUps\{AnotherLogger,
     MockServiceWithPreferredLogger
 };
 
-final class ServiceManagerTestClass extends BaseTestClass
+final class ServiceManagerTest extends BaseTestClass
 {
     public function testCreateManager(): void
     {

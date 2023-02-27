@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\CouldNotResolveParameter;
+use Medas\ServiceManager\ServiceInstantiator;
 use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\DefaultLogger;
 use Medas\ServiceManagerTest\MockUps\Instantiation\ClassWithArgument;
 
-class InstantiationTestClass extends BaseTestClass
+class InstantiationTest extends BaseTestClass
 {
     public function testBasicInstantiation(): void
     {
@@ -28,7 +29,8 @@ class InstantiationTestClass extends BaseTestClass
     public function testPassArgumentSuccess(): void
     {
         $this->loadMockUps();
-        sm()->resetInstantiatingLog();
+        service(ServiceInstantiator::class)->resetInstantiatingStack();
+
         $object = sm()->instantiate(ClassWithArgument::class, ['number' => 10]);
         self::assertInstanceOf(ClassWithArgument::class, $object);
     }

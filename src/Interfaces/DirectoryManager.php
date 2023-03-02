@@ -8,9 +8,9 @@ interface DirectoryManager
 {
     public function loadPhpFiles(string $directory): void;
 
-    public function recursiveFindByExtension(string $directory, string $extension): iterable;
+    public function recursiveFindByExtension(string $directory, string $extension, string $ignorePattern = null): iterable;
 
-    public function recursiveFind(string $directory, string $pattern): iterable;
+    public function recursiveFind(string $directory, string $matchPattern, string $ignorePattern = null): iterable;
 
     public function create(string $path): void;
 }

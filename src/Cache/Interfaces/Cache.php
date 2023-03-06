@@ -8,5 +8,7 @@ interface Cache
 {
     public function get(string|array $key, callable $getter): mixed;
 
+    public function set(string|array $key, mixed $value): void;
+
     public function remove(string|array $key): void;
 }

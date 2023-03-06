@@ -13,6 +13,11 @@ class NoopCache implements Cache
         return $getter();
     }
 
+    public function set(array|string $key, mixed $value): void
+    {
+        // Do nothing
+    }
+
     public function remove(array|string $key): void
     {
         // Do nothing

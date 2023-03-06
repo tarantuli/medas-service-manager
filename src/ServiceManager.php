@@ -99,10 +99,8 @@ class ServiceManager implements PrimesCache
     public function __destruct()
     {
         if ($this->config->mustBeSavedToCache()) {
-            // Delete any residual cached mapping, and store the current, complete mapping
-            $cache = $this->cacheManager->get();
-            $cache->remove(self::CONFIG_CACHE_KEY);
-            $cache->get(self::CONFIG_CACHE_KEY, fn() => $this->config);
+            // Explicitly set the current configuration
+            $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
         }
     }
 

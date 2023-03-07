@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManager\Values\Interfaces;
+namespace Medas\ServiceManager\Interfaces;
 
 interface Guid extends \Stringable
 {

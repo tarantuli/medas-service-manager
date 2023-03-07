@@ -7,7 +7,10 @@ namespace Medas\ServiceManager\Attributes;
 #[\Attribute(\Attribute::TARGET_METHOD)]
 class PreferredClass
 {
-    public function __construct(public string $type, public string $className)
+    public function __construct(
+        public readonly string $type,
+        public readonly string $className,
+    )
     {
     }
 }

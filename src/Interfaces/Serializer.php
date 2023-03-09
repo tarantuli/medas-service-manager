@@ -8,5 +8,5 @@ interface Serializer
 {
     public function serialize(mixed $value): mixed;
 
-    public function unserialize(Type $type, mixed $value): mixed;
+    public function unserialize(mixed $value, Type|null $type): mixed;
 }

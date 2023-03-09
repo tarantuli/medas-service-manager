@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\MockUps;
 
-use Medas\ServiceManager\Attributes\PreferredClass;
-use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\Attributes\{PreferredDefault, Service};
 
 #[Service]
 class MockServiceWithPreferredLogger
 {
-    #[PreferredClass(Logger::class, AnotherLogger::class)]
-    public function __construct(private Logger $logger)
+    public function __construct(
+        #[PreferredDefault(AnotherLogger::class)]
+        private readonly Logger $logger,
+    )
     {
     }
 

@@ -8,9 +8,17 @@ use Medas\ServiceManager\Exceptions\CircularDependencyFound;
 use Medas\ServiceManagerTest\BaseTestClass;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\DirectDependency1;
 use Medas\ServiceManagerTest\MockUps\CircularDependencies\IndirectDependency1;
+use Medas\ServiceManagerTest\MockUps\CircularDependencies\SelfDependency;
 
 class CircularDependenciesTest extends BaseTestClass
 {
+    public function testSelfDependency(): void
+    {
+        $manager = $this->loadMockUps();
+        self::expectException(CircularDependencyFound::class);
+        $manager->resolve(SelfDependency::class);
+    }
+
     public function testDirectDependency(): void
     {
         $manager = $this->loadMockUps();

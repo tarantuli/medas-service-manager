@@ -10,7 +10,7 @@ use Medas\ServiceManager\Attributes\Service;
 class MockServiceWithNullOption
 {
     public function __construct(
-        private NonExistingClass|null $nonExistingClass
+        private readonly NonExistingClass|null $nonExistingClass
     )
     {
     }

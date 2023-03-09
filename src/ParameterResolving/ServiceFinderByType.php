@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\ParameterResolving;
 
 use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Mapping\PreferredClassMap;
 use Medas\ServiceManager\ServiceManager;
 
 #[Service]
@@ -21,7 +20,7 @@ class ServiceFinderByType implements ParameterResolver
 
     public function __serialize(): array
     {
-        // This is needed, so $result isn't serialized
+        // This is needed to make sure $result isn't serialized
         return [];
     }
 
@@ -38,22 +37,12 @@ class ServiceFinderByType implements ParameterResolver
     public function handle(\ReflectionParameter|\ReflectionProperty $parameter): bool
     {
         $serviceManager = ServiceManager::get();
-        $preferredClassMap = $parameter instanceof \ReflectionParameter
-            ? new PreferredClassMap($parameter->getDeclaringFunction())
-            : [];
 
         $service = null;
         $types = parameterTypes($parameter);
 
         foreach ($types as $type) {
             $typeName = $type->getName();
-
-            if ($preferredClass = $preferredClassMap->forType($typeName)) {
-                if (null !== $serviceManager->findService($preferredClass)) {
-                    $service = $preferredClass;
-                    break;
-                }
-            }
 
             if (null !== $serviceManager->findService($typeName)) {
                 $service = $typeName;
@@ -72,6 +61,10 @@ class ServiceFinderByType implements ParameterResolver
 
     public function result(): object
     {
-        return $this->result;
+        $result = $this->result;
+
+        unset($this->result);
+
+        return $result;
     }
 }

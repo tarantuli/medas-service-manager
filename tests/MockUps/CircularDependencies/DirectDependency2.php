@@ -9,7 +9,9 @@ use Medas\ServiceManager\Attributes\Service;
 #[Service]
 class DirectDependency2
 {
-    public function __construct(private DirectDependency1 $directDependency1)
+    public function __construct(
+        private DirectDependency1 $directDependency1,
+    )
     {
     }
 }

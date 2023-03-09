@@ -7,10 +7,10 @@ namespace Medas\ServiceManagerTest\MockUps\CircularDependencies;
 use Medas\ServiceManager\Attributes\Service;
 
 #[Service]
-class IndirectDependency2
+class SelfDependency
 {
     public function __construct(
-        private IndirectDependency3 $indirectDependency3,
+        private readonly SelfDependency $selfDependency,
     )
     {
     }

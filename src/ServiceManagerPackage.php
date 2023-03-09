@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\ServiceManager\ParameterResolving\PreferredDefaultFinder;
+
 class ServiceManagerPackage extends BasePackage
 {
     use AsSingleton;
@@ -27,6 +29,8 @@ class ServiceManagerPackage extends BasePackage
     public function initialize(ServiceConfig $config): void
     {
         require_once __DIR__ . '/GlobalFunctions.php';
+
         parent::initialize($config);
+        $config->addParameterResolver(service(PreferredDefaultFinder::class));
     }
 }

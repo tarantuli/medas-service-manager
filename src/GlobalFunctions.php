@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 // This file should be in the global namespace
 
-use Medas\ServiceManager\Interfaces\ConfigManager;
+use Medas\Core\Interfaces\ConfigManager;
 use Medas\ServiceManager\ServiceManager;
 
 function config(string $path): mixed

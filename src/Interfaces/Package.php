@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Interfaces;
 
+use Medas\Core\Interfaces\IsSingleton;
 use Medas\ServiceManager\ServiceConfig;
 
 interface Package extends IsSingleton

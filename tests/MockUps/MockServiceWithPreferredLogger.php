@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\MockUps;
 
-use Medas\ServiceManager\Attributes\{PreferredDefault, Service};
+use Medas\ServiceManager\Attributes\{PreferredDefault};
+use Medas\ServiceManager\Service;
 
 #[Service]
 class MockServiceWithPreferredLogger

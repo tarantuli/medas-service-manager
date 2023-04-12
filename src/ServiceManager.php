@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Cache\{CacheManager, Interfaces\Cache, Interfaces\PrimesCache};
+use Medas\Core\Interfaces\{Cache, PrimesCache};
+use Medas\ServiceManager\Cache\{CacheManager};
 use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
 use Medas\ServiceManager\Exceptions\NoServiceManagerInstanceFound;
 
@@ -27,19 +28,11 @@ class ServiceManager implements PrimesCache
         }
     }
 
-    public static function get(): self
-    {
-        return self::$instance;
-    }
-
     private readonly ServiceConfig $config;
-
     /** @var object[] */
     private array $services = [];
-
     private CacheManager $cacheManager;
     private ServiceInstantiator $instantiator;
-
     /** @var bool[] */
     private array $initializedPackages = [];
 
@@ -83,6 +76,11 @@ class ServiceManager implements PrimesCache
         }
     }
 
+    public static function get(): self
+    {
+        return self::$instance;
+    }
+
     private function initializeConfig(\Closure|null $initializer): ServiceConfig
     {
         $config = $initializer ? $initializer() : new ServiceConfig();
@@ -94,6 +92,18 @@ class ServiceManager implements PrimesCache
         $config->wasNotCached();
 
         return $config;
+    }
+
+    public function initializePackages(): void
+    {
+        foreach ($this->config->registeredPackages() as $package) {
+            if (array_key_exists($package::class, $this->initializedPackages)) {
+                continue;
+            }
+
+            $package->initialize($this->config);
+            $this->initializedPackages[$package::class] = true;
+        }
     }
 
     public function __destruct()
@@ -109,11 +119,6 @@ class ServiceManager implements PrimesCache
         return $this->config;
     }
 
-    public function getServiceClassNames(): array
-    {
-        return array_unique($this->config->mapping()->getAll());
-    }
-
     public function primeCaches(): void
     {
         foreach ($this->getServiceClassNames() as $serviceName) {
@@ -123,6 +128,11 @@ class ServiceManager implements PrimesCache
                 $service->primeCache();
             }
         }
+    }
+
+    public function getServiceClassNames(): array
+    {
+        return array_unique($this->config->mapping()->getAll());
     }
 
     /**
@@ -174,17 +184,5 @@ class ServiceManager implements PrimesCache
         }
 
         return $this;
-    }
-
-    public function initializePackages(): void
-    {
-        foreach ($this->config->registeredPackages() as $package) {
-            if (array_key_exists($package::class, $this->initializedPackages)) {
-                continue;
-            }
-
-            $package->initialize($this->config);
-            $this->initializedPackages[$package::class] = true;
-        }
     }
 }

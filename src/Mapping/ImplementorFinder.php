@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\ServiceManager;
+use Medas\ServiceManager\{Service, ServiceManager};
 
 #[Service]
 class ImplementorFinder

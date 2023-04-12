@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ParameterResolving;
 
-use Medas\ServiceManager\{Attributes\Service, Exceptions, ServiceConfig, ServiceManager};
+use Medas\ServiceManager\{Exceptions, Service, ServiceConfig, ServiceManager};
 
 #[Service]
 class ParameterResolveManager

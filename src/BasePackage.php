@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\ServiceManager\Exceptions\ClassDependsOnUnknownClass;
-use Medas\ServiceManager\Interfaces\Package;
 
 abstract class BasePackage implements Package
 {

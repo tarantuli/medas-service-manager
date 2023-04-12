@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Interfaces\Package;
+use Medas\ServiceManager\Package;
 use Medas\ServiceManager\ParameterResolving\ParameterResolveManager;
 use Medas\ServiceManager\ServiceInstantiator;
 use Medas\ServiceManager\ServiceManager;

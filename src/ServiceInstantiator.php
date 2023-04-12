@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-#[Attributes\Service]
+#[Service]
 class ServiceInstantiator
 {
     private ParameterResolving\ParameterResolveManager $parameterResolveManager;

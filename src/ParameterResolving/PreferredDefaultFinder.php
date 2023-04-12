@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\ParameterResolving;
 
 use Medas\ServiceManager\Attributes\PreferredDefault;
-use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\Service;
 
 #[Service]
 class PreferredDefaultFinder implements ParameterResolver

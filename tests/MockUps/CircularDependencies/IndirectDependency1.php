@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\MockUps\CircularDependencies;
 
-use Medas\ServiceManager\Attributes\Service;
+use Medas\ServiceManager\Service;
 
 #[Service]
 class IndirectDependency1

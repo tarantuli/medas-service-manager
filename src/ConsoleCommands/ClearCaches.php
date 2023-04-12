@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
-use Medas\ServiceManager\Attributes\Service;
-use Medas\ServiceManager\Cache\CacheManager;
 use Medas\Console\Commands\{BaseConsoleCommand, ConsoleCommandGroup};
+use Medas\ServiceManager\Cache\CacheManager;
+use Medas\ServiceManager\Service;
 
 #[Service]
 class ClearCaches extends BaseConsoleCommand

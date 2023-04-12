@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\ServiceManager\Attributes\Service;
 use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
-use Medas\ServiceManager\Interfaces\Package;
 use Medas\ServiceManager\Mapping\{MappingManager, ServiceMapping};
 use Medas\ServiceManager\ParameterResolving\{ArgumentProcessor, ParameterResolver};
 
@@ -40,21 +38,6 @@ class ServiceConfig
         $this->addPackage(ServiceManagerPackage::instance());
     }
 
-    public function wasNotCached(): void
-    {
-        $this->wasCached = false;
-    }
-
-    public function mapping(): ServiceMapping
-    {
-        return $this->mapping;
-    }
-
-    public function errorHandler(): ErrorHandler
-    {
-        return $this->errorHandler;
-    }
-
     public function addPackage(Package $package, bool $doInitialize = false): self
     {
         if (array_key_exists($package::class, $this->registeredPackages)) {
@@ -80,6 +63,21 @@ class ServiceConfig
         }
 
         return $this;
+    }
+
+    public function wasNotCached(): void
+    {
+        $this->wasCached = false;
+    }
+
+    public function mapping(): ServiceMapping
+    {
+        return $this->mapping;
+    }
+
+    public function errorHandler(): ErrorHandler
+    {
+        return $this->errorHandler;
     }
 
     public function wasCached(): bool

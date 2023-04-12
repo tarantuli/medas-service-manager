@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Cache;
 
-use Medas\ServiceManager\Cache\Interfaces\Cache;
+use Medas\Core\Interfaces\Cache;
 
 class NoopCache implements Cache
 {

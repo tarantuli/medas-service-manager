@@ -24,7 +24,7 @@ class MockUpPackage extends BasePackage
 
     public function initialize(ServiceConfig $config): void
     {
-        sm()->bindService(service(DefaultLogger::class), Logger::class);
+        sm()->bindImplementation(service(DefaultLogger::class), Logger::class);
 
         parent::initialize($config);
     }

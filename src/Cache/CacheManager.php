@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Cache;
 
+use Medas\Core\Attributes\Service;
 use Medas\Core\Interfaces\{Cache, Clearable};
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
-use Medas\ServiceManager\Service;
 
 #[Service]
 class CacheManager

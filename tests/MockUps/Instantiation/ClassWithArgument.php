@@ -10,7 +10,7 @@ class ClassWithArgument
 {
     public function __construct(
         private readonly Logger $logger,
-        private readonly int $number,
+        private readonly int    $number,
     )
     {
     }

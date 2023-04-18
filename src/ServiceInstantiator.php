@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\Core\Attributes\Service;
+use Medas\Core\Interfaces\ObjectInstantiator;
+
 #[Service]
-class ServiceInstantiator
+class ServiceInstantiator implements ObjectInstantiator
 {
     private ParameterResolving\ParameterResolveManager $parameterResolveManager;
 
@@ -20,13 +23,13 @@ class ServiceInstantiator
         $this->parameterResolveManager = new ParameterResolving\ParameterResolveManager();
     }
 
-    public function instantiate(string $className, array $givenArguments = []): object
+    public function instantiate(string $type, array $givenArguments = []): object
     {
-        $this->checkCircularDependencies($className);
-        $arguments = $this->getConstructorArgumentValues($className, $givenArguments);
-        unset($this->instantiating[$className]);
+        $this->checkCircularDependencies($type);
+        $arguments = $this->getConstructorArgumentValues($type, $givenArguments);
+        unset($this->instantiating[$type]);
 
-        return new $className(...$arguments);
+        return new $type(...$arguments);
     }
 
     private function checkCircularDependencies(string $className): void

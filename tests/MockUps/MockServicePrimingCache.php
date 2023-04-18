@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\MockUps;
 
+use Medas\Core\Attributes\Service;
 use Medas\Core\Interfaces\PrimesCache;
-use Medas\ServiceManager\Service;
 
 #[Service]
 class MockServicePrimingCache implements PrimesCache

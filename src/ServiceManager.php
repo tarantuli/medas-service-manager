@@ -4,35 +4,37 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\Core\GlobalRepository;
 use Medas\Core\Interfaces\{Cache, PrimesCache};
 use Medas\ServiceManager\Cache\{CacheManager};
-use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
-use Medas\ServiceManager\Exceptions\NoServiceManagerInstanceFound;
+use Medas\ServiceManager\Exceptions\{InitializerDidNotReturnServiceConfig, NoServiceManagerInstanceFound};
 
-class ServiceManager implements PrimesCache
+class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCache
 {
     private const CONFIG_CACHE_KEY = ServiceConfig::class;
 
-    private static self|null $instance;
-
     public static function postInstall(): void
     {
-        if (!self::$instance) {
+        $instance = GlobalRepository::serviceManager();
+
+        if (!$instance) {
             throw new NoServiceManagerInstanceFound();
         }
 
         service(CacheManager::class)->clearAll();
 
-        foreach (self::$instance->config->registeredPackages() as $package) {
+        foreach ($instance->config->registeredPackages() as $package) {
             $package->postInstall();
         }
     }
 
     private readonly ServiceConfig $config;
+
     /** @var object[] */
     private array $services = [];
+
     private CacheManager $cacheManager;
-    private ServiceInstantiator $instantiator;
+
     /** @var bool[] */
     private array $initializedPackages = [];
 
@@ -50,9 +52,10 @@ class ServiceManager implements PrimesCache
         );
 
         // This should be instantiated *after* fetching the mapping through the config
-        $this->instantiator
-            = $this->services[ServiceInstantiator::class]
-            = new ServiceInstantiator();
+        GlobalRepository::setObjectInstantiator(
+            $this->services[ServiceInstantiator::class]
+                = new ServiceInstantiator()
+        );
 
         $this->config->errorHandler()->set();
         $this->initializePackages();
@@ -61,8 +64,9 @@ class ServiceManager implements PrimesCache
     private function registerThisInstance(): void
     {
         $this->services[self::class]
-            = self::$instance
             = $this;
+
+        GlobalRepository::setServiceManager($this);
     }
 
     private function initializeCacheManager(Cache|null $cache): void
@@ -74,11 +78,6 @@ class ServiceManager implements PrimesCache
         if ($cache) {
             $this->cacheManager->register($cache);
         }
-    }
-
-    public static function get(): self
-    {
-        return self::$instance;
     }
 
     private function initializeConfig(\Closure|null $initializer): ServiceConfig
@@ -140,27 +139,22 @@ class ServiceManager implements PrimesCache
      */
     public function resolve(string $type): object
     {
-        if (null === $service = $this->findService($type)) {
+        if (null === $service = $this->findImplementingClass($type)) {
             throw new Exceptions\ServiceNotFoundByType($type);
         }
 
         if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = $this->instantiate($service);
+            $this->services[$service] = GlobalRepository::objectInstantiator()->instantiate($service);
         }
 
         return $this->services[$service];
     }
 
-    public function findService(string $type): string|null
+    public function findImplementingClass(string $type): string|null
     {
         $mapping = $this->config->mapping();
 
         return $mapping->has($type) ? $mapping->get($type) : null;
-    }
-
-    public function instantiate(string $className, array $arguments = []): object
-    {
-        return $this->instantiator->instantiate($className, $arguments);
     }
 
     public function primeCache(): void
@@ -169,13 +163,13 @@ class ServiceManager implements PrimesCache
         // TODO: Why does this not prime caches?
     }
 
-    public function bindService(object $service, string ...$forTypes): self
+    public function bindImplementation(object $implementation, string ...$forTypes): self
     {
-        $this->services[$service::class] = $service;
+        $this->services[$implementation::class] = $implementation;
 
         $changedSomething = false;
         foreach ($forTypes as $forType) {
-            $changedSomething = $changedSomething || $this->config->mapping()->set($forType, $service::class);
+            $changedSomething = $changedSomething || $this->config->mapping()->set($forType, $implementation::class);
         }
 
         if ($changedSomething) {

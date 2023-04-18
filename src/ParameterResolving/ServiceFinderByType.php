@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ParameterResolving;
 
-use Medas\ServiceManager\{Service, ServiceManager};
+use Medas\Core\Attributes\Service;
+use Medas\Core\GlobalRepository;
 
 #[Service]
 class ServiceFinderByType implements ParameterResolver
@@ -35,7 +36,7 @@ class ServiceFinderByType implements ParameterResolver
 
     public function handle(\ReflectionParameter|\ReflectionProperty $parameter): bool
     {
-        $serviceManager = ServiceManager::get();
+        $serviceManager = GlobalRepository::serviceManager();
 
         $service = null;
         $types = parameterTypes($parameter);
@@ -43,7 +44,7 @@ class ServiceFinderByType implements ParameterResolver
         foreach ($types as $type) {
             $typeName = $type->getName();
 
-            if (null !== $serviceManager->findService($typeName)) {
+            if (null !== $serviceManager->findImplementingClass($typeName)) {
                 $service = $typeName;
                 break;
             }

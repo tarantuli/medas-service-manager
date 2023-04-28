@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-console.git",
-                "reference": "6d36a5efd48b15fa9f342f376c68ccd8404a1c4e"
+                "reference": "f4e51cd5fb0606250b3d8aef0b40915b45031f50"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/6d36a5efd48b15fa9f342f376c68ccd8404a1c4e",
-                "reference": "6d36a5efd48b15fa9f342f376c68ccd8404a1c4e",
+                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/f4e51cd5fb0606250b3d8aef0b40915b45031f50",
+                "reference": "f4e51cd5fb0606250b3d8aef0b40915b45031f50",
                 "shasum": ""
             },
             "require": {
@@ -50,7 +50,7 @@
                 "source": "https://github.com/tarantuli/medas-console/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-console/issues"
             },
-            "time": "2023-04-12T11:18:23+00:00"
+            "time": "2023-04-18T13:13:29+00:00"
         },
         {
             "name": "morphp/medas-core",
@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "86be5a92a920e863b10504f6ab3bc835271bf66b"
+                "reference": "f075fdfd640e2c35d7ac8f7a3a6b400f187cfe2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/86be5a92a920e863b10504f6ab3bc835271bf66b",
-                "reference": "86be5a92a920e863b10504f6ab3bc835271bf66b",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/f075fdfd640e2c35d7ac8f7a3a6b400f187cfe2a",
+                "reference": "f075fdfd640e2c35d7ac8f7a3a6b400f187cfe2a",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-04-18T10:45:49+00:00"
+            "time": "2023-04-28T08:21:23+00:00"
         }
     ],
     "packages-dev": [

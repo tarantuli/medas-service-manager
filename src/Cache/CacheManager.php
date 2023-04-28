@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Cache;
 
 use Medas\Core\Attributes\Service;
-use Medas\Core\Interfaces\{Cache, Clearable};
+use Medas\Core\Interfaces\{Cache, CacheManager as CacheManagerInterface, Clearable};
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
 #[Service]
-class CacheManager
+class CacheManager implements CacheManagerInterface
 {
     /** @var Cache[] */
     private array $caches = [];

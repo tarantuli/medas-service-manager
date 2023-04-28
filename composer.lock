@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "a75ed3c6d2b080a4238f083dfa8d7cb546246898"
+                "reference": "683b78a09b25a7bdcfeef2cd3daccea43be77bfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/a75ed3c6d2b080a4238f083dfa8d7cb546246898",
-                "reference": "a75ed3c6d2b080a4238f083dfa8d7cb546246898",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/683b78a09b25a7bdcfeef2cd3daccea43be77bfe",
+                "reference": "683b78a09b25a7bdcfeef2cd3daccea43be77bfe",
                 "shasum": ""
             },
             "require": {
@@ -97,7 +97,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2023-04-28T14:31:40+00:00"
+            "time": "2023-04-28T14:37:55+00:00"
         }
     ],
     "packages-dev": [

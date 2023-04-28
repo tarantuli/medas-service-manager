@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\MockUps;
 
-use Medas\ServiceManager\AsSingleton;
-use Medas\ServiceManager\BasePackage;
-use Medas\ServiceManager\ServiceConfig;
+use Medas\Core\AsSingleton;
+use Medas\ServiceManager\{BasePackage, ServiceConfig};
 
 class MockUpPackage extends BasePackage
 {

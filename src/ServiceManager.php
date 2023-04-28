@@ -6,8 +6,8 @@ namespace Medas\ServiceManager;
 
 use Medas\Core\GlobalRepository;
 use Medas\Core\Interfaces\{Cache, PrimesCache};
-use Medas\ServiceManager\Cache\{CacheManager};
-use Medas\ServiceManager\Exceptions\{InitializerDidNotReturnServiceConfig, NoServiceManagerInstanceFound};
+use Medas\ServiceManager\Cache\CacheManager;
+use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
 
 class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCache
 {
@@ -15,15 +15,11 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
 
     public static function postInstall(): void
     {
-        $instance = GlobalRepository::serviceManager();
-
-        if (!$instance) {
-            throw new NoServiceManagerInstanceFound();
-        }
-
         service(CacheManager::class)->clearAll();
 
-        foreach ($instance->config->registeredPackages() as $package) {
+        $registeredPackages = GlobalRepository::serviceManager()->config->registeredPackages();
+
+        foreach ($registeredPackages as $package) {
             $package->postInstall();
         }
     }

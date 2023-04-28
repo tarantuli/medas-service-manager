@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\CorePackage;
-use Medas\Core\GlobalRepository;
+use Medas\Core\{AsSingleton, CorePackage, GlobalRepository};
 use Medas\ServiceManager\ParameterResolving\PreferredDefaultFinder;
 
 class ServiceManagerPackage extends BasePackage

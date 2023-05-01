@@ -11,10 +11,10 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "morphp/medas-core": "dev-dev"
+        "morphp/medas-core": "dev-dev",
+        "morphp/medas-console": "dev-dev"
     },
     "require-dev": {
-        "morphp/medas-console": "dev-dev",
         "phpunit/phpunit": "^9"
     },
     "extra": {

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\Attributes\Service;
-use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
-use Medas\ServiceManager\Mapping\{MappingManager, ServiceMapping};
-use Medas\ServiceManager\ParameterResolving\{ArgumentProcessor, ParameterResolver};
+use Medas\ObjectInstantiator\ParameterResolving\{ParameterResolver, ArgumentProcessor};
+use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler,ErrorHandler};
+use Medas\ServiceManager\Mapping\{MappingManager,ServiceMapping};
 
 #[Service]
 class ServiceConfig

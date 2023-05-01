@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
+use Medas\Core\Interfaces\CacheManager;
 use Medas\ServiceManager\Mapping\ImplementorFinder;
-use Medas\ServiceManager\ParameterResolving\ParameterResolver;
 use PHPUnit\Framework\TestCase;
 
 class ImplementorFinderTest extends TestCase
@@ -13,8 +13,8 @@ class ImplementorFinderTest extends TestCase
     public function testFindImplementors(): void
     {
         self::assertInstanceOf(
-            ParameterResolver::class,
-            service(ImplementorFinder::class)->find(ParameterResolver::class)[0]
+            CacheManager::class,
+            service(ImplementorFinder::class)->find(CacheManager::class)[0]
         );
     }
 }

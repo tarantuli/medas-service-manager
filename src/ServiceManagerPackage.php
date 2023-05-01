@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\{AsSingleton, CorePackage, GlobalRepository};
-use Medas\ServiceManager\ParameterResolving\PreferredDefaultFinder;
+use Medas\ObjectInstantiator\ObjectInstantiatorPackage;
 
 class ServiceManagerPackage extends BasePackage
 {
@@ -15,6 +15,7 @@ class ServiceManagerPackage extends BasePackage
     {
         return $this->dependenciesByClass([
             CorePackage::class,
+            ObjectInstantiatorPackage::class,
         ]);
     }
 
@@ -26,14 +27,5 @@ class ServiceManagerPackage extends BasePackage
     public function postInstall(): void
     {
         GlobalRepository::serviceManager()->primeCaches();
-    }
-
-    public function initialize(ServiceConfig $config): void
-    {
-        parent::initialize($config);
-
-        $config->addParameterResolver(
-            service(PreferredDefaultFinder::class)
-        );
     }
 }

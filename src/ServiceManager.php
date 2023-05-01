@@ -6,6 +6,7 @@ namespace Medas\ServiceManager;
 
 use Medas\Core\GlobalRepository;
 use Medas\Core\Interfaces\{Cache, PrimesCache};
+use Medas\ObjectInstantiator\ObjectInstantiator;
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
 
@@ -49,8 +50,8 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
 
         // This should be instantiated *after* fetching the mapping through the config
         GlobalRepository::setObjectInstantiator(
-            $this->services[ServiceInstantiator::class]
-                = new ServiceInstantiator()
+            $this->services[ObjectInstantiator::class]
+                = new ObjectInstantiator()
         );
 
         $this->config->errorHandler()->set();

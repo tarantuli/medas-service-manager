@@ -5,16 +5,27 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
+use Medas\Core\Exceptions\Suggestions;
 
-class MultipleImplementorsFound extends BaseException
+class MultipleImplementorsFound extends BaseException implements Suggestions
 {
-    public function __construct(string $type, array $implementors)
+    public function __construct(
+        public readonly string $type,
+        public readonly array  $implementors,
+    )
     {
         parent::__construct($type, implode(', ', $implementors));
     }
 
     public function pattern(): string
     {
-        return 'Found multiple services implementing %s: %s. Bind the one you want to use using sm()->bindService()';
+        return 'found multiple services implementing %s: %s';
+    }
+
+    public function suggestions(): array
+    {
+        return [
+            'bind the one you want to use using sm()->bindImplementation()',
+        ];
     }
 }

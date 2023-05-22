@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\Core\Attributes\Service;
-use Medas\Core\GlobalRepository;
 use Medas\Core\Interfaces\ImplementorFinder as ImplementorFinderInterface;
 
 #[Service]
@@ -14,7 +13,7 @@ class ImplementorFinder implements ImplementorFinderInterface
     /** @return object[] */
     public function find(string $interface): array
     {
-        $serviceManager = GlobalRepository::serviceManager();
+        $serviceManager = medas()->serviceManager();
         $implementors = [];
 
         foreach ($serviceManager->getServiceClassNames() as $className) {

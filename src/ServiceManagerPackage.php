@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{AsSingleton, CorePackage, GlobalRepository};
+use Medas\Core\{AsSingleton, CorePackage};
 use Medas\ObjectInstantiator\ObjectInstantiatorPackage;
 
 class ServiceManagerPackage extends BasePackage
@@ -26,6 +26,6 @@ class ServiceManagerPackage extends BasePackage
 
     public function postInstall(): void
     {
-        GlobalRepository::serviceManager()->primeCaches();
+        medas()->serviceManager()->primeCaches();
     }
 }

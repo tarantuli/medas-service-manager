@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\GlobalRepository;
+use Medas\Core\CorePackage;
 use Medas\Core\Interfaces\{Cache, PrimesCache};
 use Medas\ObjectInstantiator\ObjectInstantiator;
 use Medas\ServiceManager\Cache\CacheManager;
@@ -18,7 +18,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
     {
         service(CacheManager::class)->clearAll();
 
-        $registeredPackages = GlobalRepository::serviceManager()->config->registeredPackages();
+        $registeredPackages = medas()->serviceManager()->config->registeredPackages();
 
         foreach ($registeredPackages as $package) {
             $package->postInstall();
@@ -40,6 +40,8 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         Cache    $cache = null,
     )
     {
+        CorePackage::instance()->loadGlobalFunctions();
+
         $this->registerThisInstance();
         $this->initializeCacheManager($cache);
 
@@ -49,7 +51,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         );
 
         // This should be instantiated *after* fetching the mapping through the config
-        GlobalRepository::setObjectInstantiator(
+        medas()->setObjectInstantiator(
             $this->services[ObjectInstantiator::class]
                 = new ObjectInstantiator()
         );
@@ -63,7 +65,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         $this->services[self::class]
             = $this;
 
-        GlobalRepository::setServiceManager($this);
+        medas()->setServiceManager($this);
     }
 
     private function initializeCacheManager(Cache|null $cache): void
@@ -141,7 +143,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         }
 
         if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = GlobalRepository::objectInstantiator()->instantiate($service);
+            $this->services[$service] = medas()->objectInstantiator()->instantiate($service);
         }
 
         return $this->services[$service];

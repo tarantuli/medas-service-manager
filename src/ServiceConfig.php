@@ -98,6 +98,12 @@ class ServiceConfig
 
     public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
+        foreach ($this->parameterResolvers as $resolver) {
+            if ($resolver::class === $parameterResolver::class) {
+                return $this;
+            }
+        }
+
         $this->parameterResolvers[] = $parameterResolver;
 
         usort($this->parameterResolvers,
@@ -108,6 +114,12 @@ class ServiceConfig
 
     public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
     {
+        foreach ($this->argumentProcessors as $processor) {
+            if ($processor::class === $argumentProcessor::class) {
+                return $this;
+            }
+        }
+
         $this->argumentProcessors[] = $argumentProcessor;
 
         usort($this->argumentProcessors,

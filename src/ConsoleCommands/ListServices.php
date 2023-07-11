@@ -8,7 +8,7 @@ use Medas\Console\{Commands\BaseConsoleCommand, Commands\ConsoleCommandGroup, Fo
 use Medas\Core\Attributes\Service;
 
 #[Service]
-class ListCommand extends BaseConsoleCommand
+class ListServices extends BaseConsoleCommand
 {
     public function __construct(
         private readonly Group   $group,
@@ -35,17 +35,16 @@ class ListCommand extends BaseConsoleCommand
     public function process(array $arguments): void
     {
         $this->printer
-            ->print(
+            ->printLine(
                 Text::create('Registered services: ')
-            )
-            ->print();
+            );
 
         $services = propertyValue(sm(), 'services');
 
         usort($services, fn(object $a, object $b) => strcasecmp($a::class, $b::class));
 
         foreach ($services as $service) {
-            $this->printer->print(
+            $this->printer->printLine(
                 Text::create('   ' . $service::class, Style::Bold)
             );
         }

@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
-use Medas\Console\{Commands\BaseConsoleCommand, Commands\ConsoleCommandGroup, Formats\Style, Printer, Text};
+use Medas\Console\{Commands\BaseConsoleCommand,
+    Commands\ConsoleCommandGroup,
+    Formats\Color,
+    Formats\Style,
+    Printer,
+    Text
+};
 use Medas\Core\Attributes\Service;
+use Medas\ServiceManager\ServiceManager;
 
 #[Service]
 class ListServices extends BaseConsoleCommand
 {
     public function __construct(
-        private readonly Group   $group,
-        private readonly Printer $printer,
+        private readonly Group          $group,
+        private readonly Printer        $printer,
+        private readonly ServiceManager $serviceManager,
     )
     {
     }
@@ -35,18 +43,39 @@ class ListServices extends BaseConsoleCommand
     public function process(array $arguments): void
     {
         $this->printer
+            ->printEol()
             ->printLine(
-                Text::create('Registered services: ')
-            );
+                Text::create('Registered services')
+            )
+            ->printEol();
 
-        $services = propertyValue(sm(), 'services');
+        $services = $this->serviceManager->getServiceClassNames();
 
-        usort($services, fn(object $a, object $b) => strcasecmp($a::class, $b::class));
+        usort($services, fn(string $a, string $b) => strcasecmp($a, $b));
+        $printedSomething = false;
 
         foreach ($services as $service) {
-            $this->printer->printLine(
-                Text::create('   ' . $service::class, Style::Bold)
-            );
+            if (!isset($arguments[1]) || str_contains($service, $arguments[1])) {
+                $this->printer->printLine(
+                    Text::create('   ' . $service)
+                );
+
+                $printedSomething = true;
+            }
+        }
+
+        if (!$printedSomething) {
+            if (isset($arguments[1])) {
+                $this->printer->printLine(
+                    Text::create('   no services found that match: ', Color::LightRed),
+                    Text::create($arguments[1], Style::Bold),
+                );
+            }
+            else {
+                $this->printer->printLine(
+                    Text::create('   no services found', Color::LightRed),
+                );
+            }
         }
     }
 }

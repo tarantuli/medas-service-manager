@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\Attributes\Service;
-use Medas\ObjectInstantiator\ParameterResolving\{ArgumentProcessor, ParameterResolver};
+use Medas\Core\Interfaces\{ArgumentProcessor, ParameterResolver};
 use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
 use Medas\ServiceManager\Mapping\{MappingManager, ServiceMapping};
 

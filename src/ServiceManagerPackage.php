@@ -13,10 +13,10 @@ class ServiceManagerPackage extends BasePackage
 
     public function dependencies(): array
     {
-        return $this->dependenciesByClass([
-            CorePackage::class,
-            ObjectInstantiatorPackage::class,
-        ]);
+        return [
+            CorePackage::instance(),
+            ObjectInstantiatorPackage::instance(),
+        ];
     }
 
     public function sourceDirectory(): string

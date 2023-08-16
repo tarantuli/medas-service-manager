@@ -15,4 +15,3 @@ new ServiceManager(function (): ServiceConfig {
 
     return $config;
 });
-

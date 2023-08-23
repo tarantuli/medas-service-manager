@@ -9,18 +9,17 @@ use Medas\Console\{Commands\BaseConsoleCommand,
     Formats\Color,
     Formats\Style,
     Printer,
-    Text
-};
+    Text};
 use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\ServiceManager;
 
 #[Service]
-class ListServices extends BaseConsoleCommand
+readonly class ListServices extends BaseConsoleCommand
 {
     public function __construct(
-        private readonly Group          $group,
-        private readonly Printer        $printer,
-        private readonly ServiceManager $serviceManager,
+        private Group          $group,
+        private Printer        $printer,
+        private ServiceManager $serviceManager,
     )
     {
     }

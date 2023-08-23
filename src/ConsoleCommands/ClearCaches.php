@@ -9,11 +9,11 @@ use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
 
 #[Service]
-class ClearCaches extends BaseConsoleCommand
+readonly class ClearCaches extends BaseConsoleCommand
 {
     public function __construct(
-        private readonly Group        $group,
-        private readonly CacheManager $cacheManager,
+        private Group        $group,
+        private CacheManager $cacheManager,
     )
     {
     }

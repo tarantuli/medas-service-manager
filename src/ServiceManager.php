@@ -107,8 +107,13 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
     public function __destruct()
     {
         if ($this->config->mustBeSavedToCache()) {
-            // Explicitly set the current configuration
-            $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
+            try {
+                // Explicitly set the current configuration
+                $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
+            }
+            catch (\Exception) {
+                // Do nothing
+            }
         }
     }
 

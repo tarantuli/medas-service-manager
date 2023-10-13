@@ -74,7 +74,7 @@ final class ServiceManagerTest extends BaseTestClass
     {
         $manager = $this->loadMockUps();
         ob_start();
-        $manager->primeCaches();
+        $manager->cachePrimer->prime();
         $output = ob_get_clean();
 
         self::assertEquals('cache is primed', $output);

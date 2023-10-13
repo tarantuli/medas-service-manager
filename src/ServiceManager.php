@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\CorePackage;
-use Medas\Core\Interfaces\{Cache, FileSystemCache, PrimesCache};
+use Medas\Core\Interfaces\{Cache, ServiceManager as ServiceManagerInterface};
 use Medas\ObjectInstantiator\ObjectInstantiator;
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
 
-class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCache
+class ServiceManager implements ServiceManagerInterface
 {
     private const CONFIG_CACHE_KEY = ServiceConfig::class;
 
@@ -31,6 +31,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
     private array $services = [];
 
     private CacheManager $cacheManager;
+    public readonly CachePrimer $cachePrimer;
 
     /** @var bool[] */
     private array $initializedPackages = [];
@@ -44,6 +45,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
 
         $this->registerThisInstance();
         $this->initializeCacheManager($cache);
+        $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
 
         $this->config = $this->cacheManager->get()->get(
             self::CONFIG_CACHE_KEY,
@@ -122,34 +124,7 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         return $this->config;
     }
 
-    public function primeCaches(): void
-    {
-        foreach ($this->getServiceClassNames() as $serviceName) {
-            if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
-                /** @var PrimesCache $service */
-                $service = $this->resolve($serviceName);
-                $service->primeCache();
-            }
-        }
 
-        foreach ($this->cacheManager->getAll() as $cache) {
-            if ($cache instanceof FileSystemCache) {
-                $pathToDirectoryToClear = 'var/dirs-to-clear/' . sha1($cache->baseDirectory());
-
-                if (!file_exists($pathToDirectoryToClear)) {
-                    if (!file_exists('var')) {
-                        mkdir('var');
-                    }
-
-                    if (!file_exists('var/dirs-to-clear')) {
-                        mkdir('var/dirs-to-clear');
-                    }
-
-                    file_put_contents($pathToDirectoryToClear, $cache->baseDirectory() . "\n");
-                }
-            }
-        }
-    }
 
     public function getServiceClassNames(): array
     {
@@ -177,12 +152,6 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
         $mapping = $this->config->mapping();
 
         return $mapping->has($type) ? $mapping->get($type) : null;
-    }
-
-    public function primeCache(): void
-    {
-        // Do nothing
-        // TODO: Why does this not prime caches?
     }
 
     public function bindImplementation(object $implementation, string ...$forTypes): self

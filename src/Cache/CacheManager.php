@@ -34,6 +34,11 @@ class CacheManager implements CacheManagerInterface
         return $this->caches[$name];
     }
 
+    public function getAll(): array
+    {
+        return $this->caches;
+    }
+
     public function register(Cache $cache, string $name = 'default'): void
     {
         if (array_key_exists($name, $this->caches)) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\CorePackage;
-use Medas\Core\Interfaces\{Cache, PrimesCache};
+use Medas\Core\Interfaces\{Cache, FileSystemCache, PrimesCache};
 use Medas\ObjectInstantiator\ObjectInstantiator;
 use Medas\ServiceManager\Cache\CacheManager;
 use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
@@ -129,6 +129,24 @@ class ServiceManager implements \Medas\Core\Interfaces\ServiceManager, PrimesCac
                 /** @var PrimesCache $service */
                 $service = $this->resolve($serviceName);
                 $service->primeCache();
+            }
+        }
+
+        foreach ($this->cacheManager->getAll() as $cache) {
+            if ($cache instanceof FileSystemCache) {
+                $pathToDirectoryToClear = 'var/dirs-to-clear/' . sha1($cache->baseDirectory());
+
+                if (!file_exists($pathToDirectoryToClear)) {
+                    if (!file_exists('var')) {
+                        mkdir('var');
+                    }
+
+                    if (!file_exists('var/dirs-to-clear')) {
+                        mkdir('var/dirs-to-clear');
+                    }
+
+                    file_put_contents($pathToDirectoryToClear, $cache->baseDirectory() . "\n");
+                }
             }
         }
     }

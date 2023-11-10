@@ -9,10 +9,11 @@ use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
 class DataTree
 {
     private array $values = [];
+
     /** @var History[] */
     private array $history = [];
-
     private mixed $lastFoundValue;
+
     /** @var History[] */
     private array $lastFoundHistory;
 
@@ -26,10 +27,8 @@ class DataTree
     public function set(string $index, mixed $value, string $source = 'runtime'): self
     {
         $path = $this->indexToPath($index);
-
-        $values =& $this->values;
-        $history =& $this->history;
-
+        $values = &$this->values;
+        $history = &$this->history;
         $lastPath = array_pop($path);
 
         foreach ($path as $subPath) {
@@ -38,8 +37,8 @@ class DataTree
                 $history[$subPath] = [];
             }
 
-            $values =& $values[$subPath];
-            $history =& $history[$subPath];
+            $values = &$values[$subPath];
+            $history = &$history[$subPath];
         }
 
         $values[$lastPath] = $value;
@@ -58,9 +57,12 @@ class DataTree
         return $this->setRecursively($values, $source);
     }
 
-    private function setRecursively(array  $values, string $source = 'runtime',
-                                    string $path = '', bool $doOverwrite = true): self
-
+    private function setRecursively(
+        array  $values,
+        string $source = 'runtime',
+        string $path = '',
+        bool   $doOverwrite = true
+    ): self
     {
         foreach ($values as $index => $value) {
             $index = $path === '' ? $index : $path . '.' . $index;
@@ -79,8 +81,7 @@ class DataTree
     public function has(string $index): bool
     {
         $path = $this->indexToPath($index);
-
-        $values =& $this->values;
+        $values = &$this->values;
         $history = $this->history;
 
         foreach ($path as $subPath) {
@@ -88,7 +89,7 @@ class DataTree
                 return false;
             }
 
-            $values =& $values[$subPath];
+            $values = &$values[$subPath];
             $history = $history[$subPath];
         }
 

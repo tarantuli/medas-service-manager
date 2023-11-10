@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\Attributes\Service;
-use Medas\Core\Interfaces\{ArgumentProcessor, ParameterResolver};
-use Medas\ServiceManager\ErrorHandling\{BasicErrorHandler, ErrorHandler};
-use Medas\ServiceManager\Mapping\{MappingManager, ServiceMapping};
+use Medas\Core\{Attributes\Service, Interfaces\ArgumentProcessor, Interfaces\ParameterResolver};
 
 #[Service]
 class ServiceConfig
 {
-    private MappingManager $mappingManager;
-    private ServiceMapping $mapping;
-    private ErrorHandler $errorHandler;
+    private Mapping\MappingManager $mappingManager;
+    private Mapping\ServiceMapping $mapping;
+    private ErrorHandling\ErrorHandler $errorHandler;
 
     /** @var Package[] */
     private array $registeredPackages = [];
@@ -24,16 +21,15 @@ class ServiceConfig
 
     /** @var ArgumentProcessor[] */
     private array $argumentProcessors = [];
-
     private bool $wasCached = true;
     private bool $mustBeSavedToCache = false;
 
     public function __construct(
-        ErrorHandler $errorHandler = null,
+        ErrorHandling\ErrorHandler $errorHandler = null,
     )
     {
-        $this->errorHandler = $errorHandler ?? new BasicErrorHandler();
-        $this->mappingManager = new MappingManager();
+        $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
+        $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();
 
         $this->addPackage(ServiceManagerPackage::instance());
@@ -46,6 +42,7 @@ class ServiceConfig
         }
 
         $this->addPackages($package->dependencies());
+
         $this->registeredPackages[$package::class] = $package;
 
         $this->mappingManager->addPackage($package);
@@ -71,12 +68,12 @@ class ServiceConfig
         $this->wasCached = false;
     }
 
-    public function mapping(): ServiceMapping
+    public function mapping(): Mapping\ServiceMapping
     {
         return $this->mapping;
     }
 
-    public function errorHandler(): ErrorHandler
+    public function errorHandler(): ErrorHandling\ErrorHandler
     {
         return $this->errorHandler;
     }

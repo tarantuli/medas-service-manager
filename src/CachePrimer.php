@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\Interfaces\FileSystemCache;
-use Medas\Core\Interfaces\PrimesCache;
-use Medas\ServiceManager\Cache\CacheManager;
+use Medas\Core\Interfaces\{FileSystemCache, PrimesCache};
 
 readonly class CachePrimer
 {
     public function __construct(
-        private ServiceManager $serviceManager,
-        private CacheManager   $cacheManager,
+        private ServiceManager     $serviceManager,
+        private Cache\CacheManager $cacheManager,
     )
     {
     }
@@ -23,6 +21,7 @@ readonly class CachePrimer
             if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
                 /** @var PrimesCache $service */
                 $service = $this->serviceManager->resolve($serviceName);
+
                 $service->primeCache();
             }
         }
@@ -41,6 +40,7 @@ readonly class CachePrimer
                 if (!file_exists($pathToDirectoryToClear)) {
                     if (!$ensuredPath) {
                         $this->ensurePath();
+
                         $ensuredPath = true;
                     }
 

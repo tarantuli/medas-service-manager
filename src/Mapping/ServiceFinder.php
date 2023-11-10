@@ -14,7 +14,6 @@ class ServiceFinder
     {
         // This should not be a service, it is *not* instantiated automatically,
         // so don't add more dependencies, expecting them to be injected.
-
         $this->fileFinder = new FileFinder();
     }
 
@@ -30,6 +29,7 @@ class ServiceFinder
 
         foreach ($files as $file) {
             require_once $file;
+
             $loadedFile = true;
         }
 

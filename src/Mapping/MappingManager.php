@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\ObjectInstantiator\ObjectInstantiator;
-use Medas\ObjectInstantiator\ParameterResolving\ParameterResolveManager;
-use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Package;
-use Medas\ServiceManager\ServiceManager;
+use Medas\ObjectInstantiator\{ObjectInstantiator, ParameterResolving\ParameterResolveManager};
+use Medas\ServiceManager\{Cache\CacheManager, Package, ServiceManager};
 
 class MappingManager
 {
@@ -19,9 +16,9 @@ class MappingManager
     {
         // This should not be a service, it is *not* instantiated automatically,
         // so don't add more dependencies, expecting them to be injected.
-
         $this->mapping = new ServiceMapping();
         $this->serviceFinder = new ServiceFinder();
+
         $this->addDefaultMappings();
     }
 

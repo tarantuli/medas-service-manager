@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
-use Medas\Console\{Commands\BaseConsoleCommand,
+use Medas\Console\{
+    Commands\BaseConsoleCommand,
     Commands\ConsoleCommandGroup,
     Formats\Color,
     Formats\Style,
     Printer,
-    Text};
+    Text
+};
 use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\ServiceManager;
 
@@ -43,21 +45,18 @@ readonly class ListServices extends BaseConsoleCommand
     {
         $this->printer
             ->printEol()
-            ->printLine(
-                Text::create('Registered services')
-            )
+            ->printLine(Text::create('Registered services'))
             ->printEol();
 
         $services = $this->serviceManager->getServiceClassNames();
 
         usort($services, fn(string $a, string $b) => strcasecmp($a, $b));
+
         $printedSomething = false;
 
         foreach ($services as $service) {
             if (!isset($arguments[1]) || str_contains($service, $arguments[1])) {
-                $this->printer->printLine(
-                    Text::create('   ' . $service)
-                );
+                $this->printer->printLine(Text::create('   ' . $service));
 
                 $printedSomething = true;
             }

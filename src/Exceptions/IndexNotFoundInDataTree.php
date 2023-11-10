@@ -8,7 +8,6 @@ use Medas\Core\Exceptions\BaseException;
 
 class IndexNotFoundInDataTree extends BaseException
 {
-
     public function __construct(string $index)
     {
         parent::__construct($index);

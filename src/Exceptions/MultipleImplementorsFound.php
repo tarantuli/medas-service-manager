@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Exceptions;
 
-use Medas\Core\Exceptions\BaseException;
-use Medas\Core\Exceptions\Suggestions;
+use Medas\Core\Exceptions\{BaseException, Suggestions};
 
 class MultipleImplementorsFound extends BaseException implements Suggestions
 {

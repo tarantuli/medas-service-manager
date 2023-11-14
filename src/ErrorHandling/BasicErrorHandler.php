@@ -12,6 +12,7 @@ class BasicErrorHandler implements ErrorHandler
     public function set(): void
     {
         $this->setErrorHandling();
+
         register_shutdown_function($this->handleFatalErrors(...));
     }
 

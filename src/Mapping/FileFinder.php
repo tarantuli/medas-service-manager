@@ -19,9 +19,12 @@ class FileFinder
 
     public function recursiveFind(string $directory, string $pattern): \RegexIterator
     {
-        return new \RegexIterator(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
-            $directory,
-            \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS
-        )), $pattern);
+        return new \RegexIterator(
+            new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+                $directory,
+                \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS
+            )),
+            $pattern
+        );
     }
 }

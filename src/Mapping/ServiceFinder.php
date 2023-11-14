@@ -43,11 +43,9 @@ class ServiceFinder
         foreach (get_declared_classes() as $className) {
             $class = new \ReflectionClass($className);
 
-            if (
-                !$class->isInternal()
-                && str_starts_with($class->getFileName(), $directory)
-                && $class->getAttributes(Service::class, \ReflectionAttribute::IS_INSTANCEOF)
-            ) {
+            if (!$class->isInternal()
+                    && str_starts_with($class->getFileName(), $directory)
+                    && $class->getAttributes(Service::class, \ReflectionAttribute::IS_INSTANCEOF)) {
                 $this->registerClass($class, $services);
             }
         }

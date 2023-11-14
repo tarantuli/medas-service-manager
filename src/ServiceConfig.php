@@ -103,8 +103,10 @@ class ServiceConfig
 
         $this->parameterResolvers[] = $parameterResolver;
 
-        usort($this->parameterResolvers,
-            fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority()));
+        usort(
+            $this->parameterResolvers,
+            fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority())
+        );
 
         return $this;
     }
@@ -119,8 +121,10 @@ class ServiceConfig
 
         $this->argumentProcessors[] = $argumentProcessor;
 
-        usort($this->argumentProcessors,
-            fn(ArgumentProcessor $a, ArgumentProcessor $b) => -($a->priority() <=> $b->priority()));
+        usort(
+            $this->argumentProcessors,
+            fn(ArgumentProcessor $a, ArgumentProcessor $b) => -($a->priority() <=> $b->priority())
+        );
 
         return $this;
     }

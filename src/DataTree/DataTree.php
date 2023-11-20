@@ -12,6 +12,7 @@ class DataTree
 
     /** @var History[] */
     private array $history = [];
+
     private mixed $lastFoundValue;
 
     /** @var History[] */

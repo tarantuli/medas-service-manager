@@ -21,6 +21,7 @@ class ServiceConfig
 
     /** @var ArgumentProcessor[] */
     private array $argumentProcessors = [];
+
     private bool $wasCached = true;
     private bool $mustBeSavedToCache = false;
 

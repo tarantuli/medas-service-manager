@@ -62,7 +62,7 @@ The `AsSingleton` trait provides the `instance()` method.
 > You should place the Package file in the `src` directory of your project, so the `sourceDirectory()` return value
 > should be `__DIR__`.
 
-`initialize()` is called when the package is added to the service manager. The `BasePackage` declares an empty method as
+`initialize()` is called when the service manager is instantiated. The `BasePackage` declares an empty method as
 a default.
 
 `postInstall()` is called after composer is done updating packages. The `BasePackage` declares an empty method as a
@@ -74,10 +74,10 @@ Your packages can register `ParameterResolver` services and `ArgumentProcessor` 
 using `$serviceConfig->addParameterResolver()` and `->addArgumentProcessor()` respectively:
 
 ```php
-    public function initialize(ServiceConfig $config): void
-    {
-        $config->addParameterResolver(new ConfigOptionResolver());
+public function initialize(ServiceConfig $config): void
+{
+    $config->addParameterResolver(new ConfigOptionResolver());
 
-        parent::initialize($config);
-    }
+    parent::initialize($config);
+}
 ```

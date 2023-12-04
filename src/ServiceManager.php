@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\CorePackage;
-use Medas\Core\Interfaces\{Cache, ServiceManager as ServiceManagerInterface};
+use Medas\Core\{
+    Attributes\Entrypoint,
+    CorePackage,
+    Interfaces\Cache,
+    Interfaces\CacheManager,
+    Interfaces\ServiceManager as ServiceManagerInterface
+};
 use Medas\ObjectInstantiator\ObjectInstantiator;
-use Medas\ServiceManager\Cache\CacheManager;
-use Medas\ServiceManager\Exceptions\InitializerDidNotReturnServiceConfig;
+use Medas\ServiceManager\Cache\CacheManager as OurCacheManager;
 
 class ServiceManager implements ServiceManagerInterface
 {
@@ -36,6 +40,7 @@ class ServiceManager implements ServiceManagerInterface
     /** @var bool[] */
     private array $initializedPackages = [];
 
+    #[Entrypoint]
     public function __construct(
         \Closure $initializer = null,
         Cache    $cache = null,
@@ -45,6 +50,7 @@ class ServiceManager implements ServiceManagerInterface
 
         $this->registerThisInstance();
         $this->initializeCacheManager($cache);
+
         $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
 
         $this->config = $this->cacheManager->get()->get(
@@ -53,10 +59,7 @@ class ServiceManager implements ServiceManagerInterface
         );
 
         // This should be instantiated *after* fetching the mapping through the config
-        medas()->setObjectInstantiator(
-            $this->services[ObjectInstantiator::class]
-                = new ObjectInstantiator()
-        );
+        medas()->setObjectInstantiator($this->services[ObjectInstantiator::class] = new ObjectInstantiator());
 
         $this->config->errorHandler()->set();
         $this->initializePackages();
@@ -64,17 +67,14 @@ class ServiceManager implements ServiceManagerInterface
 
     private function registerThisInstance(): void
     {
-        $this->services[self::class]
-            = $this;
+        $this->services[self::class] = $this;
 
         medas()->setServiceManager($this);
     }
 
     private function initializeCacheManager(Cache|null $cache): void
     {
-        $this->cacheManager
-            = $this->services[CacheManager::class]
-            = new CacheManager();
+        $this->cacheManager = $this->services[CacheManager::class] = new OurCacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);
@@ -86,7 +86,7 @@ class ServiceManager implements ServiceManagerInterface
         $config = $initializer ? $initializer() : new ServiceConfig();
 
         if (!$config instanceof ServiceConfig) {
-            throw new InitializerDidNotReturnServiceConfig($config);
+            throw new Exceptions\InitializerDidNotReturnServiceConfig($config);
         }
 
         $config->wasNotCached();
@@ -102,6 +102,7 @@ class ServiceManager implements ServiceManagerInterface
             }
 
             $package->initialize($this->config);
+
             $this->initializedPackages[$package::class] = true;
         }
     }
@@ -124,8 +125,6 @@ class ServiceManager implements ServiceManagerInterface
         return $this->config;
     }
 
-
-
     public function getServiceClassNames(): array
     {
         return array_unique($this->config->mapping()->getAll());
@@ -134,6 +133,7 @@ class ServiceManager implements ServiceManagerInterface
     /**
      * The return value is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
      */
+    #[Entrypoint]
     public function resolve(string $type): object
     {
         if (null === $service = $this->findImplementingClass($type)) {
@@ -154,13 +154,15 @@ class ServiceManager implements ServiceManagerInterface
         return $mapping->has($type) ? $mapping->get($type) : null;
     }
 
+    #[Entrypoint]
     public function bindImplementation(object $implementation, string ...$forTypes): self
     {
         $this->services[$implementation::class] = $implementation;
-
         $changedSomething = false;
+
         foreach ($forTypes as $forType) {
-            $changedSomething = $changedSomething || $this->config->mapping()->set($forType, $implementation::class);
+            $changedSomething = $changedSomething
+                || $this->config->mapping()->set($forType, $implementation::class);
         }
 
         if ($changedSomething) {

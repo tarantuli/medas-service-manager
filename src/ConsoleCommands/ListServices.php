@@ -45,7 +45,7 @@ readonly class ListServices extends BaseConsoleCommand
     {
         $this->printer
             ->printEol()
-            ->printLine(Text::create('Registered services'))
+            ->printLine(Text::create('Registered services', Color::White))
             ->printEol();
 
         $services = $this->serviceManager->getServiceClassNames();
@@ -55,11 +55,23 @@ readonly class ListServices extends BaseConsoleCommand
         $printedSomething = false;
 
         foreach ($services as $service) {
-            if (!isset($arguments[1]) || str_contains($service, $arguments[1])) {
-                $this->printer->printLine(Text::create('   ' . $service));
-
-                $printedSomething = true;
+            if (isset($arguments[1]) && !str_contains($service, $arguments[1])) {
+                continue;
             }
+
+            $blocks = [Text::create('   ')];
+
+            foreach (explode('\\', $service) as $part) {
+                if (count($blocks) > 1) {
+                    $blocks[] = Text::create('\\', Color::Gray);
+                }
+
+                $blocks[] = Text::create($part, Color::Blue);
+            }
+
+            $this->printer->printLine(...$blocks);
+
+            $printedSomething = true;
         }
 
         if (!$printedSomething) {

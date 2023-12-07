@@ -66,7 +66,7 @@ readonly class ListServices extends BaseConsoleCommand
                     $blocks[] = Text::create('\\', Color::Gray);
                 }
 
-                $blocks[] = Text::create($part, Color::Blue);
+                $blocks[] = Text::create($part, Color::Green);
             }
 
             $this->printer->printLine(...$blocks);

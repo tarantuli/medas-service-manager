@@ -74,7 +74,7 @@ class ServiceManager implements ServiceManagerInterface
 
     private function initializeCacheManager(Cache|null $cache): void
     {
-        $this->cacheManager = $this->services[CacheManager::class] = new OurCacheManager();
+        $this->cacheManager = $this->services[CacheManager::class] = $this->services[OurCacheManager::class] = new OurCacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);

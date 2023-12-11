@@ -62,6 +62,7 @@ class ServiceManager implements ServiceManagerInterface
         medas()->setObjectInstantiator($this->services[ObjectInstantiator::class] = new ObjectInstantiator());
 
         $this->config->errorHandler()->set();
+        $this->initializeYourself();
         $this->initializePackages();
     }
 
@@ -74,7 +75,7 @@ class ServiceManager implements ServiceManagerInterface
 
     private function initializeCacheManager(Cache|null $cache): void
     {
-        $this->cacheManager = $this->services[CacheManager::class] = $this->services[OurCacheManager::class] = new OurCacheManager();
+        $this->cacheManager = new OurCacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);
@@ -105,6 +106,11 @@ class ServiceManager implements ServiceManagerInterface
 
             $this->initializedPackages[$package::class] = true;
         }
+    }
+
+    public function initializeYourself(): void
+    {
+        $this->bindImplementation($this->cacheManager, CacheManager::class);
     }
 
     public function __destruct()

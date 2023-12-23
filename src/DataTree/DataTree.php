@@ -48,35 +48,9 @@ class DataTree
         return $this;
     }
 
-    private function indexToPath(string $index): array
-    {
-        return explode('.', $index);
-    }
-
     public function mergeArray(array $values, string $source = 'runtime'): self
     {
         return $this->setRecursively($values, $source);
-    }
-
-    private function setRecursively(
-        array  $values,
-        string $source = 'runtime',
-        string $path = '',
-        bool   $doOverwrite = true
-    ): self
-    {
-        foreach ($values as $index => $value) {
-            $index = $path === '' ? $index : $path . '.' . $index;
-
-            if (is_array($value)) {
-                $this->setRecursively($value, $source, $index, $doOverwrite);
-            }
-            elseif ($doOverwrite || !$this->has($index)) {
-                $this->set($index, $value, $source);
-            }
-        }
-
-        return $this;
     }
 
     public function has(string $index): bool
@@ -100,9 +74,35 @@ class DataTree
         return true;
     }
 
+    private function indexToPath(string $index): array
+    {
+        return explode('.', $index);
+    }
+
     public function mergeDefaults(array $values): self
     {
         return $this->setRecursively($values, source: 'defaults', doOverwrite: false);
+    }
+
+    private function setRecursively(
+        array  $values,
+        string $source = 'runtime',
+        string $path = '',
+        bool   $doOverwrite = true
+    ): self
+    {
+        foreach ($values as $index => $value) {
+            $index = $path === '' ? $index : $path . '.' . $index;
+
+            if (is_array($value)) {
+                $this->setRecursively($value, $source, $index, $doOverwrite);
+            }
+            elseif ($doOverwrite || !$this->has($index)) {
+                $this->set($index, $value, $source);
+            }
+        }
+
+        return $this;
     }
 
     public function get(string $index): mixed

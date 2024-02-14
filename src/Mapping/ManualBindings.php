@@ -8,6 +8,11 @@ class ManualBindings
 {
     public \SplObjectStorage $storage;
 
+    public function __construct()
+    {
+        $this->storage = new \SplObjectStorage();
+    }
+
     public function set(string $class, string $parameter, mixed $value, string $method = '__construct'): void
     {
         $parameterReflectors = (new \ReflectionClass($class))->getMethod($method)->getParameters();

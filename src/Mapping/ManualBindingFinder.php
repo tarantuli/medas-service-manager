@@ -21,10 +21,15 @@ readonly class ManualBindingFinder implements ParameterResolver
             return new ParameterResolverResult(false);
         }
 
-        $bindings = \service(ServiceManager::class)->config()->parameterBindings();
+        $bindings = \service(ServiceManager::class)->config()->manualBindings();
+        $className = $parameter->getDeclaringClass()->name;
+        $methodName = $parameter->getDeclaringFunction()->name;
 
-        if ($bindings->storage->contains($parameter)) {
-            return new ParameterResolverResult(true, $bindings->storage[$parameter]);
+        if (isset($bindings[$className][$methodName][$parameter->name])) {
+            return new ParameterResolverResult(
+                true,
+                $bindings[$className][$methodName][$parameter->name]
+            );
         }
 
         return new ParameterResolverResult(false);

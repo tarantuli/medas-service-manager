@@ -11,7 +11,7 @@ class ServiceConfig
 {
     private Mapping\MappingManager $mappingManager;
     private Mapping\ServiceMapping $mapping;
-    private Mapping\ManualBindings $manualBindings;
+    private array $manualBindings = [];
     private ErrorHandling\ErrorHandler $errorHandler;
 
     /** @var Package[] */
@@ -33,7 +33,6 @@ class ServiceConfig
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
         $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();
-        $this->manualBindings = new Mapping\ManualBindings();
 
         $this->addPackage(ServiceManagerPackage::instance());
     }
@@ -147,8 +146,13 @@ class ServiceConfig
         return $this->registeredPackages;
     }
 
-    public function parameterBindings(): Mapping\ManualBindings
+    public function manualBindings(): array
     {
         return $this->manualBindings;
+    }
+
+    public function addManualBinding(string $class, string $parameter, mixed $value, string $method = '__construct'): void
+    {
+        $this->manualBindings[$class][$method][$parameter] = $value;
     }
 }

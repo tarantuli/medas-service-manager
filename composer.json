@@ -1,6 +1,9 @@
 {
     "name": "morphp/medas-service-manager",
     "description": "Medas service manager",
+    "keywords": [
+        "services"
+    ],
     "authors": [
         {
             "name": "Patrick Morpey",

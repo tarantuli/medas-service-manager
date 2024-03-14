@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\{Attributes\Service, Interfaces\ArgumentProcessor, Interfaces\ParameterResolver};
-use Medas\ServiceManager\Mapping\ManualBindingFinder;
 
 #[Service]
 class ServiceConfig
@@ -36,7 +35,7 @@ class ServiceConfig
         $this->mapping = $this->mappingManager->get();
 
         $this->addPackage(ServiceManagerPackage::instance());
-        $this->addParameterResolver(new ManualBindingFinder());
+        $this->addParameterResolver(new Mapping\ManualBindingFinder());
     }
 
     public function addPackage(Package $package, bool $doInitialize = false): self
@@ -153,7 +152,12 @@ class ServiceConfig
         return $this->manualBindings;
     }
 
-    public function addManualBinding(string $class, string $parameter, mixed $value, string $method = '__construct'): void
+    public function addManualBinding(
+        string $class,
+        string $parameter,
+        mixed  $value,
+        string $method = '__construct'
+    ): void
     {
         $this->manualBindings[$class][$method][$parameter] = $value;
     }

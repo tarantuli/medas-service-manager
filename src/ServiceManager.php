@@ -95,7 +95,7 @@ class ServiceManager implements ServiceManagerInterface
         return $config;
     }
 
-    public function initializePackages(): void
+    private function initializePackages(): void
     {
         foreach ($this->config->registeredPackages() as $package) {
             if (array_key_exists($package::class, $this->initializedPackages)) {

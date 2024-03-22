@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{
-    Attributes\Entrypoint,
+use Medas\Core\{Attributes\Entrypoint,
     CorePackage,
     Interfaces\Cache,
     Interfaces\CacheManager,
@@ -131,6 +130,11 @@ class ServiceManager implements ServiceManagerInterface
         return $this->config;
     }
 
+    /**
+     * Returns the class names of all the services that are discoverable.
+     *
+     * @return string[]
+     */
     public function getServiceClassNames(): array
     {
         return array_unique($this->config->mapping()->getAll());

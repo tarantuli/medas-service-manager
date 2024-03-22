@@ -95,6 +95,11 @@ class ServiceManager implements ServiceManagerInterface
         return $config;
     }
 
+    private function initializeYourself(): void
+    {
+        $this->bindImplementation($this->cacheManager, CacheManager::class);
+    }
+
     private function initializePackages(): void
     {
         foreach ($this->config->registeredPackages() as $package) {
@@ -106,11 +111,6 @@ class ServiceManager implements ServiceManagerInterface
 
             $this->initializedPackages[$package::class] = true;
         }
-    }
-
-    public function initializeYourself(): void
-    {
-        $this->bindImplementation($this->cacheManager, CacheManager::class);
     }
 
     public function __destruct()
@@ -137,7 +137,10 @@ class ServiceManager implements ServiceManagerInterface
     }
 
     /**
-     * The return value is an object of type $type. This is specified in PhpStorm in .phpstorm.meta.php
+     * The return value is an object of type `$type`.
+     */
+    /*
+     * This is specified in PhpStorm in .phpstorm.meta.php
      */
     #[Entrypoint]
     public function resolve(string $type): object

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{Attributes\Entrypoint,
+use Medas\Core\{
+    Attributes\Entrypoint,
     CorePackage,
     Interfaces\Cache,
     Interfaces\CacheManager,
     Interfaces\ServiceManager as ServiceManagerInterface
 };
 use Medas\ObjectInstantiator\ObjectInstantiator;
-use Medas\ServiceManager\Cache\CacheManager as OurCacheManager;
+use Medas\ServiceManager\Cache\CacheManager as CacheCacheManager;
 
 class ServiceManager implements ServiceManagerInterface
 {
@@ -74,7 +75,7 @@ class ServiceManager implements ServiceManagerInterface
 
     private function initializeCacheManager(Cache|null $cache): void
     {
-        $this->cacheManager = new OurCacheManager();
+        $this->cacheManager = new CacheCacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);

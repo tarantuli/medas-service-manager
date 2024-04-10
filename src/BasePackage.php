@@ -15,4 +15,14 @@ abstract class BasePackage implements Package
     {
         // Do nothing
     }
+
+    public function hasMarkdownDocumentation(): bool
+    {
+        return false;
+    }
+
+    public function markdownDocumentationDirectory(): string
+    {
+        return '../documentation';
+    }
 }

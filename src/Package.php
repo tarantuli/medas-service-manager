@@ -18,7 +18,7 @@ interface Package extends IsSingleton
     public function postInstall(): void;
 
     /**
-     * Whether the package has a directory containing markdown documentation.
+     * Whether the package has a directory containing markdown documentation, starting with an index.md file.
      */
     public function hasMarkdownDocumentation(): bool;
 

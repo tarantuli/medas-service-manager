@@ -9,7 +9,8 @@ use Medas\Core\{
     Caching\NoopCache,
     Interfaces\Cache,
     Interfaces\CacheManager as CacheManagerInterface,
-    Interfaces\Clearable
+    Interfaces\Clearable,
+    Interfaces\MemoryCache
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
@@ -29,6 +30,13 @@ class CacheManager implements CacheManagerInterface
     {
         if ($name === 'default' && !array_key_exists($name, $this->caches)) {
             $this->register(new NoopCache());
+        }
+
+        if ($name === 'memory' && !array_key_exists($name, $this->caches)) {
+            $this->register(
+                medas()->objectInstantiator()->instantiate(MemoryCache::class),
+                'memory'
+            );
         }
 
         if (!array_key_exists($name, $this->caches)) {

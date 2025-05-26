@@ -10,7 +10,8 @@ use Medas\Core\{
     Interfaces\Cache,
     Interfaces\CacheManager as CacheManagerInterface,
     Interfaces\Clearable,
-    Interfaces\MemoryCache
+    Interfaces\MemoryCache,
+    Serializers\NoopSerializer
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
@@ -26,7 +27,6 @@ class CacheManager implements CacheManagerInterface
         // so don't add more dependencies, expecting them to be injected.
     }
 
-
     public function get(string $name = 'default'): Cache
     {
         if ($name === 'default' && !array_key_exists($name, $this->caches)) {
@@ -34,10 +34,10 @@ class CacheManager implements CacheManagerInterface
         }
 
         if ($name === 'memory' && !array_key_exists($name, $this->caches)) {
-            $this->register(
-                medas()->objectInstantiator()->instantiate(MemoryCache::class),
-                'memory'
-            );
+            $className = sm()->findImplementingClass(MemoryCache::class);
+            $memoryCache = new $className(new NoopSerializer());
+
+            $this->register($memoryCache, 'memory');
         }
 
         if (!array_key_exists($name, $this->caches)) {

@@ -26,6 +26,7 @@ class CacheManager implements CacheManagerInterface
         // so don't add more dependencies, expecting them to be injected.
     }
 
+
     public function get(string $name = 'default'): Cache
     {
         if ($name === 'default' && !array_key_exists($name, $this->caches)) {

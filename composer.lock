@@ -61,12 +61,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:tarantuli/medas-core.git",
-                "reference": "05b5f1990e75f3d9ce2dadf045e72cb02919e1a3"
+                "reference": "52354db336948e72eeef049a4ef43dda097d487d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/05b5f1990e75f3d9ce2dadf045e72cb02919e1a3",
-                "reference": "05b5f1990e75f3d9ce2dadf045e72cb02919e1a3",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/52354db336948e72eeef049a4ef43dda097d487d",
+                "reference": "52354db336948e72eeef049a4ef43dda097d487d",
                 "shasum": ""
             },
             "require": {
@@ -104,7 +104,7 @@
                 "source": "https://github.com/tarantuli/medas-core/tree/dev",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2025-05-26T09:23:44+00:00"
+            "time": "2025-05-27T07:45:03+00:00"
         },
         {
             "name": "morphp/medas-object-instantiator",

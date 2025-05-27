@@ -11,6 +11,7 @@ use Medas\Core\{
     Interfaces\CacheManager as CacheManagerInterface,
     Interfaces\Clearable,
     Interfaces\MemoryCache,
+    Interfaces\NonPersistentCache,
     Serializers\NoopSerializer
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
@@ -68,5 +69,16 @@ class CacheManager implements CacheManagerInterface
                 $cache->clear();
             }
         }
+    }
+
+    public function hasPersisentCache(): bool
+    {
+        foreach ($this->caches as $cache) {
+            if (!$cache instanceof NonPersistentCache) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

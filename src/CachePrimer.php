@@ -17,6 +17,15 @@ readonly class CachePrimer
 
     public function prime(): void
     {
+        if ($this->cacheManager->hasPersisentCache()) {
+            $this->checkServices();
+        }
+
+        $this->registerCacheDirectories();
+    }
+
+    private function checkServices(): void
+    {
         foreach ($this->serviceManager->getServiceClassNames() as $serviceName) {
             if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
                 /** @var PrimesCache $service */
@@ -25,8 +34,6 @@ readonly class CachePrimer
                 $service->primeCache();
             }
         }
-
-        $this->registerCacheDirectories();
     }
 
     private function registerCacheDirectories(): void

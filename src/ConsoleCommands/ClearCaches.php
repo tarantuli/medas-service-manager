@@ -28,6 +28,11 @@ readonly class ClearCaches extends BaseConsoleCommand
         return 'clear-caches';
     }
 
+    public function aliases(): array
+    {
+        return ['clear-cache'];
+    }
+
     public function description(): string
     {
         return 'Clears all the caches';

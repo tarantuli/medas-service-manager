@@ -6,5 +6,5 @@ namespace Medas\ServiceManager\ErrorHandling;
 
 interface ExceptionHandler
 {
-    public function handle(\Throwable $throwable): void;
+    public function handleException(\Throwable $throwable): void;
 }

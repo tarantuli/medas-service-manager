@@ -28,7 +28,7 @@ class ExceptionHandlerManager
     public function handle(\Throwable $exception): void
     {
         foreach ($this->config->exceptionHandlers() as $handler) {
-            $handler->handle($exception);
+            $handler->handleException($exception);
         }
     }
 }

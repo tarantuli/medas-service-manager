@@ -17,6 +17,9 @@ class ServiceConfig
     /** @var Package[] */
     private array $registeredPackages = [];
 
+    /** @var ErrorHandling\ExceptionHandler[] */
+    private array $exceptionHandlers = [];
+
     /** @var ParameterResolver[] */
     private array $parameterResolvers = [];
 
@@ -96,6 +99,19 @@ class ServiceConfig
         return $this->mustBeSavedToCache || (!$this->wasCached);
     }
 
+    public function addExceptionHandler(ErrorHandling\ExceptionHandler $exceptionHandler): self
+    {
+        foreach ($this->exceptionHandlers as $handler) {
+            if ($handler::class === $exceptionHandler::class) {
+                return $this;
+            }
+        }
+
+        $this->exceptionHandlers[] = $exceptionHandler;
+
+        return $this;
+    }
+
     public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
         foreach ($this->parameterResolvers as $resolver) {
@@ -130,6 +146,11 @@ class ServiceConfig
         );
 
         return $this;
+    }
+
+    public function exceptionHandlers(): array
+    {
+        return $this->exceptionHandlers;
     }
 
     public function parameterResolvers(): array

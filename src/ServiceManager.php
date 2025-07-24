@@ -98,6 +98,8 @@ class ServiceManager implements ServiceManagerInterface
     private function initializeYourself(): void
     {
         $this->bindImplementation($this->cacheManager, CacheManager::class);
+
+        new ErrorHandling\ExceptionHandlerManager();
     }
 
     private function initializePackages(): void

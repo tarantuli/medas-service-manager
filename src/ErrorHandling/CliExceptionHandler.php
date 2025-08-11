@@ -23,7 +23,7 @@ readonly class CliExceptionHandler implements ExceptionHandler
     public function handleException(\Throwable $exception): void
     {
         if (PHP_SAPI === 'cli') {
-            echo implode("\n", $this->throwableNormalizer->normalize($exception)), "\n\n";
+            echo json_encode($this->throwableNormalizer->normalize($exception), JSON_PRETTY_PRINT), "\n\n";
         }
     }
 }

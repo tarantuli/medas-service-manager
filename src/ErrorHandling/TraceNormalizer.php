@@ -28,8 +28,8 @@ readonly class TraceNormalizer
             }
 
             $paths[] = [
-                'file' => $trace['file'],
-                'line' => $trace['line'],
+                'file' => $trace['file'] ?? '[main]',
+                'line' => $trace['line'] ?? 0,
                 'function' => $trace['function'],
                 'arguments' => $arguments,
             ];

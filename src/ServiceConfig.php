@@ -39,7 +39,7 @@ class ServiceConfig
 
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder());
-        $this->addExceptionHandler(ErrorHandling\CliExceptionHandler::create());
+        $this->addExceptionHandler(new ErrorHandling\CliExceptionHandler());
     }
 
     public function addPackage(Package $package, bool $doInitialize = false): self

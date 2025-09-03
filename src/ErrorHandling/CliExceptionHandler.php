@@ -9,21 +9,70 @@ use Medas\Core\Attributes\Service;
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler
 {
-    public static function create(): static
-    {
-        return new static(new ThrowableNormalizer(new TraceNormalizer()));
-    }
-
-    public function __construct(
-        private ThrowableNormalizer $throwableNormalizer,
-    )
-    {
-    }
-
     public function handleException(\Throwable $exception): void
     {
-        if (PHP_SAPI === 'cli') {
-            echo json_encode($this->throwableNormalizer->normalize($exception), JSON_PRETTY_PRINT), "\n\n";
+        if (PHP_SAPI !== 'cli') {
+            return;
         }
+
+        $this->printThrowable($exception);
+    }
+
+    public function printThrowable(\Throwable $exception): void
+    {
+        foreach (array_reverse($exception->getTrace()) as $trace) {
+            if (isset($trace['file'])) {
+                printf("%s:%u\n", $trace['file'], $trace['line']);
+            }
+            else {
+                echo "[main]\n";
+            }
+
+            if (isset($trace['class'])) {
+                printf("  %s::%s()\n", $trace['class'], $trace['function']);
+
+                try {
+                    $parameters = (new \ReflectionMethod($trace['class'], $trace['function']))->getParameters();
+                }
+                catch (\ReflectionException) {
+                    $parameters = null;
+                }
+            }
+            else {
+                printf("  %s()\n", $trace['function']);
+
+                $parameters = null;
+            }
+
+            foreach ($trace['args'] ?? [] as $index => $argument) {
+                printf("    %s: ", $parameters ? $parameters[$index]->name : $index);
+
+                if (is_array($argument)) {
+                    try {
+                        $argument = json_encode($argument);
+                    }
+                    catch (\Exception) {
+                        $argument = "array (... cannot be serialized ...)";
+                    }
+                }
+
+                if (is_string($argument) && mb_detect_encoding($argument, 'UTF-8')) {
+                    printf("%s\n", mb_substr($argument, 0, 156));
+                }
+                else {
+                    printf("%s\n", get_debug_type($argument));
+                }
+            }
+
+            printf("\n");
+        }
+
+        printf(
+            "\n%s:%u [%u]\n%s\n\n",
+            $exception->getFile(),
+            $exception->getLine(),
+            $exception->getCode(),
+            $exception->getMessage()
+        );
     }
 }

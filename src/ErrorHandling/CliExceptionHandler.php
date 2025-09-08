@@ -45,7 +45,12 @@ readonly class CliExceptionHandler implements ExceptionHandler
             }
 
             foreach ($trace['args'] ?? [] as $index => $argument) {
-                printf("    %s: ", $parameters ? $parameters[$index]->name : $index);
+                printf(
+                    "    %s: ",
+                    $parameters && array_key_exists($index, $parameters)
+                        ? $parameters[$index]->name
+                        : $index
+                );
 
                 if (is_array($argument)) {
                     try {

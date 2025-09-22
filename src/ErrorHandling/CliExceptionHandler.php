@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\Attributes\Service;
+use Medas\Core\{Attributes\Service, StringMaker};
 
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler
@@ -61,11 +61,19 @@ readonly class CliExceptionHandler implements ExceptionHandler
                     }
                 }
 
-                if (is_string($argument) && mb_detect_encoding($argument, 'UTF-8')) {
+                $type = get_debug_type($argument);
+
+                if (class_exists($type)) {
+                    printf("%s[%u]\n", $type, spl_object_id($argument));
+                }
+                elseif (!is_scalar($argument)) {
+                    printf("%s\n", $type);
+                }
+                elseif (is_string($argument) && mb_detect_encoding($argument, 'UTF-8')) {
                     printf("%s\n", mb_substr($argument, 0, 156));
                 }
                 else {
-                    printf("%s\n", get_debug_type($argument));
+                    printf("%s\n", StringMaker::instance()->forceUtf8((string) $argument));
                 }
             }
 

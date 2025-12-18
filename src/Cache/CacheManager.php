@@ -28,7 +28,7 @@ class CacheManager implements CacheManagerInterface
         // so don't add more dependencies, expecting them to be injected.
     }
 
-    public function get(string $name = null): Cache
+    public function get(?string $name = null): Cache
     {
         if ($name === null) {
             $name = 'default';
@@ -77,12 +77,6 @@ class CacheManager implements CacheManagerInterface
 
     public function hasPersisentCache(): bool
     {
-        foreach ($this->caches as $cache) {
-            if (!$cache instanceof NonPersistentCache) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->caches, fn($cache) => !$cache instanceof NonPersistentCache);
     }
 }

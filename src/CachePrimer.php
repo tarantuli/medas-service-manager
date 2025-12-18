@@ -27,7 +27,7 @@ readonly class CachePrimer
     private function checkServices(): void
     {
         foreach ($this->serviceManager->getServiceClassNames() as $serviceName) {
-            if ((new \ReflectionClass($serviceName))->implementsInterface(PrimesCache::class)) {
+            if (new \ReflectionClass($serviceName)->implementsInterface(PrimesCache::class)) {
                 /** @var PrimesCache $service */
                 $service = $this->serviceManager->resolve($serviceName);
 

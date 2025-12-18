@@ -30,7 +30,7 @@ class ServiceConfig
     private bool $mustBeSavedToCache = false;
 
     public function __construct(
-        ErrorHandling\ErrorHandler $errorHandler = null,
+        ?ErrorHandling\ErrorHandler $errorHandler = null,
     )
     {
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
@@ -102,10 +102,8 @@ class ServiceConfig
 
     public function addExceptionHandler(ErrorHandling\ExceptionHandler $exceptionHandler): self
     {
-        foreach ($this->exceptionHandlers as $handler) {
-            if ($handler::class === $exceptionHandler::class) {
-                return $this;
-            }
+        if (array_any($this->exceptionHandlers, fn($handler) => $handler::class === $exceptionHandler::class)) {
+            return $this;
         }
 
         $this->exceptionHandlers[] = $exceptionHandler;
@@ -115,10 +113,8 @@ class ServiceConfig
 
     public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
-        foreach ($this->parameterResolvers as $resolver) {
-            if ($resolver::class === $parameterResolver::class) {
-                return $this;
-            }
+        if (array_any($this->parameterResolvers, fn($resolver) => $resolver::class === $parameterResolver::class)) {
+            return $this;
         }
 
         $this->parameterResolvers[] = $parameterResolver;
@@ -133,10 +129,8 @@ class ServiceConfig
 
     public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
     {
-        foreach ($this->argumentProcessors as $processor) {
-            if ($processor::class === $argumentProcessor::class) {
-                return $this;
-            }
+        if (array_any($this->argumentProcessors, fn($processor) => $processor::class === $argumentProcessor::class)) {
+            return $this;
         }
 
         $this->argumentProcessors[] = $argumentProcessor;

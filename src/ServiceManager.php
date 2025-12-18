@@ -42,8 +42,8 @@ class ServiceManager implements ServiceManagerInterface
 
     #[Entrypoint]
     public function __construct(
-        ?\Closure $initializer = null,
-        ?Cache    $cache = null,
+        \Closure|null $initializer = null,
+        Cache|null    $cache = null,
     )
     {
         CorePackage::instance()->loadGlobalFunctions();

@@ -32,7 +32,10 @@ readonly class CliExceptionHandler implements ExceptionHandler
                 printf("  %s::%s()\n", $trace['class'], $trace['function']);
 
                 try {
-                    $parameters = new \ReflectionMethod($trace['class'], $trace['function'])->getParameters();
+                    $parameters = new \ReflectionMethod(
+                        $trace['class'],
+                        $trace['function']
+                    )->getParameters();
                 }
                 catch (\ReflectionException) {
                     $parameters = null;

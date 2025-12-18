@@ -12,8 +12,8 @@ use Medas\ServiceManager\Cache\CacheManager;
 readonly class ClearCaches extends BaseConsoleCommand
 {
     public function __construct(
-        private Group        $group,
         private CacheManager $cacheManager,
+        private Group        $group,
     )
     {
     }

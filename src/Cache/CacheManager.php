@@ -28,7 +28,7 @@ class CacheManager implements CacheManagerInterface
         // so don't add more dependencies, expecting them to be injected.
     }
 
-    public function get(?string $name = null): Cache
+    public function get(string|null $name = null): Cache
     {
         if ($name === null) {
             $name = 'default';

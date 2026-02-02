@@ -6,6 +6,11 @@ namespace Medas\ServiceManager;
 
 abstract class BasePackage implements Package
 {
+    public function priority(): int
+    {
+        return 0;
+    }
+
     public function initialize(ServiceConfig $config): void
     {
         // Do nothing

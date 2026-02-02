@@ -8,6 +8,8 @@ use Medas\Core\Interfaces\IsSingleton;
 
 interface Package extends IsSingleton
 {
+    public function priority(): int;
+
     /** @return Package[] */
     public function dependencies(): array;
 

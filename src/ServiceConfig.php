@@ -30,7 +30,7 @@ class ServiceConfig
     private bool $mustBeSavedToCache = false;
 
     public function __construct(
-        ?ErrorHandling\ErrorHandler $errorHandler = null,
+        ErrorHandling\ErrorHandler|null $errorHandler = null,
     )
     {
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
@@ -51,6 +51,11 @@ class ServiceConfig
         $this->addPackages($package->dependencies());
 
         $this->registeredPackages[$package::class] = $package;
+
+        usort(
+            $this->registeredPackages,
+            fn(Package $a, Package $b) => -$a->priority() <=> $b->priority()
+        );
 
         $this->mappingManager->addPackage($package);
 

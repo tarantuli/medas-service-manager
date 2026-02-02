@@ -52,7 +52,7 @@ class ServiceConfig
 
         $this->registeredPackages[$package::class] = $package;
 
-        usort(
+        uasort(
             $this->registeredPackages,
             fn(Package $a, Package $b) => -$a->priority() <=> $b->priority()
         );
@@ -103,6 +103,15 @@ class ServiceConfig
     public function mustBeSavedToCache(): bool
     {
         return $this->mustBeSavedToCache || (!$this->wasCached);
+    }
+
+    public function addExceptionHandlers(...$exceptionHandlers): self
+    {
+        foreach ($exceptionHandlers as $exceptionHandler) {
+            $this->addExceptionHandler($exceptionHandler);
+        }
+
+        return $this;
     }
 
     public function addExceptionHandler(ErrorHandling\ExceptionHandler $exceptionHandler): self

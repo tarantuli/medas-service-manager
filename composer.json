@@ -17,7 +17,7 @@
     "morphp/medas-object-instantiator": "^2",
     "morphp/medas-console": "^2",
     "ext-mbstring": "*",
-    "php": "^8.3"
+    "php": "^8.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^9"

@@ -116,8 +116,10 @@ class ServiceConfig
 
     public function addExceptionHandler(ErrorHandling\ExceptionHandler $exceptionHandler): self
     {
-        if (array_any($this->exceptionHandlers, fn($handler) => $handler::class === $exceptionHandler::class)) {
-            return $this;
+        foreach ($this->exceptionHandlers as $handler) {
+            if ($handler::class === $exceptionHandler::class) {
+                return $this;
+            }
         }
 
         $this->exceptionHandlers[] = $exceptionHandler;
@@ -127,8 +129,10 @@ class ServiceConfig
 
     public function addParameterResolver(ParameterResolver $parameterResolver): self
     {
-        if (array_any($this->parameterResolvers, fn($resolver) => $resolver::class === $parameterResolver::class)) {
-            return $this;
+        foreach ($this->parameterResolvers as $resolver) {
+            if ($resolver::class === $parameterResolver::class) {
+                return $this;
+            }
         }
 
         $this->parameterResolvers[] = $parameterResolver;
@@ -143,8 +147,10 @@ class ServiceConfig
 
     public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
     {
-        if (array_any($this->argumentProcessors, fn($processor) => $processor::class === $argumentProcessor::class)) {
-            return $this;
+        foreach ($this->argumentProcessors as $processor) {
+            if ($processor::class === $argumentProcessor::class) {
+                return $this;
+            }
         }
 
         $this->argumentProcessors[] = $argumentProcessor;

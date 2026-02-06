@@ -77,6 +77,12 @@ class CacheManager implements CacheManagerInterface
 
     public function hasPersisentCache(): bool
     {
-        return array_any($this->caches, fn($cache) => !$cache instanceof NonPersistentCache);
+        foreach ($this->caches as $cache) {
+            if (!$cache instanceof NonPersistentCache) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

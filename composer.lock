@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2bbeb719109ebef620fd2993c744f750",
+    "content-hash": "9b3b407612d317fafe0ca83cb5227047",
     "packages": [
         {
             "name": "morphp/medas-console",
@@ -53,16 +53,16 @@
         },
         {
             "name": "morphp/medas-core",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-core.git",
-                "reference": "27956710a58d626d41215feaafdb6eb56b906dc6"
+                "reference": "cd37d0e0e02db6f2283b63ecef68b264937948ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/27956710a58d626d41215feaafdb6eb56b906dc6",
-                "reference": "27956710a58d626d41215feaafdb6eb56b906dc6",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/cd37d0e0e02db6f2283b63ecef68b264937948ac",
+                "reference": "cd37d0e0e02db6f2283b63ecef68b264937948ac",
                 "shasum": ""
             },
             "require": {
@@ -92,10 +92,10 @@
                 "medas"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-core/tree/v3.0.1",
+                "source": "https://github.com/tarantuli/medas-core/tree/v3.0.2",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2026-02-17T14:31:25+00:00"
+            "time": "2026-02-17T14:42:54+00:00"
         },
         {
             "name": "morphp/medas-object-instantiator",

@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{Attributes\Service, Interfaces\ArgumentProcessor, Interfaces\ParameterResolver};
+use Medas\Core\{
+    Attributes\Service,
+    Interfaces\ArgumentProcessor,
+    Interfaces\ParameterResolver,
+    Interfaces\ServiceConfig as ServiceConfigInterface
+};
 
 #[Service]
-class ServiceConfig
+class ServiceConfig implements ServiceConfigInterface
 {
     private Mapping\MappingManager $mappingManager;
     private Mapping\ServiceMapping $mapping;

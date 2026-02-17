@@ -16,7 +16,7 @@ use Medas\ServiceManager\Cache\CacheManager as CacheCacheManager;
 
 class ServiceManager implements ServiceManagerInterface
 {
-    private const CONFIG_CACHE_KEY = ServiceConfig::class;
+    private const string CONFIG_CACHE_KEY = ServiceConfig::class;
 
     public static function postInstall(): void
     {
@@ -59,7 +59,7 @@ class ServiceManager implements ServiceManagerInterface
         );
 
         // This should be instantiated *after* fetching the mapping through the config
-        medas()->setObjectInstantiator($this->services[ObjectInstantiator::class] = new ObjectInstantiator());
+        medas()->setObjectInstantiator($this->services[ObjectInstantiator::class] = new ObjectInstantiator($this));
 
         $this->config->errorHandler()->set();
         $this->initializeYourself();

@@ -1,7 +1,7 @@
 {
   "name": "morphp/medas-service-manager",
   "description": "Medas service manager",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "keywords": [
     "services"
   ],
@@ -13,7 +13,7 @@
   ],
   "type": "library",
   "require": {
-    "morphp/medas-core": "^2",
+    "morphp/medas-core": "^3",
     "morphp/medas-object-instantiator": "^2",
     "morphp/medas-console": "^2",
     "ext-mbstring": "*",

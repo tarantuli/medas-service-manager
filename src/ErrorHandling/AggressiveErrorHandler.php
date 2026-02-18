@@ -7,10 +7,10 @@ namespace Medas\ServiceManager\ErrorHandling;
 use Medas\Core\Attributes\Service;
 
 /**
- * This error handler is not very aggressive; it only throws exceptions for errors that are fatal. Useful for production.
+ * This error handler is very aggressive: it will throw an exception on every error. Useful during development.
  */
 #[Service]
-class BasicErrorHandler implements ErrorHandler
+class AggressiveErrorHandler implements ErrorHandler
 {
     public function set(): void
     {
@@ -22,9 +22,7 @@ class BasicErrorHandler implements ErrorHandler
     private function setErrorHandling(): void
     {
         set_error_handler(function ($severity, $message, $file, $line) {
-            if (in_array($severity, [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
-                throw new \ErrorException($message, $severity, $severity, $file, $line);
-            }
+            throw new \ErrorException($message, $severity, $severity, $file, $line);
         });
 
         error_reporting(E_ALL);

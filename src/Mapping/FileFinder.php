@@ -12,9 +12,25 @@ class FileFinder
         // so don't add more dependencies, expecting them to be injected.
     }
 
-    public function recursiveFindByExtension(string $directory, string $extension): \RegexIterator
+    public function recursiveFindByExtension(string $directory, string $extension): \Iterator
     {
-        return $this->recursiveFind($directory, sprintf('/\.%s$/i', preg_quote($extension)));
+        $ext = ltrim($extension, '.');
+        $suffix = '.' . strtolower($ext);
+
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
+            $directory,
+            \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS
+        ));
+
+        return new \CallbackFilterIterator(
+            $iterator,
+            static function (mixed $current) use ($suffix): bool {
+            if (!is_string($current)) {
+                return false;
+            }
+
+            return str_ends_with(strtolower($current), $suffix);
+        });
     }
 
     public function recursiveFind(string $directory, string $pattern): \RegexIterator

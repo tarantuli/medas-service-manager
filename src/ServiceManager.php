@@ -18,6 +18,9 @@ class ServiceManager implements ServiceManagerInterface
 {
     private const string CONFIG_CACHE_KEY = ServiceConfig::class;
 
+    /**
+     * This method should only be called by "composer update" or similar command line scripts.
+     */
     public static function postInstall(): void
     {
         service(CacheManager::class)->clearAll();
@@ -122,8 +125,10 @@ class ServiceManager implements ServiceManagerInterface
                 // Explicitly set the current configuration
                 $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
             }
-            catch (\Exception) {
-                // Do nothing
+            catch (\Exception $exception) {
+                // Write a panic log
+                // A relative path is no problem, because during bootstrap the working directory is set to the project root.
+                error_log($exception->getMessage() . "\n", 3, 'var/logs/service-manager-panic.log');
             }
         }
     }

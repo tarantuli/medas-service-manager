@@ -38,6 +38,7 @@ class ServiceConfig implements ServiceConfigInterface
         ErrorHandling\ErrorHandler|null $errorHandler = null,
     )
     {
+        // Default to the basic error handler, use the aggresive one during development
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
         $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();

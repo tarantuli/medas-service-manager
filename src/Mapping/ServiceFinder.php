@@ -8,32 +8,16 @@ use Medas\Core\Attributes\Service;
 
 class ServiceFinder
 {
-    private FileFinder $fileFinder;
+    private Psr4FileLoader $fileLoader;
 
     public function __construct()
     {
-        // This should not be a service, it is *not* instantiated automatically,
-        // so don't add more dependencies, expecting them to be injected.
-        $this->fileFinder = new FileFinder();
+        $this->fileLoader = new Psr4FileLoader();
     }
 
     public function find(string $directory): array
     {
-        return $this->loadFiles($directory) ? $this->analyseClasses($directory) : [];
-    }
-
-    private function loadFiles(string $directory): bool
-    {
-        $files = $this->fileFinder->recursiveFindByExtension($directory, 'php');
-        $loadedFile = false;
-
-        foreach ($files as $file) {
-            require_once $file;
-
-            $loadedFile = true;
-        }
-
-        return $loadedFile;
+        return $this->fileLoader->load($directory) ? $this->analyseClasses($directory) : [];
     }
 
     private function analyseClasses(string $directory): array

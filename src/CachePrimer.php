@@ -17,7 +17,7 @@ readonly class CachePrimer
 
     public function prime(): void
     {
-        if ($this->cacheManager->hasPersisentCache()) {
+        if ($this->cacheManager->hasPersistentCache()) {
             $this->checkServices();
         }
 
@@ -42,6 +42,7 @@ readonly class CachePrimer
 
         foreach ($this->cacheManager->getAll() as $cache) {
             if ($cache instanceof FileSystemCache) {
+                // A relative path is no problem, because during bootstrap the working directory is set to the project root.
                 $pathToDirectoryToClear = 'var/dirs-to-clear/' . sha1($cache->baseDirectory());
 
                 if (!file_exists($pathToDirectoryToClear)) {

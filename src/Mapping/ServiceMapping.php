@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\ServiceManager\Exceptions\MultipleImplementorsFound;
-
 class ServiceMapping
 {
     /** @var string[] */
@@ -14,7 +12,7 @@ class ServiceMapping
     /** @var bool[] */
     private array $hasSingularMapping = [];
 
-    /** @var array[] */
+    /** @var array[][] */
     private array $allImplementors = [];
 
     public function set(string $type, string $className): bool
@@ -41,7 +39,7 @@ class ServiceMapping
         }
 
         if ($this->hasSingularMapping[$type] === false) {
-            throw new MultipleImplementorsFound($type, $this->allImplementors[$type]);
+            return false;
         }
 
         return true;

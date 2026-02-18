@@ -22,14 +22,14 @@ readonly class CliExceptionHandler implements ExceptionHandler
     {
         foreach (array_reverse($exception->getTrace()) as $trace) {
             if (isset($trace['file'])) {
-                printf("%s:%u\n", $trace['file'], $trace['line']);
+                fprintf(STDERR, "%s:%u\n", $trace['file'], $trace['line']);
             }
             else {
                 echo "[main]\n";
             }
 
             if (isset($trace['class'])) {
-                printf("  %s::%s()\n", $trace['class'], $trace['function']);
+                fprintf(STDERR, "  %s::%s()\n", $trace['class'], $trace['function']);
 
                 try {
                     $parameters = new \ReflectionMethod(
@@ -42,13 +42,14 @@ readonly class CliExceptionHandler implements ExceptionHandler
                 }
             }
             else {
-                printf("  %s()\n", $trace['function']);
+                fprintf(STDERR, "  %s()\n", $trace['function']);
 
                 $parameters = null;
             }
 
             foreach ($trace['args'] ?? [] as $index => $argument) {
-                printf(
+                fprintf(
+                    STDERR,
                     "    %s: ",
                     $parameters && array_key_exists($index, $parameters)
                         ? $parameters[$index]->name
@@ -67,23 +68,24 @@ readonly class CliExceptionHandler implements ExceptionHandler
                 $type = get_debug_type($argument);
 
                 if (class_exists($type)) {
-                    printf("%s[%u]\n", $type, spl_object_id($argument));
+                    fprintf(STDERR, "%s[%u]\n", $type, spl_object_id($argument));
                 }
                 elseif (!is_scalar($argument)) {
-                    printf("%s\n", $type);
+                    fprintf(STDERR, "%s\n", $type);
                 }
                 elseif (is_string($argument) && mb_detect_encoding($argument, 'UTF-8')) {
-                    printf("%s\n", mb_substr($argument, 0, 156));
+                    fprintf(STDERR, "%s\n", mb_substr($argument, 0, 156));
                 }
                 else {
-                    printf("%s\n", StringMaker::instance()->forceUtf8((string) $argument));
+                    fprintf(STDERR, "%s\n", StringMaker::instance()->forceUtf8((string) $argument));
                 }
             }
 
-            printf("\n");
+            fprintf(STDERR, "\n");
         }
 
-        printf(
+        fprintf(
+            STDERR,
             "\n%s:%u [%u]\n%s\n\n",
             $exception->getFile(),
             $exception->getLine(),

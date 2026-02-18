@@ -76,7 +76,37 @@ class DataTree
 
     private function indexToPath(string $index): array
     {
-        return explode('.', $index);
+        $paths = [];
+        $stack = '';
+        $nextIsLiteral = false;
+
+        for ($i = 0; $i < strlen($index); $i++) {
+            if ($nextIsLiteral) {
+                $stack .= $index[$i];
+                $nextIsLiteral = false;
+
+                continue;
+            }
+
+            if ($index[$i] === '.') {
+                $paths[] = $stack;
+                $stack = '';
+
+                continue;
+            }
+
+            if ($index[$i] === '\\') {
+                $nextIsLiteral = true;
+
+                continue;
+            }
+
+            $stack .= $index[$i];
+        }
+
+        $paths[] = $stack;
+
+        return $paths;
     }
 
     public function mergeDefaults(array $values): self

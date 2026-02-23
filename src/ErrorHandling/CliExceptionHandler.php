@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\{Attributes\Service, StringMaker};
+use Medas\Core\{Attributes\Service, Interfaces\ExceptionHandler, StringMaker};
 
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler

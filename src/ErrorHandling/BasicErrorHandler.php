@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\Attributes\Service;
+use Medas\Core\{Attributes\Service, Interfaces\ErrorHandler};
 
 /**
  * This error handler is not very aggressive; it only throws exceptions for errors that are fatal. Useful for production.

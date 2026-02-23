@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
+use Medas\Core\Interfaces\Package;
 use Medas\ObjectInstantiator\{ObjectInstantiator, ParameterResolving\ParameterResolveManager};
-use Medas\ServiceManager\{Cache\CacheManager, Package, ServiceManager};
+use Medas\ServiceManager\{Cache\CacheManager, ServiceManager};
 
 class MappingManager
 {

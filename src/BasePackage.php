@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
+use Medas\Core\Interfaces\{Package, ServiceConfig};
+
 abstract class BasePackage implements Package
 {
     public function priority(): int

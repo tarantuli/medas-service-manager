@@ -7,6 +7,9 @@ namespace Medas\ServiceManager;
 use Medas\Core\{
     Attributes\Service,
     Interfaces\ArgumentProcessor,
+    Interfaces\ErrorHandler,
+    Interfaces\ExceptionHandler,
+    Interfaces\Package,
     Interfaces\ParameterResolver,
     Interfaces\ServiceConfig as ServiceConfigInterface
 };
@@ -17,12 +20,12 @@ class ServiceConfig implements ServiceConfigInterface
     private Mapping\MappingManager $mappingManager;
     private Mapping\ServiceMapping $mapping;
     private array $manualBindings = [];
-    private ErrorHandling\ErrorHandler $errorHandler;
+    private ErrorHandler $errorHandler;
 
     /** @var Package[] */
     private array $registeredPackages = [];
 
-    /** @var ErrorHandling\ExceptionHandler[] */
+    /** @var ExceptionHandler[] */
     private array $exceptionHandlers = [];
 
     /** @var ParameterResolver[] */
@@ -35,7 +38,7 @@ class ServiceConfig implements ServiceConfigInterface
     private bool $mustBeSavedToCache = false;
 
     public function __construct(
-        ErrorHandling\ErrorHandler|null $errorHandler = null,
+        ErrorHandler|null $errorHandler = null,
     )
     {
         // Default to the basic error handler, use the aggresive one during development
@@ -91,7 +94,7 @@ class ServiceConfig implements ServiceConfigInterface
         return $this->mapping;
     }
 
-    public function errorHandler(): ErrorHandling\ErrorHandler
+    public function errorHandler(): ErrorHandler
     {
         return $this->errorHandler;
     }
@@ -120,7 +123,7 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    public function addExceptionHandler(ErrorHandling\ExceptionHandler $exceptionHandler): self
+    public function addExceptionHandler(ExceptionHandler $exceptionHandler): self
     {
         if (array_any($this->exceptionHandlers, fn($handler) => $handler::class === $exceptionHandler::class)) {
             return $this;

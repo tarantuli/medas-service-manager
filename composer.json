@@ -1,7 +1,6 @@
 {
   "name": "morphp/medas-service-manager",
   "description": "Medas service manager",
-  "version": "3.0.5",
   "keywords": [
     "services"
   ],

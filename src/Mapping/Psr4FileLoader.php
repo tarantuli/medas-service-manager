@@ -27,7 +27,7 @@ readonly class Psr4FileLoader
 
         // Resolve PSR-4 mappings from composer.json and "autoload" them via Composer
         // (i.e., trigger the autoloader with class_exists()) instead of require_once'ing files.
-        $composerJson = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'composer.json';
+        $composerJson = dirname($directoryReal, 1) . DIRECTORY_SEPARATOR . 'composer.json';
 
         if (!is_file($composerJson)) {
             return false;

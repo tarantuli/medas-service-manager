@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\Core\Interfaces\Package;
-use Medas\ObjectInstantiator\{ObjectInstantiator, ParameterResolving\ParameterResolveManager};
 use Medas\ServiceManager\{Cache\CacheManager, ServiceManager};
 
 class MappingManager
@@ -27,8 +26,6 @@ class MappingManager
     {
         $defaultMappings = [
             ServiceManager::class,
-            ObjectInstantiator::class,
-            ParameterResolveManager::class,
             CacheManager::class,
         ];
 

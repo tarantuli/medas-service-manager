@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{AsSingleton, CorePackage};
-use Medas\ObjectInstantiator\ObjectInstantiatorPackage;
+use Medas\Core\{AsSingleton, BasePackage, CorePackage};
 
 class ServiceManagerPackage extends BasePackage
 {
@@ -15,7 +14,6 @@ class ServiceManagerPackage extends BasePackage
     {
         return [
             CorePackage::instance(),
-            ObjectInstantiatorPackage::instance(),
         ];
     }
 

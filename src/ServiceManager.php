@@ -9,9 +9,9 @@ use Medas\Core\{
     CorePackage,
     Interfaces\Cache,
     Interfaces\CacheManager,
+    Interfaces\ObjectInstantiator,
     Interfaces\ServiceManager as ServiceManagerInterface
 };
-use Medas\ObjectInstantiator\ObjectInstantiator;
 use Medas\ServiceManager\Cache\CacheManager as CacheCacheManager;
 
 class ServiceManager implements ServiceManagerInterface
@@ -45,8 +45,8 @@ class ServiceManager implements ServiceManagerInterface
 
     #[Entrypoint]
     public function __construct(
-        \Closure|null $initializer = null,
-        Cache|null    $cache = null,
+        \Closure   $initializer,
+        Cache|null $cache = null,
     )
     {
         CorePackage::instance()->loadGlobalFunctions();
@@ -62,8 +62,7 @@ class ServiceManager implements ServiceManagerInterface
         );
 
         // This should be instantiated *after* fetching the mapping through the config
-        medas()->setObjectInstantiator($this->services[ObjectInstantiator::class] = new ObjectInstantiator($this));
-
+        $this->initializeObjectInstantiator();
         $this->config->errorHandler()->set();
         $this->initializeYourself();
         $this->initializePackages();
@@ -85,9 +84,9 @@ class ServiceManager implements ServiceManagerInterface
         }
     }
 
-    private function initializeConfig(\Closure|null $initializer): ServiceConfig
+    private function initializeConfig(\Closure $initializer): ServiceConfig
     {
-        $config = $initializer ? $initializer() : new ServiceConfig();
+        $config = $initializer();
 
         if (!$config instanceof ServiceConfig) {
             throw new Exceptions\InitializerDidNotReturnServiceConfig($config);
@@ -96,6 +95,15 @@ class ServiceManager implements ServiceManagerInterface
         $config->wasNotCached();
 
         return $config;
+    }
+
+    private function initializeObjectInstantiator(): void
+    {
+        $className = $this->config->objectInstantiatorClass();
+        $objectInstantiator = new ($className)($this);
+        medas()->setObjectInstantiator($this->services[$className] = $objectInstantiator);
+
+        $this->config->mapping()->set(ObjectInstantiator::class, $className);
     }
 
     private function initializeYourself(): void

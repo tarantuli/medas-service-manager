@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager;
 
-use Medas\Core\{
-    Attributes\Service,
-    Interfaces\ArgumentProcessor,
-    Interfaces\ErrorHandler,
-    Interfaces\ExceptionHandler,
-    Interfaces\Package,
-    Interfaces\ParameterResolver,
-    Interfaces\ServiceConfig as ServiceConfigInterface
+use Medas\Core\Interfaces\{
+    ArgumentProcessor,
+    ErrorHandler,
+    ExceptionHandler,
+    Package,
+    ParameterResolver,
+    ServiceConfig as ServiceConfigInterface
 };
 
-#[Service]
 class ServiceConfig implements ServiceConfigInterface
 {
     private Mapping\MappingManager $mappingManager;
@@ -36,8 +34,10 @@ class ServiceConfig implements ServiceConfigInterface
 
     private bool $wasCached = true;
     private bool $mustBeSavedToCache = false;
+    private string $objectInstantiatorClass;
 
     public function __construct(
+        string            $objectInstantiatorClass,
         ErrorHandler|null $errorHandler = null,
     )
     {
@@ -45,6 +45,7 @@ class ServiceConfig implements ServiceConfigInterface
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
         $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();
+        $this->objectInstantiatorClass = $objectInstantiatorClass;
 
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder());
@@ -199,5 +200,10 @@ class ServiceConfig implements ServiceConfigInterface
     ): void
     {
         $this->manualBindings[$class][$method][$parameter] = $value;
+    }
+
+    public function objectInstantiatorClass(): string
+    {
+        return $this->objectInstantiatorClass;
     }
 }

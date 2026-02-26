@@ -53,16 +53,16 @@
         },
         {
             "name": "morphp/medas-core",
-            "version": "v3.0.9",
+            "version": "v3.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-core.git",
-                "reference": "16a47d87a605800e64f89c454c3e00022456ee6f"
+                "reference": "c2890df2b82206003845ccbe8ec6736d7b13ab47"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/16a47d87a605800e64f89c454c3e00022456ee6f",
-                "reference": "16a47d87a605800e64f89c454c3e00022456ee6f",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/c2890df2b82206003845ccbe8ec6736d7b13ab47",
+                "reference": "c2890df2b82206003845ccbe8ec6736d7b13ab47",
                 "shasum": ""
             },
             "require": {
@@ -77,7 +77,11 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Medas\\Core\\": "src/",
+                    "Medas\\Core\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
                     "Medas\\CoreTest\\": "tests/"
                 }
             },
@@ -92,10 +96,10 @@
                 "medas"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-core/tree/v3.0.9",
+                "source": "https://github.com/tarantuli/medas-core/tree/v3.0.10",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2026-02-23T12:10:47+00:00"
+            "time": "2026-02-26T15:56:04+00:00"
         },
         {
             "name": "morphp/medas-object-instantiator",

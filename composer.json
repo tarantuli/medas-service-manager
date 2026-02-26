@@ -13,7 +13,6 @@
   "type": "library",
   "require": {
     "morphp/medas-core": "^3",
-    "morphp/medas-object-instantiator": "^3",
     "morphp/medas-console": "^3",
     "ext-mbstring": "*",
     "php": "^8.4"
@@ -23,7 +22,11 @@
   },
   "autoload": {
     "psr-4": {
-      "Medas\\ServiceManager\\": "src/",
+      "Medas\\ServiceManager\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "Medas\\ServiceManagerTest\\": "tests/"
     }
   }

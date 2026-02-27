@@ -45,10 +45,7 @@ final class DataTreeTest extends TestCase
         $tree->set('key', null);
 
         self::assertTrue($tree->has('key'));
-
-        $this->expectException(IndexNotFoundInDataTree::class);
-
-        $tree->get('key');
+        self::assertNull($tree->get('key'));
     }
 
     public function testNullValueInDefaultsIsStored(): void
@@ -56,10 +53,7 @@ final class DataTreeTest extends TestCase
         $tree = new DataTree(['key' => null]);
 
         self::assertTrue($tree->has('key'));
-
-        $this->expectException(IndexNotFoundInDataTree::class);
-
-        $tree->get('key');
+        self::assertNull($tree->get('key'));
     }
 
     // -------------------------------------------------------------------------

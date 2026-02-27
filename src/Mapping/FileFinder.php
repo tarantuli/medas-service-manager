@@ -32,15 +32,4 @@ class FileFinder
             return str_ends_with(strtolower($current), $suffix);
         });
     }
-
-    public function recursiveFind(string $directory, string $pattern): \RegexIterator
-    {
-        return new \RegexIterator(
-            new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
-                $directory,
-                \FilesystemIterator::CURRENT_AS_PATHNAME | \FilesystemIterator::SKIP_DOTS
-            )),
-            $pattern
-        );
-    }
 }

@@ -75,13 +75,14 @@ final class PrioritizedRegistryTest extends TestCase
     public function testItemsSortedByPriorityDescending(): void
     {
         $registry = $this->makeRegistryWithPriority();
-        $low = (object) ['priority' => 1];
-        $high = (object) ['priority' => 10];
-        $medium = (object) ['priority' => 5];
 
-        $registry->add($low, true);
-        $registry->add($high, true);
-        $registry->add($medium, true);
+        $low    = new readonly class(1)  { public function __construct(public int $priority) {} };
+        $high   = new readonly class(10) { public function __construct(public int $priority) {} };
+        $medium = new readonly class(5)  { public function __construct(public int $priority) {} };
+
+        $registry->add($low);
+        $registry->add($high);
+        $registry->add($medium);
 
         self::assertSame([$high, $medium, $low], $registry->all());
     }
@@ -89,11 +90,12 @@ final class PrioritizedRegistryTest extends TestCase
     public function testNewItemInsertedInCorrectSortPosition(): void
     {
         $registry = $this->makeRegistryWithPriority();
-        $low = (object) ['priority' => 1];
-        $high = (object) ['priority' => 10];
 
-        $registry->add($low, true);
-        $registry->add($high, true);
+        $low  = new readonly class(1)  { public function __construct(public int $priority) {} };
+        $high = new readonly class(10) { public function __construct(public int $priority) {} };
+
+        $registry->add($low);
+        $registry->add($high);
 
         self::assertSame([$high, $low], $registry->all());
     }
@@ -103,6 +105,6 @@ final class PrioritizedRegistryTest extends TestCase
     // -------------------------------------------------------------------------
     private function makeRegistryWithPriority(): PrioritizedRegistry
     {
-        return new PrioritizedRegistry(fn(object $item) => $item->priority);
+        return new PrioritizedRegistry(fn(object $item) => $item->priority); // priority is a typed property on the anonymous class
     }
 }

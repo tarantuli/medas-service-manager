@@ -81,20 +81,36 @@ class DataTree
 
     public function get(string $index): mixed
     {
-        return $this->find($index)[0] ?? throw new IndexNotFoundInDataTree($index);
+        $result = $this->find($index);
+
+        if ($result === null) {
+            throw new IndexNotFoundInDataTree($index);
+        }
+
+        return $result[0];
     }
 
     /** @return History[] */
     public function getHistory(string $index): array
     {
-        return $this->find($index)[1] ?? throw new IndexNotFoundInDataTree($index);
+        $result = $this->find($index);
+
+        if ($result === null) {
+            throw new IndexNotFoundInDataTree($index);
+        }
+
+        return $result[1];
     }
 
     public function getSource(string $index): string
     {
-        $history = $this->find($index)[1] ?? throw new IndexNotFoundInDataTree($index);
+        $result = $this->find($index);
 
-        return $history[array_key_last($history)]->source;
+        if ($result === null) {
+            throw new IndexNotFoundInDataTree($index);
+        }
+
+        return $result[1][array_key_last($result[1])]->source;
     }
 
     public function getElse(string $index, mixed $fallback): mixed
@@ -133,8 +149,9 @@ class DataTree
         $paths = [];
         $stack = '';
         $nextIsLiteral = false;
+        $len = strlen($index);
 
-        for ($i = 0; $i < strlen($index); $i++) {
+        for ($i = 0; $i < $len; $i++) {
             if ($nextIsLiteral) {
                 $stack .= $index[$i];
                 $nextIsLiteral = false;

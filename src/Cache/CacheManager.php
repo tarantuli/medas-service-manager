@@ -49,9 +49,12 @@ class CacheManager implements CacheManagerInterface
 
         if ($name === 'memory' && !array_key_exists($name, $this->caches)) {
             $className = $this->serviceManager->findImplementingClass(MemoryCache::class);
-            $memoryCache = new $className(new NoopSerializer());
 
-            $this->register($memoryCache, 'memory');
+            if ($className === null) {
+                throw new CacheNotFoundByName('memory');
+            }
+
+            $this->register(new $className(new NoopSerializer()), 'memory');
         }
 
         if (!array_key_exists($name, $this->caches)) {

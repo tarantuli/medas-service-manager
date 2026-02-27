@@ -16,13 +16,11 @@ class ImplementorFinder implements ImplementorFinderInterface
         $implementors = [];
 
         foreach ($serviceManager->getServiceClassNames() as $className) {
-            $class = new \ReflectionClass($className);
-
-            if ($class->isAbstract()) {
+            if (new \ReflectionClass($className)->isAbstract()) {
                 continue;
             }
 
-            if (!$class->implementsInterface($interface)) {
+            if (!is_a($className, $interface, allow_string: true)) {
                 continue;
             }
 

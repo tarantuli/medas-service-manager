@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\{Attributes\Service, Interfaces\ParameterResolver, ParameterResolverResult};
+use Medas\Core\{Interfaces\ParameterResolver, ParameterResolverResult};
 use Medas\ServiceManager\ServiceConfig;
 
-#[Service]
 readonly class ManualBindingFinder implements ParameterResolver
 {
     public function __construct(

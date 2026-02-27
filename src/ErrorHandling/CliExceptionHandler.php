@@ -86,7 +86,7 @@ readonly class CliExceptionHandler implements ExceptionHandler
 
         fprintf(
             STDERR,
-            "\n%s:%u [%u]\n%s\n\n",
+            "\n%s:%u [%s]\n%s\n\n",
             $exception->getFile(),
             $exception->getLine(),
             $exception->getCode(),

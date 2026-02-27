@@ -37,7 +37,13 @@ abstract readonly class BaseErrorHandler implements ErrorHandler
         $error = error_get_last();
 
         if ($error !== null && $error['type'] === E_ERROR) {
-            fprintf(STDERR, "[fatal error]\n");
+            fprintf(
+                STDERR,
+                "[fatal error] %s in %s on line %d\n",
+                $error['message'],
+                $error['file'],
+                $error['line'],
+            );
         }
     }
 }

@@ -6,13 +6,12 @@ namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\Exceptions\ServiceNotFoundByType;
 use Medas\ServiceManager\ServiceManager;
-use Medas\ServiceManagerTest\BaseTestClass;
-use Medas\ServiceManagerTest\MockUps\{AnotherLogger,
-    DefaultLogger,
-    Logger,
-    MockServiceWithDefaultLogger,
-    MockServiceWithNullOption,
-    MockServiceWithPreferredLogger};
+use Medas\ServiceManagerTest\MockUps\{DefaultLogger};
+use Medas\ServiceManagerTest\MockUps\AnotherLogger;
+use Medas\ServiceManagerTest\MockUps\Logger;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithDefaultLogger;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithNullOption;
+use Medas\ServiceManagerTest\MockUps\MockServiceWithPreferredLogger;
 
 final class ServiceManagerTest extends BaseTestClass
 {

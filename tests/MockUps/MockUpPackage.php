@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\MockUps;
 
 use Medas\Core\AsSingleton;
-use Medas\ServiceManager\{BasePackage, ServiceConfig};
+use Medas\Core\BasePackage;
+use Medas\Core\Interfaces\ServiceConfig;
 
 class MockUpPackage extends BasePackage
 {
     use AsSingleton;
+
+    public function isTestPackage(): bool
+    {
+        return true;
+    }
 
     public function dependencies(): array
     {

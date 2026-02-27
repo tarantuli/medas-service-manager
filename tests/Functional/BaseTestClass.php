@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Medas\ServiceManagerTest;
+namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\ServiceManager;
 use Medas\ServiceManagerTest\MockUps\MockUpPackage;

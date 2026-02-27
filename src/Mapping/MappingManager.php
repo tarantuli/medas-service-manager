@@ -36,7 +36,10 @@ class MappingManager
 
     public function addPackage(Package $package): void
     {
-        $this->mapping->addFromPackage($this->serviceFinder->find($package->sourceDirectory()));
+        $this->mapping->addFromPackage($this->serviceFinder->find(
+            $package->sourceDirectory(),
+            $package->isTestPackage()
+        ));
     }
 
     public function get(): ServiceMapping

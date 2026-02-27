@@ -7,12 +7,11 @@ namespace Medas\ServiceManager;
 use Medas\Core\{
     Attributes\Entrypoint,
     CorePackage,
-    Interfaces\Cache,
-    Interfaces\CacheManager,
+    Interfaces\Cache as CacheInterface,
+    Interfaces\CacheManager as CacheManagerInterface,
     Interfaces\ObjectInstantiator,
     Interfaces\ServiceManager as ServiceManagerInterface
 };
-use Medas\ServiceManager\Cache\CacheManager as CacheCacheManager;
 
 class ServiceManager implements ServiceManagerInterface
 {
@@ -23,7 +22,7 @@ class ServiceManager implements ServiceManagerInterface
      */
     public static function postInstall(): void
     {
-        service(CacheManager::class)->clearAll();
+        service(CacheManagerInterface::class)->clearAll();
 
         $registeredPackages = medas()->serviceManager()->config->registeredPackages();
 
@@ -37,16 +36,28 @@ class ServiceManager implements ServiceManagerInterface
     /** @var object[] */
     private array $services = [];
 
-    private CacheManager $cacheManager;
+    private CacheManagerInterface $cacheManager;
     public readonly CachePrimer $cachePrimer;
 
     /** @var bool[] */
     private array $initializedPackages = [];
 
+    /**
+     * Whether the config was loaded from cache (true) or freshly built (false).
+     * A freshly built config must always be persisted.
+     */
+    private bool $configWasCached = true;
+
+    /**
+     * Whether the mapping was mutated at runtime via bindImplementation().
+     * When true, the config must be persisted even if it was originally cached.
+     */
+    private bool $mappingDirty = false;
+
     #[Entrypoint]
     public function __construct(
-        \Closure   $initializer,
-        Cache|null $cache = null,
+        \Closure            $initializer,
+        CacheInterface|null $cache = null,
     )
     {
         CorePackage::instance()->loadGlobalFunctions();
@@ -58,14 +69,15 @@ class ServiceManager implements ServiceManagerInterface
 
         $this->config = $this->cacheManager->get()->get(
             self::CONFIG_CACHE_KEY,
-            fn() => $this->initializeConfig($initializer)
+            fn() => $this->buildFreshConfig($initializer),
         );
 
-        // This should be instantiated *after* fetching the mapping through the config
+        // This should be instantiated *after* fetching the mapping through the config.
         $this->initializeObjectInstantiator();
         $this->config->errorHandler()->set();
-        $this->initializeYourself();
+        $this->registerCoreServices();
         $this->initializePackages();
+        $this->registerShutdownPersistence();
     }
 
     private function registerThisInstance(): void
@@ -75,16 +87,19 @@ class ServiceManager implements ServiceManagerInterface
         medas()->setServiceManager($this);
     }
 
-    private function initializeCacheManager(Cache|null $cache): void
+    private function initializeCacheManager(CacheInterface|null $cache): void
     {
-        $this->cacheManager = new CacheCacheManager();
+        $this->cacheManager = new Cache\CacheManager();
 
         if ($cache) {
             $this->cacheManager->register($cache);
         }
     }
 
-    private function initializeConfig(\Closure $initializer): ServiceConfig
+    /**
+     * Called only when there is no cached config — builds a fresh one via the user-supplied initializer closure.
+     */
+    private function buildFreshConfig(\Closure $initializer): ServiceConfig
     {
         $config = $initializer();
 
@@ -92,7 +107,7 @@ class ServiceManager implements ServiceManagerInterface
             throw new Exceptions\InitializerDidNotReturnServiceConfig($config);
         }
 
-        $config->wasNotCached();
+        $this->configWasCached = false;
 
         return $config;
     }
@@ -106,10 +121,10 @@ class ServiceManager implements ServiceManagerInterface
         $this->config->mapping()->set(ObjectInstantiator::class, $className);
     }
 
-    private function initializeYourself(): void
+    private function registerCoreServices(): void
     {
-        $this->bindImplementation($this, ServiceManagerInterface::class, ServiceManager::class);
-        $this->bindImplementation($this->cacheManager, CacheManager::class);
+        $this->bindImplementation($this, ServiceManagerInterface::class, self::class);
+        $this->bindImplementation($this->cacheManager, Cache\CacheManager::class);
 
         new ErrorHandling\ExceptionHandlerManager();
     }
@@ -127,28 +142,43 @@ class ServiceManager implements ServiceManagerInterface
         }
     }
 
-    public function __destruct()
+    /**
+     * Registers a shutdown function to persist the config to cache when required.
+     *
+     * This is more reliable than __destruct() because shutdown functions run at a well-known
+     * point in the request lifecycle, before the GC tears down the object graph. A
+     * destructor offers no ordering guarantees — the CacheManager could be destroyed first,
+     * causing a silent error_log fallback that is hard to diagnose.
+     */
+    private function registerShutdownPersistence(): void
     {
-        if ($this->config->mustBeSavedToCache()) {
-            try {
-                // Explicitly set the current configuration
-                $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
+        register_shutdown_function(function (): void {
+            if (!$this->configWasCached || $this->mappingDirty) {
+                try {
+                    $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
+                }
+                catch (\Exception $exception) {
+                    // A relative path is no problem; during bootstrap the working directory is set to the project root.
+                    error_log(
+                        $exception->getMessage() . "\n",
+                        3,
+                        'var/logs/service-manager-panic.log'
+                    );
+                }
             }
-            catch (\Exception $exception) {
-                // Write a panic log
-                // A relative path is no problem, because during bootstrap the working directory is set to the project root.
-                error_log($exception->getMessage() . "\n", 3, 'var/logs/service-manager-panic.log');
-            }
-        }
+        });
     }
 
+    // -------------------------------------------------------------------------
+    // Public API
+    // -------------------------------------------------------------------------
     public function config(): ServiceConfig
     {
         return $this->config;
     }
 
     /**
-     * Returns the class names of all the services that are discoverable.
+     * Returns the class names of all discoverable services.
      *
      * @return string[]
      */
@@ -159,9 +189,7 @@ class ServiceManager implements ServiceManagerInterface
 
     /**
      * The return value is an object of type `$type`.
-     */
-    /*
-     * This is specified in PhpStorm in .phpstorm.meta.php
+     * (Return type is specified in PhpStorm in .phpstorm.meta.php)
      */
     #[Entrypoint]
     public function resolve(string $type): object
@@ -188,16 +216,12 @@ class ServiceManager implements ServiceManagerInterface
     public function bindImplementation(object $implementation, string ...$forTypes): self
     {
         $this->services[$implementation::class] = $implementation;
-        $changedSomething = false;
 
         foreach ($forTypes as $forType) {
-            $changedSomething = $changedSomething
-                || $this->config->mapping()->set($forType, $implementation::class);
-        }
-
-        if ($changedSomething) {
-            // The mapping has changed and must be saved to cache
-            $this->config->doSaveToCache();
+            if ($this->config->mapping()->set($forType, $implementation::class)) {
+                // At least one mapping entry changed — the config must be persisted.
+                $this->mappingDirty = true;
+            }
         }
 
         return $this;

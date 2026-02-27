@@ -18,6 +18,7 @@
     "php": "^8.4"
   },
   "require-dev": {
+    "morphp/medas-object-instantiator": "^3",
     "phpunit/phpunit": "^10"
   },
   "autoload": {

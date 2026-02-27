@@ -15,104 +15,83 @@ use Medas\Core\Interfaces\{
 
 class ServiceConfig implements ServiceConfigInterface
 {
-    private Mapping\MappingManager $mappingManager;
-    private Mapping\ServiceMapping $mapping;
+    private readonly Mapping\MappingManager $mappingManager;
+    private readonly Mapping\ServiceMapping $mapping;
+    private readonly ErrorHandler $errorHandler;
+    private readonly string $objectInstantiatorClass;
+    private readonly Registry\PackageRegistry $packageRegistry;
+
+    /** @var Registry\PrioritizedRegistry<ExceptionHandler> */
+    private readonly Registry\PrioritizedRegistry $exceptionHandlerRegistry;
+
+    /** @var Registry\PrioritizedRegistry<ParameterResolver> */
+    private readonly Registry\PrioritizedRegistry $parameterResolverRegistry;
+
+    /** @var Registry\PrioritizedRegistry<ArgumentProcessor> */
+    private readonly Registry\PrioritizedRegistry $argumentProcessorRegistry;
+
+    /** @var array<string, array<string, array<string, mixed>>> */
     private array $manualBindings = [];
-    private ErrorHandler $errorHandler;
-
-    /** @var Package[] */
-    private array $registeredPackages = [];
-
-    /** @var ExceptionHandler[] */
-    private array $exceptionHandlers = [];
-
-    /** @var ParameterResolver[] */
-    private array $parameterResolvers = [];
-
-    /** @var ArgumentProcessor[] */
-    private array $argumentProcessors = [];
-
-    private bool $wasCached = true;
-    private bool $mustBeSavedToCache = false;
-    private string $objectInstantiatorClass;
 
     public function __construct(
         string            $objectInstantiatorClass,
         ErrorHandler|null $errorHandler = null,
     )
     {
-        // Default to the basic error handler, use the aggresive one during development
+        // Default to the basic error handler; use the aggressive one during development.
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
+        $this->objectInstantiatorClass = $objectInstantiatorClass;
         $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();
-        $this->objectInstantiatorClass = $objectInstantiatorClass;
+        $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
+
+        // ExceptionHandlers have no priority concept — insertion order is preserved.
+        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry();
+
+        $this->parameterResolverRegistry = new Registry\PrioritizedRegistry(
+            fn(ParameterResolver $r) => $r->priority(),
+        );
+
+        $this->argumentProcessorRegistry = new Registry\PrioritizedRegistry(
+            fn(ArgumentProcessor $p) => $p->priority(),
+        );
 
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder());
         $this->addExceptionHandler(new ErrorHandling\CliExceptionHandler());
     }
 
+    // -------------------------------------------------------------------------
+    // Package management
+    // -------------------------------------------------------------------------
     public function addPackage(Package $package, bool $doInitialize = false): self
     {
-        if (array_key_exists($package::class, $this->registeredPackages)) {
-            return $this;
-        }
-
-        $this->addPackages($package->dependencies());
-
-        $this->registeredPackages[$package::class] = $package;
-
-        uasort(
-            $this->registeredPackages,
-            fn(Package $a, Package $b) => -$a->priority() <=> $b->priority()
-        );
-
-        $this->mappingManager->addPackage($package);
-
-        if ($doInitialize) {
-            $package->initialize($this);
-        }
+        $this->packageRegistry->add($package, $this, $doInitialize);
 
         return $this;
     }
 
     public function addPackages(array $packages): self
     {
-        foreach ($packages as $package) {
-            $this->addPackage($package);
-        }
+        $this->packageRegistry->addMultiple($packages, $this);
 
         return $this;
     }
 
-    public function wasNotCached(): void
+    /** @return Package[] */
+    public function registeredPackages(): array
     {
-        $this->wasCached = false;
+        return $this->packageRegistry->all();
     }
 
-    public function mapping(): Mapping\ServiceMapping
+    // -------------------------------------------------------------------------
+    // Exception handlers
+    // -------------------------------------------------------------------------
+    public function addExceptionHandler(ExceptionHandler $exceptionHandler): self
     {
-        return $this->mapping;
-    }
+        $this->exceptionHandlerRegistry->add($exceptionHandler);
 
-    public function errorHandler(): ErrorHandler
-    {
-        return $this->errorHandler;
-    }
-
-    public function wasCached(): bool
-    {
-        return $this->wasCached;
-    }
-
-    public function doSaveToCache(): void
-    {
-        $this->mustBeSavedToCache = true;
-    }
-
-    public function mustBeSavedToCache(): bool
-    {
-        return $this->mustBeSavedToCache || (!$this->wasCached);
+        return $this;
     }
 
     public function addExceptionHandlers(...$exceptionHandlers): self
@@ -124,69 +103,81 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    public function addExceptionHandler(ExceptionHandler $exceptionHandler): self
-    {
-        if (array_any($this->exceptionHandlers, fn($handler) => $handler::class === $exceptionHandler::class)) {
-            return $this;
-        }
-
-        $this->exceptionHandlers[] = $exceptionHandler;
-
-        return $this;
-    }
-
-    public function addParameterResolver(ParameterResolver $parameterResolver): self
-    {
-        if (array_any($this->parameterResolvers, fn($resolver) => $resolver::class === $parameterResolver::class)) {
-            return $this;
-        }
-
-        $this->parameterResolvers[] = $parameterResolver;
-
-        usort(
-            $this->parameterResolvers,
-            fn(ParameterResolver $a, ParameterResolver $b) => -($a->priority() <=> $b->priority())
-        );
-
-        return $this;
-    }
-
-    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
-    {
-        if (array_any($this->argumentProcessors, fn($processor) => $processor::class === $argumentProcessor::class)) {
-            return $this;
-        }
-
-        $this->argumentProcessors[] = $argumentProcessor;
-
-        usort(
-            $this->argumentProcessors,
-            fn(ArgumentProcessor $a, ArgumentProcessor $b) => -($a->priority() <=> $b->priority())
-        );
-
-        return $this;
-    }
-
+    /** @return ExceptionHandler[] */
     public function exceptionHandlers(): array
     {
-        return $this->exceptionHandlers;
+        return $this->exceptionHandlerRegistry->all();
     }
 
+    // -------------------------------------------------------------------------
+    // Parameter resolvers
+    // -------------------------------------------------------------------------
+    public function addParameterResolver(ParameterResolver $parameterResolver): self
+    {
+        $this->parameterResolverRegistry->add($parameterResolver);
+
+        return $this;
+    }
+
+    public function addParameterResolvers(ParameterResolver ...$parameterResolvers): self
+    {
+        foreach ($parameterResolvers as $parameterResolver) {
+            $this->addParameterResolver($parameterResolver);
+        }
+
+        return $this;
+    }
+
+    /** @return ParameterResolver[] */
     public function parameterResolvers(): array
     {
-        return $this->parameterResolvers;
+        return $this->parameterResolverRegistry->all();
     }
 
+    // -------------------------------------------------------------------------
+    // Argument processors
+    // -------------------------------------------------------------------------
+    public function addArgumentProcessor(ArgumentProcessor $argumentProcessor): self
+    {
+        $this->argumentProcessorRegistry->add($argumentProcessor);
+
+        return $this;
+    }
+
+    public function addArgumentProcessors(ArgumentProcessor ...$argumentProcessors): self
+    {
+        foreach ($argumentProcessors as $argumentProcessor) {
+            $this->addArgumentProcessor($argumentProcessor);
+        }
+
+        return $this;
+    }
+
+    /** @return ArgumentProcessor[] */
     public function argumentProcessors(): array
     {
-        return $this->argumentProcessors;
+        return $this->argumentProcessorRegistry->all();
     }
 
-    public function registeredPackages(): array
+    // -------------------------------------------------------------------------
+    // Mapping & instantiation
+    // -------------------------------------------------------------------------
+    public function mapping(): Mapping\ServiceMapping
     {
-        return $this->registeredPackages;
+        return $this->mapping;
     }
 
+    public function objectInstantiatorClass(): string
+    {
+        return $this->objectInstantiatorClass;
+    }
+
+    // -------------------------------------------------------------------------
+    // Manual bindings
+    // -------------------------------------------------------------------------
+    /**
+     * @return array<string, array<string, array<string, mixed>>>
+     */
     public function manualBindings(): array
     {
         return $this->manualBindings;
@@ -196,14 +187,17 @@ class ServiceConfig implements ServiceConfigInterface
         string $class,
         string $parameter,
         mixed  $value,
-        string $method = '__construct'
+        string $method = '__construct',
     ): void
     {
         $this->manualBindings[$class][$method][$parameter] = $value;
     }
 
-    public function objectInstantiatorClass(): string
+    // -------------------------------------------------------------------------
+    // Error handling
+    // -------------------------------------------------------------------------
+    public function errorHandler(): ErrorHandler
     {
-        return $this->objectInstantiatorClass;
+        return $this->errorHandler;
     }
 }

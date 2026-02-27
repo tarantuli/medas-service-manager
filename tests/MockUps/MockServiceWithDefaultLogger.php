@@ -7,10 +7,10 @@ namespace Medas\ServiceManagerTest\MockUps;
 use Medas\Core\Attributes\Service;
 
 #[Service]
-class MockServiceWithDefaultLogger
+readonly class MockServiceWithDefaultLogger
 {
     public function __construct(
-        private readonly Logger $logger,
+        private Logger $logger,
     )
     {
     }

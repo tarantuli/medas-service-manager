@@ -8,16 +8,22 @@ use Medas\Core\Attributes\Service;
 
 class ServiceFinder
 {
-    private Psr4FileLoader $fileLoader;
+    private Psr4FileLoader $psr4FileLoader;
+    private UnsafeFileLoader $unsafeFileLoader;
 
     public function __construct()
     {
-        $this->fileLoader = new Psr4FileLoader();
+        $this->psr4FileLoader = new Psr4FileLoader();
+        $this->unsafeFileLoader = new UnsafeFileLoader();
     }
 
-    public function find(string $directory): array
+    public function find(string $directory, bool $allowUnguardedLoad): array
     {
-        return $this->fileLoader->load($directory) ? $this->analyseClasses($directory) : [];
+        $loadedAny = $allowUnguardedLoad
+            ? $this->unsafeFileLoader->load($directory)
+            : $this->psr4FileLoader->load($directory);
+
+        return $loadedAny ? $this->analyseClasses($directory) : [];
     }
 
     private function analyseClasses(string $directory): array

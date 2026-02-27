@@ -12,6 +12,7 @@ use Medas\Core\{
     Interfaces\Clearable,
     Interfaces\MemoryCache,
     Interfaces\NonPersistentCache,
+    Interfaces\ServiceManager,
     Serializers\NoopSerializer
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
@@ -22,7 +23,9 @@ class CacheManager implements CacheManagerInterface
     /** @var Cache[] */
     private array $caches = [];
 
-    public function __construct()
+    public function __construct(
+        private readonly ServiceManager $serviceManager,
+    )
     {
         // This service is *not* instantiated automatically,
         // so don't add more dependencies, expecting them to be injected.
@@ -45,7 +48,7 @@ class CacheManager implements CacheManagerInterface
         }
 
         if ($name === 'memory' && !array_key_exists($name, $this->caches)) {
-            $className = sm()->findImplementingClass(MemoryCache::class);
+            $className = $this->serviceManager->findImplementingClass(MemoryCache::class);
             $memoryCache = new $className(new NoopSerializer());
 
             $this->register($memoryCache, 'memory');

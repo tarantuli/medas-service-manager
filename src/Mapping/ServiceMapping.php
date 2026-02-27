@@ -17,7 +17,7 @@ class ServiceMapping
 
     public function set(string $type, string $className): bool
     {
-        if ($this->mapping[$type] ?? null === $className) {
+        if (($this->mapping[$type] ?? null) === $className) {
             return false;
         }
 
@@ -34,15 +34,7 @@ class ServiceMapping
 
     public function has(string $type): bool
     {
-        if (!array_key_exists($type, $this->hasSingularMapping)) {
-            return false;
-        }
-
-        if ($this->hasSingularMapping[$type] === false) {
-            return false;
-        }
-
-        return true;
+        return ($this->hasSingularMapping[$type] ?? false) === true;
     }
 
     public function addFromPackage(array $mapping): void
@@ -63,6 +55,6 @@ class ServiceMapping
 
     public function getAll(): array
     {
-        return array_filter($this->mapping);
+        return array_filter($this->mapping, fn($v) => $v !== null);
     }
 }

@@ -25,7 +25,7 @@ readonly class CliExceptionHandler implements ExceptionHandler
                 fprintf(STDERR, "%s:%u\n", $trace['file'], $trace['line']);
             }
             else {
-                echo "[main]\n";
+                fprintf(STDERR, "[main]\n");
             }
 
             if (isset($trace['class'])) {
@@ -58,7 +58,7 @@ readonly class CliExceptionHandler implements ExceptionHandler
 
                 if (is_array($argument)) {
                     try {
-                        $argument = json_encode($argument);
+                        $argument = json_encode($argument, JSON_THROW_ON_ERROR);
                     }
                     catch (\Exception) {
                         $argument = "array (... cannot be serialized ...)";

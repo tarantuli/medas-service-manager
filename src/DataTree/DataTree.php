@@ -13,11 +13,6 @@ class DataTree
     /** @var History[] */
     private array $history = [];
 
-    private mixed $lastFoundValue;
-
-    /** @var History[] */
-    private array $lastFoundHistory;
-
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $index => $value) {
@@ -55,23 +50,82 @@ class DataTree
 
     public function has(string $index): bool
     {
+        return $this->find($index) !== null;
+    }
+
+    public function mergeDefaults(array $values): self
+    {
+        return $this->setRecursively($values, source: 'defaults', doOverwrite: false);
+    }
+
+    private function setRecursively(
+        array  $values,
+        string $source = 'runtime',
+        string $path = '',
+        bool   $doOverwrite = true
+    ): self
+    {
+        foreach ($values as $index => $value) {
+            $index = $path === '' ? $index : $path . '.' . $index;
+
+            if (is_array($value)) {
+                $this->setRecursively($value, $source, $index, $doOverwrite);
+            }
+            elseif ($doOverwrite || !$this->has($index)) {
+                $this->set($index, $value, $source);
+            }
+        }
+
+        return $this;
+    }
+
+    public function get(string $index): mixed
+    {
+        return $this->find($index)[0] ?? throw new IndexNotFoundInDataTree($index);
+    }
+
+    /** @return History[] */
+    public function getHistory(string $index): array
+    {
+        return $this->find($index)[1] ?? throw new IndexNotFoundInDataTree($index);
+    }
+
+    public function getSource(string $index): string
+    {
+        $history = $this->find($index)[1] ?? throw new IndexNotFoundInDataTree($index);
+
+        return $history[array_key_last($history)]->source;
+    }
+
+    public function getElse(string $index, mixed $fallback): mixed
+    {
+        $found = $this->find($index);
+
+        return $found !== null ? $found[0] : $fallback;
+    }
+
+    /**
+     * Traverses the tree for $index and returns a [value, history] pair, or null when not found.
+     * All public accessors delegate here instead of relying on shared mutable state.
+     *
+     * @return array{0: mixed, 1: History[]}|null
+     */
+    private function find(string $index): array|null
+    {
         $path = $this->indexToPath($index);
         $values = &$this->values;
         $history = $this->history;
 
         foreach ($path as $subPath) {
             if (!isset($values[$subPath])) {
-                return false;
+                return null;
             }
 
             $values = &$values[$subPath];
             $history = $history[$subPath];
         }
 
-        $this->lastFoundValue = $values;
-        $this->lastFoundHistory = $history;
-
-        return true;
+        return [$values, $history];
     }
 
     private function indexToPath(string $index): array
@@ -107,68 +161,5 @@ class DataTree
         $paths[] = $stack;
 
         return $paths;
-    }
-
-    public function mergeDefaults(array $values): self
-    {
-        return $this->setRecursively($values, source: 'defaults', doOverwrite: false);
-    }
-
-    private function setRecursively(
-        array  $values,
-        string $source = 'runtime',
-        string $path = '',
-        bool   $doOverwrite = true
-    ): self
-    {
-        foreach ($values as $index => $value) {
-            $index = $path === '' ? $index : $path . '.' . $index;
-
-            if (is_array($value)) {
-                $this->setRecursively($value, $source, $index, $doOverwrite);
-            }
-            elseif ($doOverwrite || !$this->has($index)) {
-                $this->set($index, $value, $source);
-            }
-        }
-
-        return $this;
-    }
-
-    public function get(string $index): mixed
-    {
-        if (!$this->has($index)) {
-            throw new IndexNotFoundInDataTree($index);
-        }
-
-        return $this->lastFoundValue;
-    }
-
-    /** @return History[] */
-    public function getHistory(string $index): array
-    {
-        if (!$this->has($index)) {
-            throw new IndexNotFoundInDataTree($index);
-        }
-
-        return $this->lastFoundHistory;
-    }
-
-    public function getSource(string $index): string
-    {
-        if (!$this->has($index)) {
-            throw new IndexNotFoundInDataTree($index);
-        }
-
-        return $this->lastFoundHistory[count($this->lastFoundHistory) - 1]->source;
-    }
-
-    public function getElse(string $index, mixed $fallback): mixed
-    {
-        if (!$this->has($index)) {
-            return $fallback;
-        }
-
-        return $this->lastFoundValue;
     }
 }

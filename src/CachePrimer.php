@@ -60,12 +60,10 @@ readonly class CachePrimer
 
     private function ensurePath(): void
     {
-        if (!file_exists('var')) {
-            mkdir('var');
-        }
-
-        if (!file_exists('var/dirs-to-clear')) {
-            mkdir('var/dirs-to-clear');
+        if (!file_exists('var/dirs-to-clear')
+                && !mkdir('var/dirs-to-clear', 0755, recursive: true)
+                && !is_dir('var/dirs-to-clear')) {
+            throw new \RuntimeException('Could not create directory var/dirs-to-clear');
         }
     }
 }

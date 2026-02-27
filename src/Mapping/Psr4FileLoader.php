@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\Attributes\Service;
-
-#[Service]
 readonly class Psr4FileLoader
 {
     private FileFinder $fileFinder;
@@ -51,8 +48,9 @@ readonly class Psr4FileLoader
             $paths = is_array($paths) ? $paths : [$paths];
 
             foreach ($paths as $path) {
-                $this->processPath($path, $composerJson, $directoryReal, $namespacePrefix)
-                    && $loadedAny = true;
+                if ($this->processPath($path, $composerJson, $directoryReal, $namespacePrefix)) {
+                    $loadedAny = true;
+                }
             }
         }
 

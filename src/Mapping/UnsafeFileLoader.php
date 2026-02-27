@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\Attributes\Service;
-
-#[Service]
 readonly class UnsafeFileLoader
 {
     private FileFinder $fileFinder;

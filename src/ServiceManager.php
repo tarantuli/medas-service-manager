@@ -89,7 +89,7 @@ class ServiceManager implements ServiceManagerInterface
 
     private function initializeCacheManager(CacheInterface|null $cache): void
     {
-        $this->cacheManager = new Cache\CacheManager();
+        $this->cacheManager = new Cache\CacheManager($this);
 
         if ($cache) {
             $this->cacheManager->register($cache);
@@ -126,7 +126,12 @@ class ServiceManager implements ServiceManagerInterface
         $this->bindImplementation($this, ServiceManagerInterface::class, self::class);
         $this->bindImplementation($this->cacheManager, Cache\CacheManager::class);
 
-        new ErrorHandling\ExceptionHandlerManager();
+        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($this->config);
+
+        $this->bindImplementation(
+            $exceptionHandlerManager,
+            ErrorHandling\ExceptionHandlerManager::class
+        );
     }
 
     private function initializePackages(): void

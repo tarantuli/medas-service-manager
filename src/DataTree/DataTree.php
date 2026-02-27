@@ -117,7 +117,7 @@ class DataTree
         $history = $this->history;
 
         foreach ($path as $subPath) {
-            if (!isset($values[$subPath])) {
+            if (!array_key_exists($subPath, $values)) {
                 return null;
             }
 

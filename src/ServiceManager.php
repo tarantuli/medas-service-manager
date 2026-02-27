@@ -24,7 +24,7 @@ class ServiceManager implements ServiceManagerInterface
     {
         service(CacheManagerInterface::class)->clearAll();
 
-        $registeredPackages = medas()->serviceManager()->config->registeredPackages();
+        $registeredPackages = medas()->serviceManager()->config()->registeredPackages();
 
         foreach ($registeredPackages as $package) {
             $package->postInstall();
@@ -38,9 +38,6 @@ class ServiceManager implements ServiceManagerInterface
 
     private CacheManagerInterface $cacheManager;
     public readonly CachePrimer $cachePrimer;
-
-    /** @var bool[] */
-    private array $initializedPackages = [];
 
     /**
      * Whether the config was loaded from cache (true) or freshly built (false).
@@ -137,13 +134,7 @@ class ServiceManager implements ServiceManagerInterface
     private function initializePackages(): void
     {
         foreach ($this->config->registeredPackages() as $package) {
-            if (array_key_exists($package::class, $this->initializedPackages)) {
-                continue;
-            }
-
             $package->initialize($this->config);
-
-            $this->initializedPackages[$package::class] = true;
         }
     }
 

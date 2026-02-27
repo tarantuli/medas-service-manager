@@ -64,6 +64,6 @@ class ServiceFinder
             }
         } while ($class = $class->getParentClass());
 
-        return $classes;
+        return array_unique($classes);
     }
 }

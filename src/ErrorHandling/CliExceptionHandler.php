@@ -18,7 +18,7 @@ readonly class CliExceptionHandler implements ExceptionHandler
         $this->printThrowable($exception);
     }
 
-    public function printThrowable(\Throwable $exception): void
+    private function printThrowable(\Throwable $exception): void
     {
         foreach (array_reverse($exception->getTrace()) as $trace) {
             if (isset($trace['file'])) {

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\ServiceConfig;
 
-#[Service]
 readonly class ExceptionHandlerManager
 {
     public function __construct(

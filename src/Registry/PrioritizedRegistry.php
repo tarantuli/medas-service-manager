@@ -35,9 +35,10 @@ class PrioritizedRegistry
      *
      * @param T $item
      */
-    public function add(object $item): bool
+    public function add(object $item, bool $bypassExistanceCheck = false): bool
     {
-        if (array_any($this->items, fn(object $existing) => $existing::class === $item::class)) {
+        if (!$bypassExistanceCheck
+                && array_any($this->items, fn(object $existing) => $existing::class === $item::class)) {
             return false;
         }
 

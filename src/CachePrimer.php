@@ -52,7 +52,9 @@ readonly class CachePrimer
                         $ensuredPath = true;
                     }
 
-                    file_put_contents($pathToDirectoryToClear, $cache->baseDirectory() . "\n");
+                    if (file_put_contents($pathToDirectoryToClear, $cache->baseDirectory() . "\n") === false) {
+                        throw new \RuntimeException("Could not write to $pathToDirectoryToClear");
+                    }
                 }
             }
         }

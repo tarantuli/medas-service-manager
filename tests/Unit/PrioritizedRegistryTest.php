@@ -12,7 +12,6 @@ final class PrioritizedRegistryTest extends TestCase
     // -------------------------------------------------------------------------
     // Without a priority function — insertion order is preserved
     // -------------------------------------------------------------------------
-
     public function testAddReturnsTrue(): void
     {
         $registry = new PrioritizedRegistry();
@@ -38,7 +37,9 @@ final class PrioritizedRegistryTest extends TestCase
         $b = new \stdClass();
 
         $registry->add($a);
-        $registry->add($b); // same class as $a
+
+        // same class as $a
+        $registry->add($b);
 
         self::assertSame([$a], $registry->all());
     }
@@ -47,9 +48,17 @@ final class PrioritizedRegistryTest extends TestCase
     {
         $registry = new PrioritizedRegistry();
 
-        $first  = new class {};
-        $second = new class {};
-        $third  = new class {};
+        $first = new class
+        {
+        };
+
+        $second = new class
+        {
+        };
+
+        $third = new class
+        {
+        };
 
         $registry->add($first);
         $registry->add($second);
@@ -63,21 +72,11 @@ final class PrioritizedRegistryTest extends TestCase
         self::assertSame([], new PrioritizedRegistry()->all());
     }
 
-    // -------------------------------------------------------------------------
-    // With a priority function — items sorted highest-first
-    // -------------------------------------------------------------------------
-
-    private function makeRegistryWithPriority(): PrioritizedRegistry
-    {
-        return new PrioritizedRegistry(fn(object $item) => $item->priority);
-    }
-
     public function testItemsSortedByPriorityDescending(): void
     {
         $registry = $this->makeRegistryWithPriority();
-
-        $low    = (object) ['priority' => 1];
-        $high   = (object) ['priority' => 10];
+        $low = (object) ['priority' => 1];
+        $high = (object) ['priority' => 10];
         $medium = (object) ['priority' => 5];
 
         $registry->add($low, true);
@@ -90,13 +89,20 @@ final class PrioritizedRegistryTest extends TestCase
     public function testNewItemInsertedInCorrectSortPosition(): void
     {
         $registry = $this->makeRegistryWithPriority();
-
-        $low  = (object) ['priority' => 1];
+        $low = (object) ['priority' => 1];
         $high = (object) ['priority' => 10];
 
         $registry->add($low, true);
         $registry->add($high, true);
 
         self::assertSame([$high, $low], $registry->all());
+    }
+
+    // -------------------------------------------------------------------------
+    // With a priority function — items sorted highest-first
+    // -------------------------------------------------------------------------
+    private function makeRegistryWithPriority(): PrioritizedRegistry
+    {
+        return new PrioritizedRegistry(fn(object $item) => $item->priority);
     }
 }

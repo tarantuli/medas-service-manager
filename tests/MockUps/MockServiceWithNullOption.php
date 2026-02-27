@@ -9,9 +9,7 @@ use Medas\Core\Attributes\Service;
 #[Service]
 readonly class MockServiceWithNullOption
 {
-    public function __construct(
-        private NonExistingClass|null $nonExistingClass
-    )
+    public function __construct(private NonExistingClass|null $nonExistingClass)
     {
     }
 }

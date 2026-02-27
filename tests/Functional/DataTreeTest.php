@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\ServiceManager\DataTree\{DataTree, History};
-use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
+use Medas\ServiceManager\{DataTree\DataTree, DataTree\History, Exceptions\IndexNotFoundInDataTree};
 use PHPUnit\Framework\TestCase;
 
 class DataTreeTest extends TestCase
@@ -16,10 +15,12 @@ class DataTreeTest extends TestCase
 
         // String
         $dataTree->set('env', 'test');
+
         $this->assertEquals('test', $dataTree->get('env'));
 
         // Integer value
         $dataTree->set('int', 1);
+
         $this->assertEquals('integer', gettype($dataTree->get('int')));
     }
 
@@ -28,6 +29,7 @@ class DataTreeTest extends TestCase
         $dataTree = new DataTree();
 
         $this->expectException(IndexNotFoundInDataTree::class);
+
         $dataTree->get('env');
     }
 
@@ -41,6 +43,7 @@ class DataTreeTest extends TestCase
     public function testOverwriteDefaultsAtRuntime(): void
     {
         $dataTree = new DataTree(['env' => 'test']);
+
         $dataTree->set('env', 'dev');
 
         $this->assertEquals('dev', $dataTree->get('env'));

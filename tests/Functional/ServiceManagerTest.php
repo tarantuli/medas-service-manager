@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\Core\Interfaces\CacheManager;
-use Medas\ServiceManager\Exceptions\ServiceNotFoundByType;
-use Medas\ServiceManager\ServiceManager;
-use Medas\ServiceManagerTest\MockUps\AnotherLogger;
-use Medas\ServiceManagerTest\MockUps\DefaultLogger;
-use Medas\ServiceManagerTest\MockUps\Logger;
-use Medas\ServiceManagerTest\MockUps\MockServiceWithDefaultLogger;
-use Medas\ServiceManagerTest\MockUps\MockServiceWithNullOption;
-use Medas\ServiceManagerTest\MockUps\MockServiceWithPreferredLogger;
-use Medas\ServiceManagerTest\MockUps\MockCache;
+use Medas\ServiceManager\{Exceptions\ServiceNotFoundByType, ServiceManager};
+use Medas\ServiceManagerTest\MockUps\{
+    AnotherLogger,
+    DefaultLogger,
+    Logger,
+    MockCache,
+    MockServiceWithDefaultLogger,
+    MockServiceWithNullOption,
+    MockServiceWithPreferredLogger
+};
 
 final class ServiceManagerTest extends BaseTestClass
 {
@@ -29,6 +30,7 @@ final class ServiceManagerTest extends BaseTestClass
         $manager = medas()->serviceManager();
 
         $this->expectException(ServiceNotFoundByType::class);
+
         /** @noinspection PhpUndefinedClassInspection */
         $manager->resolve(NonExistingClass::class);
     }
@@ -74,9 +76,13 @@ final class ServiceManagerTest extends BaseTestClass
     public function testCachePriming(): void
     {
         $manager = $this->loadMockUps();
+
         $manager->resolve(CacheManager::class)->register(new MockCache());
+
         ob_start();
+
         $manager->cachePrimer->prime();
+
         $output = ob_get_clean();
 
         self::assertEquals('cache is primed', $output);

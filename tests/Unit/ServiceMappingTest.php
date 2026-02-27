@@ -12,7 +12,6 @@ final class ServiceMappingTest extends TestCase
     // -------------------------------------------------------------------------
     // set() / get() / has()
     // -------------------------------------------------------------------------
-
     public function testHasReturnsFalseForUnknownType(): void
     {
         self::assertFalse(new ServiceMapping()->has('Unknown'));
@@ -21,6 +20,7 @@ final class ServiceMappingTest extends TestCase
     public function testSetAndGet(): void
     {
         $mapping = new ServiceMapping();
+
         $mapping->set('InterfaceA', 'ClassA');
 
         self::assertTrue($mapping->has('InterfaceA'));
@@ -37,6 +37,7 @@ final class ServiceMappingTest extends TestCase
     public function testSetReturnsFalseWhenMappingUnchanged(): void
     {
         $mapping = new ServiceMapping();
+
         $mapping->set('InterfaceA', 'ClassA');
 
         self::assertFalse($mapping->set('InterfaceA', 'ClassA'));
@@ -45,6 +46,7 @@ final class ServiceMappingTest extends TestCase
     public function testSetOverwritesExistingMapping(): void
     {
         $mapping = new ServiceMapping();
+
         $mapping->set('InterfaceA', 'ClassA');
         $mapping->set('InterfaceA', 'ClassB');
 
@@ -54,10 +56,10 @@ final class ServiceMappingTest extends TestCase
     // -------------------------------------------------------------------------
     // addFromPackage() — single implementor
     // -------------------------------------------------------------------------
-
     public function testSingleImplementorIsResolvable(): void
     {
         $mapping = new ServiceMapping();
+
         $mapping->addFromPackage([['InterfaceA', 'ClassA']]);
 
         self::assertTrue($mapping->has('InterfaceA'));
@@ -67,10 +69,10 @@ final class ServiceMappingTest extends TestCase
     // -------------------------------------------------------------------------
     // addFromPackage() — multiple implementors for the same type
     // -------------------------------------------------------------------------
-
     public function testMultipleImplementorsMakeTypeUnresolvable(): void
     {
         $mapping = new ServiceMapping();
+
         $mapping->addFromPackage([
             ['InterfaceA', 'ClassA'],
             ['InterfaceA', 'ClassB'],
@@ -82,14 +84,15 @@ final class ServiceMappingTest extends TestCase
     // -------------------------------------------------------------------------
     // getAll()
     // -------------------------------------------------------------------------
-
     public function testGetAllExcludesAmbiguousTypes(): void
     {
+        // makes InterfaceA ambiguous
         $mapping = new ServiceMapping();
+
         $mapping->addFromPackage([
             ['InterfaceA', 'ClassA'],
             ['InterfaceB', 'ClassB'],
-            ['InterfaceA', 'ClassC'], // makes InterfaceA ambiguous
+            ['InterfaceA', 'ClassC'],
         ]);
 
         $all = $mapping->getAll();
@@ -102,6 +105,7 @@ final class ServiceMappingTest extends TestCase
     {
         // Regression: array_filter() without callback would strip '' and '0'
         $mapping = new ServiceMapping();
+
         $mapping->set('InterfaceA', 'ClassA');
 
         self::assertArrayHasKey('InterfaceA', $mapping->getAll());

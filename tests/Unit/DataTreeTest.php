@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Unit;
 
-use Medas\ServiceManager\DataTree\{DataTree, History};
-use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
+use Medas\ServiceManager\{DataTree\DataTree, DataTree\History, Exceptions\IndexNotFoundInDataTree};
 use PHPUnit\Framework\TestCase;
 
 final class DataTreeTest extends TestCase
@@ -13,16 +12,17 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // Basic get / set
     // -------------------------------------------------------------------------
-
     public function testGetThrowsForMissingKey(): void
     {
         $this->expectException(IndexNotFoundInDataTree::class);
+
         new DataTree()->get('missing');
     }
 
     public function testGetReturnsSetValue(): void
     {
         $tree = new DataTree();
+
         $tree->set('key', 'value');
 
         self::assertSame('value', $tree->get('key'));
@@ -38,14 +38,16 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // Null values must be stored and retrievable
     // -------------------------------------------------------------------------
-
     public function testNullValueIsStored(): void
     {
         $tree = new DataTree();
+
         $tree->set('key', null);
 
         self::assertTrue($tree->has('key'));
+
         $this->expectException(IndexNotFoundInDataTree::class);
+
         $tree->get('key');
     }
 
@@ -54,14 +56,15 @@ final class DataTreeTest extends TestCase
         $tree = new DataTree(['key' => null]);
 
         self::assertTrue($tree->has('key'));
+
         $this->expectException(IndexNotFoundInDataTree::class);
+
         $tree->get('key');
     }
 
     // -------------------------------------------------------------------------
     // has() / getElse()
     // -------------------------------------------------------------------------
-
     public function testHasReturnsFalseForMissingKey(): void
     {
         self::assertFalse(new DataTree()->has('missing'));
@@ -70,6 +73,7 @@ final class DataTreeTest extends TestCase
     public function testHasReturnsTrueForExistingKey(): void
     {
         $tree = new DataTree();
+
         $tree->set('key', 'value');
 
         self::assertTrue($tree->has('key'));
@@ -83,6 +87,7 @@ final class DataTreeTest extends TestCase
     public function testGetElseReturnsValueWhenPresent(): void
     {
         $tree = new DataTree();
+
         $tree->set('key', 'value');
 
         self::assertSame('value', $tree->getElse('key', 'fallback'));
@@ -91,10 +96,10 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // Dot-path notation
     // -------------------------------------------------------------------------
-
     public function testDotPathSetAndGet(): void
     {
         $tree = new DataTree();
+
         $tree->set('a.b.c', 'deep');
 
         self::assertSame('deep', $tree->get('a.b.c'));
@@ -103,6 +108,7 @@ final class DataTreeTest extends TestCase
     public function testParentNodeReturnsSubtreeArray(): void
     {
         $tree = new DataTree();
+
         $tree->set('db.host', 'localhost');
         $tree->set('db.port', 3306);
 
@@ -112,6 +118,7 @@ final class DataTreeTest extends TestCase
     public function testEscapedDotIsNotASeparator(): void
     {
         $tree = new DataTree();
+
         $tree->set('key\\.with\\.dots', 'value');
 
         self::assertTrue($tree->has('key\\.with\\.dots'));
@@ -121,10 +128,10 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // mergeArray / mergeDefaults
     // -------------------------------------------------------------------------
-
     public function testMergeArraySetsNestedValues(): void
     {
         $tree = new DataTree();
+
         $tree->mergeArray(['db' => ['user' => 'root', 'pass' => 'secret']]);
 
         self::assertSame('root', $tree->get('db.user'));
@@ -134,6 +141,7 @@ final class DataTreeTest extends TestCase
     public function testMergeDefaultsDoesNotOverwriteExistingValues(): void
     {
         $tree = new DataTree();
+
         $tree->set('env', 'production');
         $tree->mergeDefaults(['env' => 'development']);
 
@@ -143,6 +151,7 @@ final class DataTreeTest extends TestCase
     public function testMergeDefaultsSetsAbsentValues(): void
     {
         $tree = new DataTree();
+
         $tree->mergeDefaults(['env' => 'development']);
 
         self::assertSame('development', $tree->get('env'));
@@ -151,10 +160,10 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // History
     // -------------------------------------------------------------------------
-
     public function testHistoryTracksWrites(): void
     {
         $tree = new DataTree();
+
         $tree->set('env', 'test', 'default');
         $tree->set('env', 'dev', 'runtime');
 
@@ -170,12 +179,14 @@ final class DataTreeTest extends TestCase
     public function testGetHistoryThrowsForMissingKey(): void
     {
         $this->expectException(IndexNotFoundInDataTree::class);
+
         new DataTree()->getHistory('missing');
     }
 
     public function testGetSourceReturnsLatestSource(): void
     {
         $tree = new DataTree();
+
         $tree->set('env', 'test', 'default');
         $tree->set('env', 'dev', 'runtime');
 
@@ -185,6 +196,7 @@ final class DataTreeTest extends TestCase
     public function testGetSourceThrowsForMissingKey(): void
     {
         $this->expectException(IndexNotFoundInDataTree::class);
+
         new DataTree()->getSource('missing');
     }
 
@@ -198,13 +210,13 @@ final class DataTreeTest extends TestCase
     // -------------------------------------------------------------------------
     // History is a value object
     // -------------------------------------------------------------------------
-
     public function testHistoryIsReadonly(): void
     {
         /** @noinspection PhpObjectFieldsAreOnlyWrittenInspection */
         $history = new History('source', 'value');
 
         $this->expectException(\Error::class);
+
         /** @noinspection PhpReadonlyPropertyWrittenOutsideDeclarationScopeInspection */
         $history->source = 'mutated';
     }

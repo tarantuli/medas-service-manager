@@ -13,6 +13,7 @@ abstract class BaseTestClass extends TestCase
     protected function loadMockUps(): ServiceManager
     {
         $manager = medas()->serviceManager();
+
         $manager->config()->addPackage(MockUpPackage::instance(), true);
 
         return $manager;

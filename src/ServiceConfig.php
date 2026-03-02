@@ -46,15 +46,9 @@ class ServiceConfig implements ServiceConfigInterface
         $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
 
         // ExceptionHandlers have no priority concept — insertion order is preserved.
-        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry();
-
-        $this->parameterResolverRegistry = new Registry\PrioritizedRegistry(
-            fn(ParameterResolver $r) => $r->priority(),
-        );
-
-        $this->argumentProcessorRegistry = new Registry\PrioritizedRegistry(
-            fn(ArgumentProcessor $p) => $p->priority(),
-        );
+        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
+        $this->parameterResolverRegistry = new Registry\PrioritizedRegistry();
+        $this->argumentProcessorRegistry = new Registry\PrioritizedRegistry();
 
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));

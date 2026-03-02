@@ -18,12 +18,12 @@ class PrioritizedRegistry
     private array $items = [];
 
     /**
-     * @param (\Closure(T): int)|null $priorityFn
-     *     When provided, items are kept sorted from highest to lowest priority.
-     *     When null, the insertion order is preserved.
+     * @param bool $sortByPriority
+     *     When true, items are kept sorted from highest to lowest priority.
+     *     When false, the insertion order is preserved.
      */
     public function __construct(
-        private readonly \Closure|null $priorityFn = null,
+        private readonly bool $sortByPriority = true,
     )
     {
     }
@@ -43,10 +43,8 @@ class PrioritizedRegistry
 
         $this->items[] = $item;
 
-        if ($this->priorityFn !== null) {
-            $fn = $this->priorityFn;
-
-            usort($this->items, fn(object $a, object $b) => -($fn($a) <=> $fn($b)));
+        if ($this->sortByPriority !== null) {
+            usort($this->items, fn(object $a, object $b) => -($a->priority() <=> $b->priority()));
         }
 
         return true;

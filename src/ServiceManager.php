@@ -158,7 +158,7 @@ class ServiceManager implements ServiceManagerInterface
                     error_log(
                         $exception->getMessage() . "\n",
                         3,
-                        'var/logs/service-manager-panic.log'
+                        'var/log/service-manager-panic.log'
                     );
                 }
             }

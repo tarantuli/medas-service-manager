@@ -43,7 +43,7 @@ class PrioritizedRegistry
 
         $this->items[] = $item;
 
-        if ($this->sortByPriority !== null) {
+        if ($this->sortByPriority) {
             usort($this->items, fn(object $a, object $b) => -($a->priority() <=> $b->priority()));
         }
 

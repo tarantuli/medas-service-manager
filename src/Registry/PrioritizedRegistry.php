@@ -17,6 +17,8 @@ class PrioritizedRegistry
     /** @var T[] */
     private array $items = [];
 
+    private array $itemNames = [];
+
     /**
      * @param bool $sortByPriority
      *     When true, items are kept sorted from highest to lowest priority.
@@ -26,6 +28,20 @@ class PrioritizedRegistry
         private readonly bool $sortByPriority = true,
     )
     {
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'sortByPriority' => $this->sortByPriority,
+            'itemNames' => array_map(fn($item) => $item::class, $this->items),
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->sortByPriority = $data['sortByPriority'];
+        $this->itemNames = $data['itemNames'];
     }
 
     /**
@@ -55,6 +71,12 @@ class PrioritizedRegistry
      */
     public function all(): array
     {
+        if ($this->itemNames && !$this->items) {
+            foreach ($this->itemNames as $itemName) {
+                $this->items[] = service($itemName);
+            }
+        }
+
         return $this->items;
     }
 }

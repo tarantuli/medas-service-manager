@@ -11,6 +11,7 @@ readonly class CachePrimer
     public function __construct(
         private ServiceManager     $serviceManager,
         private Cache\CacheManager $cacheManager,
+        private string             $dirsToClearPath = 'var/dirs-to-clear',
     )
     {
     }
@@ -62,10 +63,10 @@ readonly class CachePrimer
 
     private function ensurePath(): void
     {
-        if (!file_exists('var/dirs-to-clear')
-                && !mkdir('var/dirs-to-clear', 0755, recursive: true)
-                && !is_dir('var/dirs-to-clear')) {
-            throw new \RuntimeException('Could not create directory var/dirs-to-clear');
+        if (!file_exists($this->dirsToClearPath)
+                && !mkdir($this->dirsToClearPath, 0755, recursive: true)
+                && !is_dir($this->dirsToClearPath)) {
+            throw new \RuntimeException('Could not create directory ' . $this->dirsToClearPath);
         }
     }
 }

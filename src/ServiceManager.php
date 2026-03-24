@@ -53,8 +53,9 @@ class ServiceManager implements ServiceManagerInterface
 
     #[Entrypoint]
     public function __construct(
-        \Closure            $initializer,
-        CacheInterface|null $cache = null,
+        \Closure                $initializer,
+        CacheInterface|null     $cache = null,
+        private readonly string $panicLogPath = 'var/log/service-manager-panic.log',
     )
     {
         CorePackage::instance()->loadGlobalFunctions();
@@ -155,11 +156,7 @@ class ServiceManager implements ServiceManagerInterface
                 }
                 catch (\Exception $exception) {
                     // A relative path is no problem; during bootstrap the working directory is set to the project root.
-                    error_log(
-                        $exception->getMessage() . "\n",
-                        3,
-                        'var/log/service-manager-panic.log'
-                    );
+                    error_log($exception->getMessage() . "\n", 3, $this->panicLogPath);
                 }
             }
         });

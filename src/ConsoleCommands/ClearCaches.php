@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ConsoleCommands;
 
-use Medas\Console\Commands\{Arguments, BaseConsoleCommand, ConsoleCommandGroup};
+use Medas\Console\Commands\{BaseConsoleCommand, CommandInput, ConsoleCommandGroup};
 use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\Cache\CacheManager;
 
@@ -38,7 +38,7 @@ readonly class ClearCaches extends BaseConsoleCommand
         return 'Clears all the caches';
     }
 
-    public function process(Arguments $arguments): void
+    public function process(CommandInput $input): void
     {
         $this->cacheManager->clearAll();
     }

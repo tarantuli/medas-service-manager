@@ -8,6 +8,9 @@ use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
 
 class DataTree
 {
+    /** @var array<string, string[]> Memoised parse results — the output depends only on the input string. */
+    private static array $pathCache = [];
+
     private array $values = [];
 
     /** @var History[] */
@@ -146,6 +149,10 @@ class DataTree
 
     private function indexToPath(string $index): array
     {
+        if (isset(self::$pathCache[$index])) {
+            return self::$pathCache[$index];
+        }
+
         $paths = [];
         $stack = '';
         $nextIsLiteral = false;
@@ -177,6 +184,6 @@ class DataTree
 
         $paths[] = $stack;
 
-        return $paths;
+        return self::$pathCache[$index] = $paths;
     }
 }

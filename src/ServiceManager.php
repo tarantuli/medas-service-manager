@@ -51,6 +51,9 @@ class ServiceManager implements ServiceManagerInterface
      */
     private bool $mappingDirty = false;
 
+    /** @var string[]|null Cached result of getServiceClassNames(); null means stale. */
+    private array|null $serviceClassNamesCache = null;
+
     #[Entrypoint]
     public function __construct(
         \Closure                $initializer,
@@ -177,7 +180,7 @@ class ServiceManager implements ServiceManagerInterface
      */
     public function getServiceClassNames(): array
     {
-        return array_unique($this->config->mapping()->getAll());
+        return $this->serviceClassNamesCache ??= array_unique($this->config->mapping()->getAll());
     }
 
     /**
@@ -209,6 +212,7 @@ class ServiceManager implements ServiceManagerInterface
     public function bindImplementation(object $implementation, string ...$forTypes): self
     {
         $this->services[$implementation::class] = $implementation;
+        $this->serviceClassNamesCache = null;
 
         foreach ($forTypes as $forType) {
             if ($this->config->mapping()->set($forType, $implementation::class)) {

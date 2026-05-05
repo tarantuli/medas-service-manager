@@ -205,7 +205,14 @@ class ServiceManager implements ServiceManagerInterface
     {
         $mapping = $this->config->mapping();
 
-        return $mapping->has($type) ? $mapping->get($type) : null;
+        if ($mapping->has($type)) {
+            return $mapping->get($type);
+        }
+        elseif ($mapping->hasMultiple($type)) {
+            throw new Exceptions\MultipleImplementorsFound($type, $mapping->getImplementors($type));
+        }
+
+        return null;
     }
 
     #[Entrypoint]

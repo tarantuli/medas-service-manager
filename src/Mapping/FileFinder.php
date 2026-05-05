@@ -25,11 +25,11 @@ class FileFinder
         return new \CallbackFilterIterator(
             $iterator,
             static function (mixed $current) use ($suffix): bool {
-            if (!is_string($current)) {
-                return false;
-            }
+                if (!is_string($current)) {
+                    return false;
+                }
 
-            return str_ends_with(strtolower($current), $suffix);
-        });
+                return str_ends_with(strtolower($current), $suffix);
+            });
     }
 }

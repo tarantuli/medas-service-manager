@@ -41,6 +41,16 @@ class ServiceMapping
         return ($this->hasSingularMapping[$type] ?? false) === true;
     }
 
+    public function hasMultiple(string $type): bool
+    {
+        return ($this->hasSingularMapping[$type] ?? null) === false;
+    }
+
+    public function getImplementors(string $type): array
+    {
+        return $this->allImplementors[$type] ?? [];
+    }
+
     public function addFromPackage(array $mapping): void
     {
         foreach ($mapping as [$type, $className]) {

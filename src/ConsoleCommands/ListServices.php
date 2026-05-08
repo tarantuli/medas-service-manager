@@ -59,7 +59,7 @@ readonly class ListServices extends BaseConsoleCommand
         usort($services, fn(string $a, string $b) => strcasecmp($a, $b));
 
         $printedSomething = false;
-        $filterValue = $input->arguments[0] ?? null;
+        $filterValue = $input->getArgument(0) ?? null;
 
         foreach ($services as $service) {
             if (isset($filterValue) && !str_contains($service, $filterValue)) {

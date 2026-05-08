@@ -7,6 +7,8 @@ namespace Medas\ServiceManager;
 use Medas\Core\{
     Attributes\Entrypoint,
     CorePackage,
+    Exceptions\MultipleImplementorsFound,
+    Exceptions\ServiceNotFoundByType,
     Interfaces\Cache as CacheInterface,
     Interfaces\CacheManager as CacheManagerInterface,
     Interfaces\ObjectInstantiator,
@@ -191,7 +193,7 @@ class ServiceManager implements ServiceManagerInterface
     public function resolve(string $type): object
     {
         if (null === $service = $this->findImplementingClass($type)) {
-            throw new Exceptions\ServiceNotFoundByType($type);
+            throw new ServiceNotFoundByType($type);
         }
 
         if (!array_key_exists($service, $this->services)) {
@@ -209,7 +211,7 @@ class ServiceManager implements ServiceManagerInterface
             return $mapping->get($type);
         }
         elseif ($mapping->hasMultiple($type)) {
-            throw new Exceptions\MultipleImplementorsFound($type, $mapping->getImplementors($type));
+            throw new MultipleImplementorsFound($type, $mapping->getImplementors($type));
         }
 
         return null;

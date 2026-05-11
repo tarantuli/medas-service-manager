@@ -24,6 +24,9 @@ class ServiceConfig implements ServiceConfigInterface
     /** @var Registry\PrioritizedRegistry<ExceptionHandler> */
     private readonly Registry\PrioritizedRegistry $exceptionHandlerRegistry;
 
+    /** @var string[] */
+    private array $exceptionHandlerClasses = [];
+
     /** @var Registry\PrioritizedRegistry<ParameterResolver> */
     private readonly Registry\PrioritizedRegistry $parameterResolverRegistry;
 
@@ -101,6 +104,31 @@ class ServiceConfig implements ServiceConfigInterface
     public function exceptionHandlers(): array
     {
         return $this->exceptionHandlerRegistry->all();
+    }
+
+    public function addExceptionHandlerClasses(string ...$classes): self
+    {
+        array_push($this->exceptionHandlerClasses, ...$classes);
+
+        return $this;
+    }
+
+    /** @return string[] */
+    public function exceptionHandlerClasses(): array
+    {
+        return $this->exceptionHandlerClasses;
+    }
+
+    // -------------------------------------------------------------------------
+    // Type bindings
+    // -------------------------------------------------------------------------
+    public function addTypeBinding(string $implementationClass, string ...$forTypes): self
+    {
+        foreach ($forTypes as $type) {
+            $this->mapping->set($type, $implementationClass);
+        }
+
+        return $this;
     }
 
     // -------------------------------------------------------------------------

@@ -142,6 +142,10 @@ class ServiceManager implements ServiceManagerInterface
         foreach ($this->config->registeredPackages() as $package) {
             $package->initialize($this->config);
         }
+
+        foreach ($this->config->registeredPackages() as $package) {
+            $package->ready();
+        }
     }
 
     /**

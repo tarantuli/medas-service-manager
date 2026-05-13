@@ -42,6 +42,12 @@ class PackageRegistry
             $this->add($dependency, $config);
         }
 
+        if ($config->isDev()) {
+            foreach ($package->devDependencies() as $dependency) {
+                $this->add($dependency, $config);
+            }
+        }
+
         $this->packages[$package::class] = $package;
 
         uasort(

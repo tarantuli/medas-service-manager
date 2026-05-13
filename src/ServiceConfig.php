@@ -36,14 +36,18 @@ class ServiceConfig implements ServiceConfigInterface
     /** @var array<string, array<string, array<string, mixed>>> */
     private array $manualBindings = [];
 
+    private readonly bool $isDev;
+
     public function __construct(
         string            $objectInstantiatorClass,
         ErrorHandler|null $errorHandler = null,
+        bool              $isDev = false,
     )
     {
         // Default to the basic error handler; use the aggressive one during development.
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
         $this->objectInstantiatorClass = $objectInstantiatorClass;
+        $this->isDev = $isDev;
         $this->mappingManager = new Mapping\MappingManager();
         $this->mapping = $this->mappingManager->get();
         $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
@@ -56,6 +60,11 @@ class ServiceConfig implements ServiceConfigInterface
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
         $this->addExceptionHandler(new ErrorHandling\CliExceptionHandler());
+    }
+
+    public function isDev(): bool
+    {
+        return $this->isDev;
     }
 
     // -------------------------------------------------------------------------
@@ -71,6 +80,24 @@ class ServiceConfig implements ServiceConfigInterface
     public function addPackages(array $packages): self
     {
         $this->packageRegistry->addMultiple($packages, $this);
+
+        return $this;
+    }
+
+    public function addDevPackage(Package $package, bool $doInitialize = false): ServiceConfigInterface
+    {
+        if ($this->isDev) {
+            $this->addPackage($package, $doInitialize);
+        }
+
+        return $this;
+    }
+
+    public function addDevPackages(array $packages): ServiceConfigInterface
+    {
+        if ($this->isDev) {
+            $this->addPackages($packages);
+        }
 
         return $this;
     }

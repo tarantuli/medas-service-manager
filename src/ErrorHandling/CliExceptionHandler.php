@@ -6,6 +6,7 @@ namespace Medas\ServiceManager\ErrorHandling;
 
 use Medas\Core\{Attributes\Service, Interfaces\ExceptionHandler, StringMaker};
 
+#[\Deprecated('use CliExceptionPrinter from medas-logging instead')]
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler
 {

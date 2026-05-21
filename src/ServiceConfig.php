@@ -59,7 +59,6 @@ class ServiceConfig implements ServiceConfigInterface
 
         $this->addPackage(ServiceManagerPackage::instance());
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
-        $this->addExceptionHandler(new ErrorHandling\CliExceptionHandler());
     }
 
     public function isDev(): bool

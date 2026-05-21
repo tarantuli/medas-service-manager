@@ -10,13 +10,15 @@ use Medas\Core\{Attributes\Service, Interfaces\ExceptionHandler, StringMaker};
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler
 {
-    public function handleException(\Throwable $exception): void
+    public function handleException(\Throwable $exception): bool
     {
         if (PHP_SAPI !== 'cli') {
-            return;
+            return false;
         }
 
         $this->printThrowable($exception);
+
+        return true;
     }
 
     private function printThrowable(\Throwable $exception): void

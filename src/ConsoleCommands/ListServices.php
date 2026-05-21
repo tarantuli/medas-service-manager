@@ -8,7 +8,7 @@ use Medas\Console\{
     Commands\BaseConsoleCommand,
     Commands\CommandInput,
     Commands\ConsoleCommandGroup,
-    Formats\Color,
+    Formats\SafeColor,
     Formats\Style,
     Printer,
     Text
@@ -51,7 +51,7 @@ readonly class ListServices extends BaseConsoleCommand
     {
         $this->printer
             ->printEol()
-            ->printLine(Text::create('Registered services', Color::White))
+            ->printLine(Text::create('Registered services', SafeColor::White))
             ->printEol();
 
         $services = $this->serviceManager->getServiceClassNames();
@@ -70,10 +70,10 @@ readonly class ListServices extends BaseConsoleCommand
 
             foreach (explode('\\', $service) as $part) {
                 if (count($blocks) > 1) {
-                    $blocks[] = Text::create('\\', Color::Gray);
+                    $blocks[] = Text::create('\\', SafeColor::Gray);
                 }
 
-                $blocks[] = Text::create($part, Color::Green);
+                $blocks[] = Text::create($part, SafeColor::Green);
             }
 
             $this->printer->printLine(...$blocks);
@@ -84,13 +84,13 @@ readonly class ListServices extends BaseConsoleCommand
         if (!$printedSomething) {
             if (isset($filterValue)) {
                 $this->printer->printLine(
-                    Text::create('   no services found that match: ', Color::LightRed),
+                    Text::create('   no services found that match: ', SafeColor::LightRed),
                     Text::create($filterValue, Style::Bold),
                 );
             }
             else {
                 $this->printer->printLine(
-                    Text::create('   no services found', Color::LightRed),
+                    Text::create('   no services found', SafeColor::LightRed),
                 );
             }
         }

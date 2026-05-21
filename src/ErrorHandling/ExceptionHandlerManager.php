@@ -25,8 +25,24 @@ class ExceptionHandlerManager
 
     public function handle(\Throwable $exception): void
     {
+        $handled = false;
+
         foreach ($this->resolvedHandlers ?? $this->resolveHandlers() as $handler) {
-            $handler->handleException($exception);
+            if ($handler->handleException($exception)) {
+                // Don't short circuit if the exception was handled.
+                // Multiple handlers are allowed to handle the same exception.
+                $handled = true;
+            }
+        }
+
+        if (!$handled) {
+            error_log(sprintf(
+                'Unhandled exception: %s in %s:%d — %s',
+                $exception::class,
+                $exception->getFile(),
+                $exception->getLine(),
+                $exception->getMessage(),
+            ));
         }
     }
 

@@ -72,7 +72,13 @@ class PrioritizedRegistry
     public function all(): array
     {
         if ($this->itemNames && !$this->items) {
-            foreach ($this->itemNames as $itemName) {
+            // Clear itemNames before resolving so that re-entrant calls to all() during
+            // service resolution (e.g., argument processors resolving their own dependencies)
+            // return an empty list rather than attempting to resolve the same items again.
+            $names = $this->itemNames;
+            $this->itemNames = [];
+
+            foreach ($names as $itemName) {
                 $this->items[] = service($itemName);
             }
         }

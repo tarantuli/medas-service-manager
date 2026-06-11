@@ -109,7 +109,7 @@ class ServiceConfig implements ServiceConfigInterface
 
         // Re-add exception handlers by class name.
         foreach ($data['exceptionHandlerClasses'] as $class) {
-            $this->exceptionHandlerRegistry->add(service($class));
+            $this->exceptionHandlerRegistry->add(new $class());
         }
 
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));

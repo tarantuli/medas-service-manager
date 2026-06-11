@@ -61,6 +61,66 @@ class ServiceConfig implements ServiceConfigInterface
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
     }
 
+    public function __serialize(): array
+    {
+        $errorHandler = $this->errorHandler;
+
+        return [
+            'objectInstantiatorClass' => $this->objectInstantiatorClass,
+            'errorHandlerClass' => $errorHandler::class,
+            'isDev' => $this->isDev,
+            'mapping' => $this->mapping,
+            'manualBindings' => $this->manualBindings,
+            'packageClasses' => array_keys($this->packageRegistry->all()),
+            'exceptionHandlerClasses' => array_merge(
+                array_map(fn(ExceptionHandler $h) => $h::class, $this->exceptionHandlerRegistry->all()),
+                $this->exceptionHandlerClasses,
+            ),
+            'parameterResolverRegistry' => $this->parameterResolverRegistry,
+            'argumentProcessorRegistry' => $this->argumentProcessorRegistry,
+        ];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->objectInstantiatorClass = $data['objectInstantiatorClass'];
+        $this->isDev = $data['isDev'];
+        $this->manualBindings = $data['manualBindings'];
+        $this->exceptionHandlerClasses = $data['exceptionHandlerClasses'];
+
+        // Restore the error handler by class name.
+        $errorHandlerClass = $data['errorHandlerClass'];
+        $this->errorHandler = new $errorHandlerClass();
+
+        // Rebuild mapping infrastructure and re-register all packages so MappingManager
+        // scans their source directories. initialize() is NOT called — that already
+        // happened before caching.
+        $this->mappingManager = new Mapping\MappingManager();
+        $this->mapping = $this->mappingManager->get();
+        $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
+
+        foreach ($data['packageClasses'] as $packageClass) {
+            $this->packageRegistry->add($packageClass::instance(), $this);
+        }
+
+        // Re-apply manual type bindings on top of the freshly scanned mapping.
+        foreach ($data['mapping']->getAll() as $type => $className) {
+            $this->mapping->set($type, $className);
+        }
+
+        // Registries deserialize themselves to class names; service() resolves them lazily.
+        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
+        $this->parameterResolverRegistry = $data['parameterResolverRegistry'];
+        $this->argumentProcessorRegistry = $data['argumentProcessorRegistry'];
+
+        // Re-add exception handlers by class name.
+        foreach ($data['exceptionHandlerClasses'] as $class) {
+            $this->exceptionHandlerRegistry->add(service($class));
+        }
+
+        $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
+    }
+
     public function isDev(): bool
     {
         return $this->isDev;

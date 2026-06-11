@@ -15,7 +15,6 @@ use Medas\Core\Interfaces\{
 
 class ServiceConfig implements ServiceConfigInterface
 {
-    private readonly Mapping\MappingManager $mappingManager;
     private readonly Mapping\ServiceMapping $mapping;
     private readonly ErrorHandler $errorHandler;
     private readonly string $objectInstantiatorClass;
@@ -48,9 +47,9 @@ class ServiceConfig implements ServiceConfigInterface
         $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
         $this->objectInstantiatorClass = $objectInstantiatorClass;
         $this->isDev = $isDev;
-        $this->mappingManager = new Mapping\MappingManager();
-        $this->mapping = $this->mappingManager->get();
-        $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
+        $mappingManager = new Mapping\MappingManager();
+        $this->mapping = $mappingManager->get();
+        $this->packageRegistry = new Registry\PackageRegistry($mappingManager);
 
         // ExceptionHandlers have no priority concept — insertion order is preserved.
         $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
@@ -91,13 +90,8 @@ class ServiceConfig implements ServiceConfigInterface
         // Restore the error handler by class name.
         $errorHandlerClass = $data['errorHandlerClass'];
         $this->errorHandler = new $errorHandlerClass();
-
-        // Rebuild mapping infrastructure and re-register all packages so MappingManager
-        // scans their source directories. initialize() is NOT called — that already
-        // happened before caching.
-        $this->mappingManager = new Mapping\MappingManager();
-        $this->mapping = $this->mappingManager->get();
-        $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
+        $this->mapping = $data['mapping'];
+        $this->packageRegistry = new Registry\PackageRegistry(new Mapping\MappingManager());
 
         foreach ($data['packageClasses'] as $packageClass) {
             $this->packageRegistry->add($packageClass::instance(), $this);

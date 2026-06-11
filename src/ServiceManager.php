@@ -26,10 +26,8 @@ class ServiceManager implements ServiceManagerInterface
     {
         service(CacheManagerInterface::class)->clearAll();
 
-        $registeredPackages = medas()->serviceManager()->config()->registeredPackages();
-
-        foreach ($registeredPackages as $package) {
-            $package->postInstall();
+        foreach (medas()->serviceManager()->config()->packageClasses() as $packageClass) {
+            $packageClass::instance()->postInstall();
         }
     }
 
@@ -75,11 +73,7 @@ class ServiceManager implements ServiceManagerInterface
             fn() => $this->buildFreshConfig($initializer),
         );
 
-        // This should be instantiated *after* fetching the mapping through the config.
-        $this->initializeObjectInstantiator();
         $this->config->errorHandler()->set();
-        $this->registerCoreServices();
-        $this->initializePackages();
         $this->registerShutdownPersistence();
     }
 
@@ -101,50 +95,71 @@ class ServiceManager implements ServiceManagerInterface
 
     /**
      * Called only when there is no cached config — builds a fresh one via the user-supplied initializer closure.
+     * Owns the full bootstrap sequence: object instantiator, core services, package initialize() and ready().
      */
     private function buildFreshConfig(\Closure $initializer): ServiceConfig
     {
-        $config = $initializer();
+        $builder = $initializer();
 
-        if (!$config instanceof ServiceConfig) {
-            throw new Exceptions\InitializerDidNotReturnServiceConfig($config);
+        if (!$builder instanceof ServiceConfigBuilder) {
+            throw new Exceptions\InitializerDidNotReturnServiceConfig($builder);
         }
 
         $this->configWasCached = false;
 
-        return $config;
+        $this->bootstrapObjectInstantiator($builder);
+        $this->bootstrapCoreServices($builder);
+        $this->bootstrapPackages($builder);
+
+        return $builder->build();
     }
 
-    private function initializeObjectInstantiator(): void
+    /**
+     * Instantiates the configured ObjectInstantiator and registers it on medas() and in the service map.
+     * Also adds the type binding to the builder so it ends up in the final mapping.
+     */
+    private function bootstrapObjectInstantiator(ServiceConfigBuilder $builder): void
     {
-        $className = $this->config->objectInstantiatorClass();
+        $className = $builder->objectInstantiatorClass();
         $objectInstantiator = new ($className)($this);
         medas()->setObjectInstantiator($this->services[$className] = $objectInstantiator);
 
-        $this->config->mapping()->set(ObjectInstantiator::class, $className);
+        $builder->addTypeBinding($className, ObjectInstantiator::class);
     }
 
-    private function registerCoreServices(): void
+    /**
+     * Registers core service instances (ServiceManager, CacheManager, ExceptionHandlerManager)
+     * into the service map and adds their type bindings to the builder.
+     */
+    private function bootstrapCoreServices(ServiceConfigBuilder $builder): void
     {
-        $this->bindImplementation($this, ServiceManagerInterface::class, self::class);
-        $this->bindImplementation($this->cacheManager, Cache\CacheManager::class);
+        $this->services[self::class] = $this;
+        $this->services[Cache\CacheManager::class] = $this->cacheManager;
 
-        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($this->config);
+        $builder->addTypeBinding(self::class, ServiceManagerInterface::class, self::class);
+        $builder->addTypeBinding(Cache\CacheManager::class, Cache\CacheManager::class);
 
-        $this->bindImplementation(
-            $exceptionHandlerManager,
-            ErrorHandling\ExceptionHandlerManager::class
+        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($builder);
+        $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
+
+        $builder->addTypeBinding(
+            ErrorHandling\ExceptionHandlerManager::class,
+            ErrorHandling\ExceptionHandlerManager::class,
         );
     }
 
-    private function initializePackages(): void
+    /**
+     * Calls initialize() then ready() on all registered packages, passing the builder so
+     * packages can still register resolvers, processors, and type bindings before build().
+     */
+    private function bootstrapPackages(ServiceConfigBuilder $builder): void
     {
-        foreach ($this->config->registeredPackages() as $package) {
-            $package->initialize($this->config);
+        foreach ($builder->packageClasses() as $packageClass) {
+            $packageClass::instance()->initialize($builder);
         }
 
-        foreach ($this->config->registeredPackages() as $package) {
-            $package->ready();
+        foreach ($builder->packageClasses() as $packageClass) {
+            $packageClass::instance()->ready();
         }
     }
 

@@ -13,51 +13,29 @@ use Medas\Core\Interfaces\{
     ServiceConfig as ServiceConfigInterface
 };
 
+/**
+ * Plain, serializable configuration state produced by ServiceConfigBuilder.
+ * Contains no bootstrap machinery — only the data ServiceManager needs at runtime.
+ */
 class ServiceConfig implements ServiceConfigInterface
 {
-    private readonly Mapping\ServiceMapping $mapping;
-    private readonly ErrorHandler $errorHandler;
-    private readonly string $objectInstantiatorClass;
-    private readonly Registry\PackageRegistry $packageRegistry;
-
     /** @var Registry\PrioritizedRegistry<ExceptionHandler> */
     private readonly Registry\PrioritizedRegistry $exceptionHandlerRegistry;
 
-    /** @var string[] */
-    private array $exceptionHandlerClasses = [];
-
-    /** @var Registry\PrioritizedRegistry<ParameterResolver> */
-    private readonly Registry\PrioritizedRegistry $parameterResolverRegistry;
-
-    /** @var Registry\PrioritizedRegistry<ArgumentProcessor> */
-    private readonly Registry\PrioritizedRegistry $argumentProcessorRegistry;
-
-    /** @var array<string, array<string, array<string, mixed>>> */
-    private array $manualBindings = [];
-
-    private readonly bool $isDev;
-
     public function __construct(
-        string            $objectInstantiatorClass,
-        ErrorHandler|null $errorHandler = null,
-        bool              $isDev = false,
+        private readonly string                       $objectInstantiatorClass,
+        private readonly ErrorHandler                 $errorHandler,
+        private readonly bool                         $isDev,
+        private readonly Mapping\ServiceMapping       $mapping,
+        private readonly array                        $packageClasses,
+        private array                                 $exceptionHandlerClasses,
+        private array                                 $manualBindings,
+        private readonly Registry\PrioritizedRegistry $parameterResolverRegistry,
+        private readonly Registry\PrioritizedRegistry $argumentProcessorRegistry,
     )
     {
-        // Default to the basic error handler; use the aggressive one during development.
-        $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
-        $this->objectInstantiatorClass = $objectInstantiatorClass;
-        $this->isDev = $isDev;
-        $mappingManager = new Mapping\MappingManager();
-        $this->mapping = $mappingManager->get();
-        $this->packageRegistry = new Registry\PackageRegistry($mappingManager);
-
         // ExceptionHandlers have no priority concept — insertion order is preserved.
         $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
-        $this->parameterResolverRegistry = new Registry\PrioritizedRegistry();
-        $this->argumentProcessorRegistry = new Registry\PrioritizedRegistry();
-
-        $this->addPackage(ServiceManagerPackage::instance());
-        $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
     }
 
     public function __serialize(): array
@@ -69,12 +47,9 @@ class ServiceConfig implements ServiceConfigInterface
             'errorHandlerClass' => $errorHandler::class,
             'isDev' => $this->isDev,
             'mapping' => $this->mapping,
+            'packageClasses' => $this->packageClasses,
+            'exceptionHandlerClasses' => $this->exceptionHandlerClasses,
             'manualBindings' => $this->manualBindings,
-            'packageClasses' => array_keys($this->packageRegistry->all()),
-            'exceptionHandlerClasses' => array_merge(
-                array_map(fn(ExceptionHandler $h) => $h::class, $this->exceptionHandlerRegistry->all()),
-                $this->exceptionHandlerClasses,
-            ),
             'parameterResolverRegistry' => $this->parameterResolverRegistry,
             'argumentProcessorRegistry' => $this->argumentProcessorRegistry,
         ];
@@ -82,35 +57,19 @@ class ServiceConfig implements ServiceConfigInterface
 
     public function __unserialize(array $data): void
     {
-        $this->objectInstantiatorClass = $data['objectInstantiatorClass'];
-        $this->isDev = $data['isDev'];
-        $this->manualBindings = $data['manualBindings'];
-        $this->exceptionHandlerClasses = $data['exceptionHandlerClasses'];
-
-        // Restore the error handler by class name.
         $errorHandlerClass = $data['errorHandlerClass'];
+        $this->objectInstantiatorClass = $data['objectInstantiatorClass'];
         $this->errorHandler = new $errorHandlerClass();
+        $this->isDev = $data['isDev'];
         $this->mapping = $data['mapping'];
-        $this->packageRegistry = new Registry\PackageRegistry(new Mapping\MappingManager());
-
-        foreach ($data['packageClasses'] as $packageClass) {
-            $this->packageRegistry->add($packageClass::instance(), $this);
-        }
-
-        // Re-apply manual type bindings on top of the freshly scanned mapping.
-        foreach ($data['mapping']->getAll() as $type => $className) {
-            $this->mapping->set($type, $className);
-        }
-
-        // Registries deserialize themselves to class names; service() resolves them lazily.
-        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
+        $this->packageClasses = $data['packageClasses'];
+        $this->exceptionHandlerClasses = $data['exceptionHandlerClasses'];
+        $this->manualBindings = $data['manualBindings'];
         $this->parameterResolverRegistry = $data['parameterResolverRegistry'];
         $this->argumentProcessorRegistry = $data['argumentProcessorRegistry'];
 
-        // Re-add exception handlers by class name.
-        foreach ($data['exceptionHandlerClasses'] as $class) {
-            $this->exceptionHandlerRegistry->add(service($class));
-        }
+        // ExceptionHandlers have no priority concept — insertion order is preserved.
+        $this->exceptionHandlerRegistry = new Registry\PrioritizedRegistry(false);
 
         $this->addParameterResolver(new Mapping\ManualBindingFinder($this));
     }
@@ -121,44 +80,12 @@ class ServiceConfig implements ServiceConfigInterface
     }
 
     // -------------------------------------------------------------------------
-    // Package management
+    // Read-only package access
     // -------------------------------------------------------------------------
-    public function addPackage(Package $package, bool $doInitialize = false): self
+    /** @return class-string<Package>[] */
+    public function packageClasses(): array
     {
-        $this->packageRegistry->add($package, $this, $doInitialize);
-
-        return $this;
-    }
-
-    public function addPackages(array $packages): self
-    {
-        $this->packageRegistry->addMultiple($packages, $this);
-
-        return $this;
-    }
-
-    public function addDevPackage(Package $package, bool $doInitialize = false): ServiceConfigInterface
-    {
-        if ($this->isDev) {
-            $this->addPackage($package, $doInitialize);
-        }
-
-        return $this;
-    }
-
-    public function addDevPackages(array $packages): ServiceConfigInterface
-    {
-        if ($this->isDev) {
-            $this->addPackages($packages);
-        }
-
-        return $this;
-    }
-
-    /** @return Package[] */
-    public function registeredPackages(): array
-    {
-        return $this->packageRegistry->all();
+        return $this->packageClasses;
     }
 
     // -------------------------------------------------------------------------
@@ -180,7 +107,6 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    /** @return ExceptionHandler[] */
     public function exceptionHandlers(): array
     {
         return $this->exceptionHandlerRegistry->all();
@@ -193,14 +119,13 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    /** @return string[] */
     public function exceptionHandlerClasses(): array
     {
         return $this->exceptionHandlerClasses;
     }
 
     // -------------------------------------------------------------------------
-    // Type bindings
+    // Type bindings (used by ServiceManager::bindImplementation at runtime)
     // -------------------------------------------------------------------------
     public function addTypeBinding(string $implementationClass, string ...$forTypes): self
     {
@@ -230,7 +155,6 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    /** @return ParameterResolver[] */
     public function parameterResolvers(): array
     {
         return $this->parameterResolverRegistry->all();
@@ -255,7 +179,6 @@ class ServiceConfig implements ServiceConfigInterface
         return $this;
     }
 
-    /** @return ArgumentProcessor[] */
     public function argumentProcessors(): array
     {
         return $this->argumentProcessorRegistry->all();
@@ -277,9 +200,7 @@ class ServiceConfig implements ServiceConfigInterface
     // -------------------------------------------------------------------------
     // Manual bindings
     // -------------------------------------------------------------------------
-    /**
-     * @return array<string, array<string, array<string, mixed>>>
-     */
+    /** @return array<string, array<string, array<string, mixed>>> */
     public function manualBindings(): array
     {
         return $this->manualBindings;
@@ -301,5 +222,28 @@ class ServiceConfig implements ServiceConfigInterface
     public function errorHandler(): ErrorHandler
     {
         return $this->errorHandler;
+    }
+
+    // -------------------------------------------------------------------------
+    // Stub methods — not applicable on the data container, only on the builder
+    // -------------------------------------------------------------------------
+    public function addPackage(Package $package, bool $doInitialize = false): self
+    {
+        throw new \LogicException('addPackage() must be called on ServiceConfigBuilder, not ServiceConfig.');
+    }
+
+    public function addPackages(array $packages): self
+    {
+        throw new \LogicException('addPackages() must be called on ServiceConfigBuilder, not ServiceConfig.');
+    }
+
+    public function addDevPackage(Package $package, bool $doInitialize = false): self
+    {
+        throw new \LogicException('addDevPackage() must be called on ServiceConfigBuilder, not ServiceConfig.');
+    }
+
+    public function addDevPackages(array $packages): self
+    {
+        throw new \LogicException('addDevPackages() must be called on ServiceConfigBuilder, not ServiceConfig.');
     }
 }

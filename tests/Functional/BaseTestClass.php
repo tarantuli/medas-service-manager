@@ -14,7 +14,7 @@ abstract class BaseTestClass extends TestCase
     {
         $manager = medas()->serviceManager();
 
-        $manager->config()->addPackage(MockUpPackage::instance(), true);
+        $manager->config->addPackage(MockUpPackage::instance(), true);
 
         return $manager;
     }

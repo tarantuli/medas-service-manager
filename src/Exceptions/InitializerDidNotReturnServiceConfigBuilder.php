@@ -6,7 +6,7 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
-class InitializerDidNotReturnServiceConfig extends BaseException
+class InitializerDidNotReturnServiceConfigBuilder extends BaseException
 {
     public function __construct(mixed $returnValue)
     {

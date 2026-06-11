@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Mapping;
 
 use Medas\Core\{Interfaces\ParameterResolver, ParameterResolverResult};
-use Medas\ServiceManager\ServiceConfig;
+use Medas\ServiceManager\ServiceManager;
 
 readonly class ManualBindingFinder implements ParameterResolver
 {
     public function __construct(
-        private ServiceConfig $config,
+        private ServiceManager $serviceManager,
     )
     {
         // This service is *not* instantiated automatically,
@@ -28,7 +28,7 @@ readonly class ManualBindingFinder implements ParameterResolver
             return new ParameterResolverResult(false);
         }
 
-        $bindings = $this->config->manualBindings();
+        $bindings = $this->serviceManager->config->manualBindings;
         $className = $parameter->getDeclaringClass()->name;
         $methodName = $parameter->getDeclaringFunction()->name;
 

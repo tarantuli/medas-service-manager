@@ -48,9 +48,9 @@ class ExceptionHandlerManager
 
     private function resolveHandlers(): array
     {
-        $this->resolvedHandlers = $this->config->exceptionHandlers();
+        $this->resolvedHandlers = [];
 
-        foreach ($this->config->exceptionHandlerClasses() as $class) {
+        foreach ($this->config->exceptionHandlers as $class) {
             try {
                 $this->resolvedHandlers[] = service($class);
             }

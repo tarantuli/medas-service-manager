@@ -66,6 +66,17 @@ class PrioritizedRegistry
         return true;
     }
 
+    public function addByName(string $name): bool
+    {
+        if (array_any($this->items, fn(object $existing) => $existing::class === $name)) {
+            return false;
+        }
+
+        $this->itemNames[] = $name;
+
+        return true;
+    }
+
     /**
      * @return T[]
      */

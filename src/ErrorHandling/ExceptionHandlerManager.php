@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\Interfaces\ExceptionHandler;
+use Medas\Core\{Exceptions\TraceFormatter, Interfaces\ExceptionHandler};
 use Medas\ServiceManager\{ServiceConfig, ServiceManager};
 
 class ExceptionHandlerManager
@@ -41,13 +41,20 @@ class ExceptionHandlerManager
         }
 
         if (!$handled) {
+            if (class_exists(TraceFormatter::class)) {
+                $trace = new TraceFormatter(156)->toString($exception->getTrace());
+            }
+            else {
+                $trace = $exception->getTraceAsString();
+            }
+
             error_log(sprintf(
-                "Unhandled exception: %s in %s:%d — %s\n%s",
+                "Unhandled exception: %s in %s:%d — %s\n\n%s",
                 $exception::class,
                 $exception->getFile(),
                 $exception->getLine(),
                 $exception->getMessage(),
-                $exception->getTraceAsString()
+                $trace
             ));
         }
     }

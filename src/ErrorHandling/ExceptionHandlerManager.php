@@ -5,29 +5,34 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\ErrorHandling;
 
 use Medas\Core\Interfaces\ExceptionHandler;
-use Medas\ServiceManager\ServiceConfig;
+use Medas\ServiceManager\{ServiceConfig, ServiceManager};
 
 class ExceptionHandlerManager
 {
-    private readonly ServiceConfig $config;
-
     /** @var ExceptionHandler[]|null */
     private array|null $resolvedHandlers = null;
 
-    public function __construct(ServiceConfig $config)
+    public function __construct()
     {
-        $this->config = $config;
-
         // This service is *not* instantiated automatically,
         // so don't add more dependencies, expecting them to be injected.
         set_exception_handler($this->handle(...));
+    }
+
+    public function resolveHandlers(ServiceManager $serviceManager, ServiceConfig $config): void
+    {
+        $this->resolvedHandlers = [];
+
+        foreach ($config->exceptionHandlers as $class) {
+            $this->resolvedHandlers[] = $serviceManager->resolve($class);
+        }
     }
 
     public function handle(\Throwable $exception): void
     {
         $handled = false;
 
-        foreach ($this->resolvedHandlers ?? $this->resolveHandlers() as $handler) {
+        foreach ($this->resolvedHandlers as $handler) {
             if ($handler->handleException($exception)) {
                 // Don't short circuit if the exception was handled.
                 // Multiple handlers are allowed to handle the same exception.
@@ -37,28 +42,13 @@ class ExceptionHandlerManager
 
         if (!$handled) {
             error_log(sprintf(
-                'Unhandled exception: %s in %s:%d — %s',
+                "Unhandled exception: %s in %s:%d — %s\n%s",
                 $exception::class,
                 $exception->getFile(),
                 $exception->getLine(),
                 $exception->getMessage(),
+                $exception->getTraceAsString()
             ));
         }
-    }
-
-    private function resolveHandlers(): array
-    {
-        $this->resolvedHandlers = [];
-
-        foreach ($this->config->exceptionHandlers as $class) {
-            try {
-                $this->resolvedHandlers[] = service($class);
-            }
-            catch (\Throwable) {
-                // Resolution failure must not suppress the original exception.
-            }
-        }
-
-        return $this->resolvedHandlers;
     }
 }

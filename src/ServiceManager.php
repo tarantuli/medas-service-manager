@@ -43,13 +43,18 @@ class ServiceManager implements ServiceManagerInterface
 
         $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
         $this->config = $this->loadConfig($initializer);
-        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($this->config);
+
+        // Register the exception handler early so that it can register the exception handler early.
+        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager();
         $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
         $errorHandler = new $this->config->errorHandler;
 
         $errorHandler->set();
 
         $this->instantiateObjectInstantiator();
+
+        // Resolve the detailed exception handler after the object instantiator is ready.
+        $exceptionHandlerManager->resolveHandlers($this, $this->config);
     }
 
     private function registerThisInstance(): void

@@ -43,14 +43,13 @@ class ServiceManager implements ServiceManagerInterface
 
         $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
         $this->config = $this->loadConfig($initializer);
-
-        $this->instantiateObjectInstantiator();
-
         $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($this->config);
         $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
         $errorHandler = new $this->config->errorHandler;
 
         $errorHandler->set();
+
+        $this->instantiateObjectInstantiator();
     }
 
     private function registerThisInstance(): void
@@ -141,7 +140,6 @@ class ServiceManager implements ServiceManagerInterface
     private function instantiateObjectInstantiator(): void
     {
         $objectInstantiator = new ($this->config->objectInstantiatorClass)(
-            $this,
             $this->config->parameterResolvers,
             $this->config->argumentProcessors
         );

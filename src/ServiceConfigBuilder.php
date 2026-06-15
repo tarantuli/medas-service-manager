@@ -51,7 +51,6 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
     public function build(): ServiceConfig
     {
         $errorHandler = $this->errorHandler;
-        $prioritySorter = new Registry\PrioritySorter();
 
         return new ServiceConfig(
             objectInstantiatorClass: $this->objectInstantiatorClass,
@@ -60,8 +59,8 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
             mapping: $this->mappingManager->get(),
             packageClasses: array_keys($this->packageRegistry->all()),
             manualBindings: $this->manualBindings,
-            parameterResolvers: $prioritySorter->sort($this->parameterResolvers),
-            argumentProcessors: $prioritySorter->sort($this->argumentProcessors),
+            parameterResolvers: $this->parameterResolvers,
+            argumentProcessors: $this->argumentProcessors,
             exceptionHandlers: $this->exceptionHandlers,
         );
     }

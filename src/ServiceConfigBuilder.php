@@ -119,13 +119,6 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         return $this;
     }
 
-    public function addExceptionHandlerClasses(string ...$classes): self
-    {
-        array_push($this->exceptionHandlers, ...$classes);
-
-        return $this;
-    }
-
     public function addTypeBinding(string $implementationClass, string ...$forTypes): self
     {
         foreach ($forTypes as $type) {
@@ -175,5 +168,43 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
     ): void
     {
         $this->manualBindings[$class][$method][$parameter] = $value;
+    }
+
+    /**
+     * The parameter name is the name of the environment variable that contains the comma-separated list of test
+     * packages.
+     *
+     * You can call this method in the bootstrap closure that generates a ServiceConfigBuilder:
+     *
+     * <code>
+     * $sm = new ServiceManager(function () use ($isDev): ServiceConfigBuilder {
+     *     $config = new ServiceConfigBuilder(ObjectInstantiator::class, isDev: $isDev);
+     *
+     *     $config->addPackage(BackendPackage::instance());
+     *     $config->addTestPackages('TEST_PACKAGES');
+     *
+     *     return $config;
+     * });
+     * </code>
+     */
+    public function addTestPackages(string $envName): void
+    {
+        $testPackages = getenv($envName);
+
+        if ($testPackages === false) {
+            return;
+        }
+
+        foreach (explode(',', $testPackages) as $testPackage) {
+            if (!class_exists($testPackage)) {
+                continue;
+            }
+
+            /** @var class-string<Package> $testPackage */
+            /** @var Package $instance */
+            $instance = $testPackage::instance();
+
+            $this->addPackage($instance);
+        }
     }
 }

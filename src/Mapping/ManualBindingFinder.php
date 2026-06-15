@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\{Interfaces\ParameterResolver, ParameterResolverResult};
+use Medas\Core\{Attributes\Service, Interfaces\ParameterResolver, ParameterResolverResult};
 use Medas\ServiceManager\ServiceManager;
 
+#[Service]
 readonly class ManualBindingFinder implements ParameterResolver
 {
     public function __construct(
         private ServiceManager $serviceManager,
     )
     {
-        // This service is *not* instantiated automatically,
-        // so don't add more dependencies, expecting them to be injected.
     }
 
     public function priority(): int

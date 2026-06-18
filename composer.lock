@@ -56,16 +56,16 @@
         },
         {
             "name": "morphp/medas-core",
-            "version": "v4.0.6",
+            "version": "v4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-core.git",
-                "reference": "31d2d42a125c52f28745848b5542bdd3476dbfdb"
+                "reference": "95a3bce35529d7f342f832184e59fd9818e33964"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/31d2d42a125c52f28745848b5542bdd3476dbfdb",
-                "reference": "31d2d42a125c52f28745848b5542bdd3476dbfdb",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/95a3bce35529d7f342f832184e59fd9818e33964",
+                "reference": "95a3bce35529d7f342f832184e59fd9818e33964",
                 "shasum": ""
             },
             "require": {
@@ -98,10 +98,10 @@
                 "medas"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-core/tree/v4.0.6",
+                "source": "https://github.com/tarantuli/medas-core/tree/v4.1.1",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2026-06-15T14:50:56+00:00"
+            "time": "2026-06-16T11:01:48+00:00"
         },
         {
             "name": "psr/event-dispatcher",

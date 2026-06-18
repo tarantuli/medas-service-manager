@@ -25,7 +25,6 @@ class ServiceManager implements ServiceManagerInterface
     private array $services = [];
 
     private readonly CacheManagerInterface $cacheManager;
-    public readonly CachePrimer $cachePrimer;
 
     /** @var string[]|null Cached result of getServiceClassNames(); null means stale. */
     private array|null $serviceClassNamesCache = null;
@@ -41,7 +40,6 @@ class ServiceManager implements ServiceManagerInterface
         $this->registerThisInstance();
         $this->initializeCacheManager($cache);
 
-        $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
         $this->config = $this->loadConfig($initializer);
 
         // Register the exception handler early so that it can register the exception handler early.
@@ -55,6 +53,10 @@ class ServiceManager implements ServiceManagerInterface
 
         // Resolve the detailed exception handler after the object instantiator is ready.
         $exceptionHandlerManager->resolveHandlers($this, $this->config);
+
+        // ready() must run on every request: the config may come from cache, but anything
+        // ready() does requires live service resolution and can therefore never itself be cached.
+        $this->readyPackages();
     }
 
     private function registerThisInstance(): void
@@ -95,7 +97,7 @@ class ServiceManager implements ServiceManagerInterface
         }
 
         $this->bootstrapCoreServices($builder);
-        $this->bootstrapPackages($builder);
+        $this->initializePackages($builder);
         $this->bootstrapObjectInstantiator($builder);
 
         return $builder->build();
@@ -109,25 +111,19 @@ class ServiceManager implements ServiceManagerInterface
     {
         $builder->addPackage(ServiceManagerPackage::instance());
         $builder->addParameterResolver(Mapping\ManualBindingFinder::class);
-
-        $this->services[self::class] = $this;
-
         $builder->addTypeBinding(self::class, ServiceManagerInterface::class, self::class);
         $builder->addTypeBinding(Cache\CacheManager::class, Cache\CacheManager::class);
     }
 
     /**
-     * Calls initialize() then ready() on all registered packages, passing the builder so
-     * packages can still register resolvers, processors, and type bindings before build().
+     * Calls initialize() on all registered packages so they can register resolvers, processors,
+     * and type bindings before build(). Only runs when the config is being freshly built —
+     * the results become part of the cached ServiceConfig.
      */
-    private function bootstrapPackages(ServiceConfigBuilder $builder): void
+    private function initializePackages(ServiceConfigBuilder $builder): void
     {
         foreach ($builder->packageClasses() as $packageClass) {
             $packageClass::instance()->initialize($builder);
-        }
-
-        foreach ($builder->packageClasses() as $packageClass) {
-            $packageClass::instance()->ready();
         }
     }
 
@@ -150,6 +146,18 @@ class ServiceManager implements ServiceManagerInterface
         );
 
         medas()->setObjectInstantiator($this->services[$this->config->objectInstantiatorClass] = $objectInstantiator);
+    }
+
+    /**
+     * Calls ready() on all registered packages. Runs on every request, regardless of whether
+     * the config came from cache — ready() exists specifically for setup that requires live
+     * service resolution and therefore cannot be expressed as cacheable config.
+     */
+    private function readyPackages(): void
+    {
+        foreach ($this->config->packageClasses as $packageClass) {
+            $packageClass::instance()->ready();
+        }
     }
 
     /**

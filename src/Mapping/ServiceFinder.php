@@ -45,6 +45,10 @@ class ServiceFinder
 
     private function registerClass(\ReflectionClass $class, array &$services): void
     {
+        if ($class->isAbstract()) {
+            return;
+        }
+
         $forTypes = $this->getSelfParentsAndInterfaces($class);
 
         foreach ($forTypes as $forType) {

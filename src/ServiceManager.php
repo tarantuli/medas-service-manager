@@ -67,6 +67,7 @@ class ServiceManager implements ServiceManagerInterface
     private function initializeCacheManager(CacheInterface|null $cache): void
     {
         $this->cacheManager = new Cache\CacheManager($this);
+        $this->services[Cache\CacheManager::class] = $this->cacheManager;
 
         if ($cache) {
             $this->cacheManager->register($cache);
@@ -110,7 +111,6 @@ class ServiceManager implements ServiceManagerInterface
         $builder->addParameterResolver(Mapping\ManualBindingFinder::class);
 
         $this->services[self::class] = $this;
-        $this->services[Cache\CacheManager::class] = $this->cacheManager;
 
         $builder->addTypeBinding(self::class, ServiceManagerInterface::class, self::class);
         $builder->addTypeBinding(Cache\CacheManager::class, Cache\CacheManager::class);

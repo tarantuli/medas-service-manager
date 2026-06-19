@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 use Medas\Core\Interfaces\{
-    ErrorHandler,
+    ErrorPolicy,
     Package,
     ServiceConfigBuilder as ServiceConfigBuilderInterface
 };
@@ -19,7 +19,7 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
 {
     private readonly Mapping\MappingManager $mappingManager;
     private readonly Registry\PackageRegistry $packageRegistry;
-    private readonly ErrorHandler $errorHandler;
+    private readonly ErrorPolicy $errorPolicy;
     public readonly string $objectInstantiatorClass;
     public readonly bool $isDev;
 
@@ -36,13 +36,13 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
     private array $manualBindings = [];
 
     public function __construct(
-        string            $objectInstantiatorClass,
-        ErrorHandler|null $errorHandler = null,
-        bool              $isDev = false,
+        string           $objectInstantiatorClass,
+        ErrorPolicy|null $errorPolicy = null,
+        bool             $isDev = false,
     )
     {
         $this->objectInstantiatorClass = $objectInstantiatorClass;
-        $this->errorHandler = $errorHandler ?? new ErrorHandling\BasicErrorHandler();
+        $this->errorPolicy = $errorPolicy ?? new ErrorHandling\BasicErrorPolicy();
         $this->isDev = $isDev;
         $this->mappingManager = new Mapping\MappingManager();
         $this->packageRegistry = new Registry\PackageRegistry($this->mappingManager);
@@ -50,11 +50,9 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
 
     public function build(): ServiceConfig
     {
-        $errorHandler = $this->errorHandler;
-
         return new ServiceConfig(
             objectInstantiatorClass: $this->objectInstantiatorClass,
-            errorHandler: $errorHandler::class,
+            errorPolicy: $this->errorPolicy::class,
             isDev: $this->isDev,
             mapping: $this->mappingManager->get(),
             packageClasses: array_keys($this->packageRegistry->all()),

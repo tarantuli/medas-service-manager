@@ -45,9 +45,7 @@ class ServiceManager implements ServiceManagerInterface
         // Register the exception handler early so that it can register the exception handler early.
         $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager();
         $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
-        $errorHandler = new $this->config->errorHandler;
-
-        $errorHandler->set();
+        (new $this->config->errorPolicy)->set();
 
         $this->instantiateObjectInstantiator();
 

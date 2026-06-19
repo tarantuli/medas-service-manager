@@ -12,7 +12,7 @@ readonly class ServiceConfig
 {
     public function __construct(
         public string                 $objectInstantiatorClass,
-        public string                 $errorHandler,
+        public string                 $errorPolicy,
         public bool                   $isDev,
         public Mapping\ServiceMapping $mapping,
         public array                  $packageClasses,

@@ -80,7 +80,7 @@ $config = new ServiceConfig(
 );
 ```
 
-In dev mode `AggressiveErrorHandler` is used (converts warnings and notices to exceptions) instead of `BasicErrorHandler`.
+In dev mode `AggressiveErrorPolicy` is used (converts warnings and notices to exceptions) instead of `BasicErrorPolicy`.
 
 **Registering packages:**
 

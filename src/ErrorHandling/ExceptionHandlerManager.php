@@ -48,14 +48,16 @@ class ExceptionHandlerManager
                 $trace = $exception->getTraceAsString();
             }
 
-            error_log(sprintf(
-                "Unhandled exception: %s in %s:%d — %s\n\n%s",
+            $message = sprintf(
+                "[Unhandled exception] %s in %s on line %d — %s\n\n%s",
                 $exception::class,
                 $exception->getFile(),
                 $exception->getLine(),
                 $exception->getMessage(),
                 $trace
-            ));
+            );
+
+            defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);
         }
     }
 }

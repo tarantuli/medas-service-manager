@@ -38,10 +38,10 @@ abstract readonly class BaseErrorPolicy implements ErrorPolicy
 
         if ($error !== null && $error['type'] === E_ERROR) {
             $message = sprintf(
-                "[fatal error] %s in %s on line %d\n",
+                "[fatal error] %s in %s on line %d",
                 $error['message'],
                 $error['file'],
-                $error['line'],
+                $error['line']
             );
 
             defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);

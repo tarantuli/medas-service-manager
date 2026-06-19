@@ -26,9 +26,6 @@ class ServiceManager implements ServiceManagerInterface
 
     private readonly CacheManagerInterface $cacheManager;
 
-    /** @var string[]|null Cached result of getServiceClassNames(); null means stale. */
-    private array|null $serviceClassNamesCache = null;
-
     #[Entrypoint]
     public function __construct(
         \Closure            $initializer,
@@ -45,6 +42,7 @@ class ServiceManager implements ServiceManagerInterface
         // Register the exception handler early so that it can register the exception handler early.
         $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager();
         $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
+
         (new $this->config->errorPolicy)->set();
 
         $this->instantiateObjectInstantiator();
@@ -143,7 +141,9 @@ class ServiceManager implements ServiceManagerInterface
             $this->config->argumentProcessors
         );
 
-        medas()->setObjectInstantiator($this->services[$this->config->objectInstantiatorClass] = $objectInstantiator);
+        $this->services[$this->config->objectInstantiatorClass] = $objectInstantiator;
+
+        medas()->setObjectInstantiator($objectInstantiator);
     }
 
     /**
@@ -159,13 +159,13 @@ class ServiceManager implements ServiceManagerInterface
     }
 
     /**
-     * Returns the class names of all discoverable services.
+     * Returns the class names of all discovered services.
      *
      * @return string[]
      */
     public function getServiceClassNames(): array
     {
-        return $this->serviceClassNamesCache ??= array_unique($this->config->mapping->getAll());
+        return $this->config->mapping->getClassNames();
     }
 
     /**

@@ -15,6 +15,11 @@ class ServiceMapping
     /** @var array[][] */
     private array $allImplementors = [];
 
+    /** @var string[] */
+    private array $classNames = [];
+
+    private bool $classNamesNeedsRebuilding = false;
+
     public function set(string $type, string $className): bool
     {
         if (($this->mapping[$type] ?? null) === $className) {
@@ -23,6 +28,7 @@ class ServiceMapping
 
         $this->hasSingularMapping[$type] = true;
         $this->mapping[$type] = $className;
+        $this->classNamesNeedsRebuilding = true;
 
         return true;
     }
@@ -61,10 +67,17 @@ class ServiceMapping
                 $this->mapping[$type] = null;
             }
         }
+
+        $this->classNamesNeedsRebuilding = true;
     }
 
-    public function getAll(): array
+    public function getClassNames(): array
     {
-        return array_filter($this->mapping, fn($v) => $v !== null);
+        if ($this->classNamesNeedsRebuilding) {
+            $this->classNames = array_unique(array_filter($this->mapping, fn($v) => $v !== null));
+            $this->classNamesNeedsRebuilding = false;
+        }
+
+        return $this->classNames;
     }
 }

@@ -179,7 +179,7 @@ class ServiceManager implements ServiceManagerInterface
         $this->activeResolves[$type] = true;
 
         if (null === $service = $this->findImplementingClass($type)) {
-            throw new ServiceNotFoundByType($type, $this->activeResolves);
+            throw new ServiceNotFoundByType($type, array_keys($this->activeResolves));
         }
 
         if (!array_key_exists($service, $this->services)) {

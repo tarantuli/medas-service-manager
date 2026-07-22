@@ -24,6 +24,7 @@ class ServiceManager implements ServiceManagerInterface
     /** @var object[] */
     private array $services = [];
 
+    private array $activeResolves = [];
     private readonly CacheManagerInterface $cacheManager;
 
     #[Entrypoint]
@@ -175,13 +176,17 @@ class ServiceManager implements ServiceManagerInterface
     #[Entrypoint]
     public function resolve(string $type): object
     {
+        $this->activeResolves[$type] = true;
+
         if (null === $service = $this->findImplementingClass($type)) {
-            throw new ServiceNotFoundByType($type);
+            throw new ServiceNotFoundByType($type, $this->activeResolves);
         }
 
         if (!array_key_exists($service, $this->services)) {
             $this->services[$service] = medas()->objectInstantiator()->instantiate($service);
         }
+
+        unset($this->activeResolves[$type]);
 
         return $this->services[$service];
     }

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a97bc3af1f9037a829c42f04b0636b9",
+    "content-hash": "2d9aac6417bb1e5bd7ea97d74b50121b",
     "packages": [
         {
             "name": "morphp/medas-console",
-            "version": "v3.2.5",
+            "version": "v4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-console.git",
-                "reference": "f13a245c33199d1f639d30c251ce75fd29e6a851"
+                "reference": "a59d589ca3a00e57cb463e4b3c5bdbe86ddbd48d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/f13a245c33199d1f639d30c251ce75fd29e6a851",
-                "reference": "f13a245c33199d1f639d30c251ce75fd29e6a851",
+                "url": "https://api.github.com/repos/tarantuli/medas-console/zipball/a59d589ca3a00e57cb463e4b3c5bdbe86ddbd48d",
+                "reference": "a59d589ca3a00e57cb463e4b3c5bdbe86ddbd48d",
                 "shasum": ""
             },
             "require": {
@@ -49,23 +49,23 @@
                 "console"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-console/tree/v3.2.5",
+                "source": "https://github.com/tarantuli/medas-console/tree/v4.0.0",
                 "issues": "https://github.com/tarantuli/medas-console/issues"
             },
-            "time": "2026-06-11T10:44:33+00:00"
+            "time": "2026-07-28T10:24:33+00:00"
         },
         {
             "name": "morphp/medas-core",
-            "version": "v4.2.3",
+            "version": "v4.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-core.git",
-                "reference": "9dd01952591230a822aaebdcd8c9ff1e644ad586"
+                "reference": "73b30ce9d9bc026993ba1f92859877ff09bb8dfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/9dd01952591230a822aaebdcd8c9ff1e644ad586",
-                "reference": "9dd01952591230a822aaebdcd8c9ff1e644ad586",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/73b30ce9d9bc026993ba1f92859877ff09bb8dfe",
+                "reference": "73b30ce9d9bc026993ba1f92859877ff09bb8dfe",
                 "shasum": ""
             },
             "require": {
@@ -98,10 +98,10 @@
                 "medas"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-core/tree/v4.2.3",
+                "source": "https://github.com/tarantuli/medas-core/tree/v4.2.5",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2026-07-22T08:42:50+00:00"
+            "time": "2026-07-27T08:10:04+00:00"
         },
         {
             "name": "psr/event-dispatcher",

@@ -9,8 +9,8 @@ use Medas\Console\{
     Commands\BaseConsoleCommand,
     Commands\CommandInput,
     Commands\ConsoleCommandGroup,
+    Formats\Decoration,
     Formats\SafeColor,
-    Formats\Style,
     Printer,
     Text
 };
@@ -88,7 +88,7 @@ readonly class ListServices extends BaseConsoleCommand
             if (isset($filterValue)) {
                 $this->printer->printLine(
                     Text::create('   no services found that match: ', SafeColor::LightRed),
-                    Text::create($filterValue, Style::Bold),
+                    Text::create($filterValue, Decoration::Bold),
                 );
             }
             else {

@@ -24,6 +24,9 @@ class ServiceManager implements ServiceManagerInterface
     /** @var object[] */
     private array $services = [];
 
+    /** @var object[] Already-resolved services, by the type that was asked for. */
+    private array $resolvedByType = [];
+
     private array $activeResolves = [];
     private readonly CacheManagerInterface $cacheManager;
 
@@ -176,6 +179,14 @@ class ServiceManager implements ServiceManagerInterface
     #[Entrypoint]
     public function resolve(string $type): object
     {
+        // Asked for before: the answer cannot change, because the mapping is fixed once
+        // the config is built and a service instance is never replaced. resolve() runs
+        // tens of thousands of times per request (every dispatch() and cache() goes
+        // through it), so this path must stay a single array lookup.
+        if (isset($this->resolvedByType[$type])) {
+            return $this->resolvedByType[$type];
+        }
+
         $this->activeResolves[$type] = true;
 
         if (null === $service = $this->findImplementingClass($type)) {
@@ -188,7 +199,7 @@ class ServiceManager implements ServiceManagerInterface
 
         unset($this->activeResolves[$type]);
 
-        return $this->services[$service];
+        return $this->resolvedByType[$type] = $this->services[$service];
     }
 
     public function findImplementingClass(string $type): string|null

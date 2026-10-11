@@ -12,8 +12,8 @@ use Medas\Core\Attributes\Service;
  * generation markers - emptying that directory is the only way a command-line process can make the web server's APCu
  * cache start afresh.
  *
- * This is the PHP counterpart of the post-install script bin/post-install-scripts/clear-cache-dirs.sh, so the
- * clear-caches console command clears the same caches as a composer install.
+ * The post-install script bin/post-install-scripts/clear-cache-dirs.php uses this too, so the clear-caches console
+ * command clears the same caches as a composer install.
  */
 #[Service]
 readonly class DirectoriesToClear

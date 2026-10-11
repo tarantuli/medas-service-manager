@@ -168,16 +168,16 @@ $service = medas()->serviceManager()->resolve(InvoiceService::class);
 **Listing all registered services:**
 
 ```bash
-php bin/medas service-manager:list-services
+php bin/medas services:list
 
 # Filter by a substring
-php bin/medas service-manager:list-services Invoice
+php bin/medas services:list Invoice
 ```
 
 **Clearing all caches:**
 
 ```bash
-php bin/medas service-manager:clear-caches
+php bin/medas services:clear-caches
 ```
 
 Empties every directory registered under `var/dirs-to-clear/` (like the post-install script does), then calls `clear()` on every cache registered with the cache manager. Emptying the registered directories is what reaches caches outside this command-line process: it removes the file caches' entries, and the APCu cache's generation marker, so the web server's APCu cache starts a new generation (see `medas-cache`). Registered paths that are a file system root, the project root or one of its parents are skipped.
@@ -187,9 +187,9 @@ Empties every directory registered under `var/dirs-to-clear/` (like the post-ins
 **Config caching** — the `ServiceConfig` (including the full service mapping) is serialized and cached. This means after the first request, the file system is not scanned again. The cache must be cleared after making changes (adding or removing `#[Service]` classes, registering new packages, etc.):
 
 ```bash
-php bin/medas service-manager:clear-caches
+php bin/medas services:clear-caches
 # or
 composer update  # runs the post-install scripts, which clear the caches
 ```
 
-**`var/dirs-to-clear/`** — file system caches (and the APCu cache's generation directory) register their directories here, so the post-install script `clear-cache-dirs.sh` knows which directories to empty. Each entry is a SHA1-named file containing the directory path.
+**`var/dirs-to-clear/`** — file system caches (and the APCu cache's generation directory) register their directories here, so the post-install script `clear-cache-dirs.php` knows which directories to empty. Each entry is a SHA1-named file containing the directory path.

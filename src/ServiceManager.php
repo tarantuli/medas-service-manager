@@ -11,11 +11,13 @@ use Medas\Core\{
     Exceptions\ServiceNotFoundByType,
     Interfaces\Cache as CacheInterface,
     Interfaces\CacheManager as CacheManagerInterface,
+    Interfaces\InstantiatesLazily,
     Interfaces\ObjectInstantiator,
+    Interfaces\ResolvesLazily,
     Interfaces\ServiceManager as ServiceManagerInterface
 };
 
-class ServiceManager implements ServiceManagerInterface
+class ServiceManager implements ServiceManagerInterface, ResolvesLazily
 {
     private const string CONFIG_CACHE_KEY = ServiceConfig::class;
 
@@ -188,6 +190,26 @@ class ServiceManager implements ServiceManagerInterface
             return $this->resolvedByType[$type];
         }
 
+        return $this->resolveUnresolved($type, false);
+    }
+
+    /**
+     * Used for injecting dependencies: a service that hasn't been instantiated yet is registered and returned as a
+     * lazy object, so it (and its own dependencies) are only instantiated when the service is actually used. Later
+     * calls to resolve() return that same lazy object.
+     */
+    #[Entrypoint]
+    public function resolveLazy(string $type): object
+    {
+        if (isset($this->resolvedByType[$type])) {
+            return $this->resolvedByType[$type];
+        }
+
+        return $this->resolveUnresolved($type, true);
+    }
+
+    private function resolveUnresolved(string $type, bool $lazy): object
+    {
         $this->activeResolves[$type] = true;
 
         if (null === $service = $this->findImplementingClass($type)) {
@@ -195,7 +217,11 @@ class ServiceManager implements ServiceManagerInterface
         }
 
         if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = medas()->objectInstantiator()->instantiate($service);
+            $objectInstantiator = medas()->objectInstantiator();
+
+            $this->services[$service] = $lazy && $objectInstantiator instanceof InstantiatesLazily
+                ? $objectInstantiator->instantiateLazy($service)
+                : $objectInstantiator->instantiate($service);
         }
 
         unset($this->activeResolves[$type]);

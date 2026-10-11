@@ -4,23 +4,24 @@ Part of the [Medas framework](https://github.com/tarantuli/medas-core).
 
 ## Description
 
-The DI container and application bootstrap for the Medas framework. `ServiceManager` ties together service discovery, object instantiation, package lifecycle, caching, and error handling into a single entry point.
+The DI container and application bootstrap for the Medas framework. `ServiceManager` ties together service discovery, object instantiation, package lifecycle, caching and error handling into a single entry point.
 
 **Bootstrap sequence:**
 
-1. The user-supplied initializer closure is called to produce a `ServiceConfig`
-2. The `ServiceConfig` is loaded from persistent cache if available, or built fresh and persisted on shutdown
-3. `ObjectInstantiator` is initialized from the configured class
-4. All registered packages have `initialize()` called, then `ready()` called (in registration order)
-5. A shutdown function persists the config to cache if it was freshly built or mutated
+1. The cache manager is set up, with the cache passed to the constructor as the default cache
+2. The `ServiceConfig` is loaded from that cache. Only when it isn't cached, the user-supplied initializer closure is called to produce a `ServiceConfigBuilder`, all registered packages have `initialize()` called and the built config is stored in the cache
+3. The configured object instantiator is created with the registered parameter resolvers, argument processors and the `isDev` flag
+4. All registered packages have `ready()` called (in registration order) — on every request, also when the config came from the cache
 
 **Service discovery:**
 
-`ServiceFinder` scans each package's `sourceDirectory()` for PHP files, loads them via PSR-4, and records every class annotated with `#[Service]` in a `ServiceMapping`. The mapping is stored in cache so file scanning only happens on the first boot or after a cache clear. The mapping is keyed by interface/class name → implementation class name.
+`ServiceFinder` scans each package's `sourceDirectory()` for PHP files, loads them via PSR-4 and records every class annotated with `#[Service]` in a `ServiceMapping`. The mapping is stored in cache so file scanning only happens on the first boot or after a cache clear. The mapping is keyed by interface/class name → implementation class name.
 
 **Resolution:**
 
-`resolve(string $type)` looks up the implementation for a type, instantiates it on first call (injecting all constructor dependencies via `ObjectInstantiator`), and caches the instance for the lifetime of the request. Calling `resolve()` with the same type always returns the same instance.
+`resolve(string $type)` looks up the implementation for a type, instantiates it on first call (injecting all constructor dependencies via `ObjectInstantiator`) and caches the instance for the lifetime of the request. Calling `resolve()` with the same type always returns the same instance.
+
+`resolveLazy(string $type)` (from the `ResolvesLazily` interface) is what dependency injection uses: a service that hasn't been instantiated yet is registered as a lazy object, whose constructor only runs when the service is first used. Later calls to `resolve()` return that same object. A service that is injected but never used is never constructed, and neither are its own dependencies. Mark a service `#[Service(lazy: false)]` when its constructor must run when it's injected. See the object instantiator's documentation for details.
 
 **`ImplementorFinder`** walks all registered service class names and returns every non-abstract class that implements a given interface. This is how plugins (event listeners, response handlers, parameter resolvers, etc.) are discovered automatically without manual registration.
 
@@ -35,63 +36,57 @@ On `postInstall()` (run after `composer update`), `CachePrimer::prime()` calls `
 **Bootstrapping the application:**
 
 ```php
-use Medas\ServiceManager\{ServiceConfig, ServiceManager};
+use Medas\ServiceManager\{ServiceConfigBuilder, ServiceManager};
 use Medas\ObjectInstantiator\ObjectInstantiator;
-use Medas\Cache\FileSystemCache;
 
-new ServiceManager(function (): ServiceConfig {
-    $config = new ServiceConfig(
-        objectInstantiatorClass: ObjectInstantiator::class,
-    );
+new ServiceManager(function (): ServiceConfigBuilder {
+    $builder = new ServiceConfigBuilder(ObjectInstantiator::class);
 
-    $config->addPackages([
-        // Register all your packages here
-        ServiceManagerPackage::instance(),
-        LoggingPackage::instance(),
-        EntityManagerPackage::instance(),
-        // ...
+    $builder->addPackages([
+        // Register your root packages here; their dependencies are added automatically
+        AppPackage::instance(),
     ]);
 
-    return $config;
+    return $builder;
 });
 ```
 
 **Adding a persistent cache to the service manager:**
 
 ```php
-use Medas\Cache\FileSystemCache;
+use Medas\Cache\{ApcuCache, FileSystemCache};
 
-$cache = new FileSystemCache(baseDirectory: 'var/cache/service-manager');
+// APCu for web requests; the CLI usually has APCu disabled (apc.enable_cli), so fall back to the file system there
+$cache = ApcuCache::isAvailable()
+    ? new ApcuCache('my-app')
+    : new FileSystemCache(__DIR__ . '/var/cache');
 
 new ServiceManager(
-    initializer: function (): ServiceConfig { /* ... */ },
+    initializer: function (): ServiceConfigBuilder { /* ... */ },
     cache: $cache,
 );
 ```
 
-With a persistent cache, the `ServiceMapping` is read from disk on later requests and file scanning is skipped.
+With a persistent cache, the `ServiceConfig` (including the service mapping) is read from the cache on later requests and file scanning is skipped. The cache passed here becomes the default cache, which the framework also uses for other compiled data, such as the object instantiator's resolution plans and the entity metadata.
 
 **Development mode — aggressive error handling:**
 
 ```php
-$config = new ServiceConfig(
-    objectInstantiatorClass: ObjectInstantiator::class,
-    isDev: true,
-);
+$builder = new ServiceConfigBuilder(ObjectInstantiator::class, isDev: true);
 ```
 
-In dev mode `AggressiveErrorPolicy` is used (converts warnings and notices to exceptions) instead of `BasicErrorPolicy`.
+In dev mode `AggressiveErrorPolicy` is used (converts warnings and notices to exceptions) instead of `BasicErrorPolicy`, dev packages are registered, and the object instantiator checks its cached resolution plans against the source files, so constructor changes take effect without clearing the cache.
 
 **Registering packages:**
 
 ```php
-$config->addPackages([
+$builder->addPackages([
     HttpRequestHandlerPackage::instance(),
     RoutingPackage::instance(),
 ]);
 
 // Dev-only packages are silently skipped in production
-$config->addDevPackages([
+$builder->addDevPackages([
     DebugPackage::instance(),
 ]);
 ```
@@ -99,7 +94,7 @@ $config->addDevPackages([
 **Defining a package:**
 
 ```php
-use Medas\Core\{AsSingleton, BasePackage, Interfaces\ServiceConfig};
+use Medas\Core\{AsSingleton, BasePackage, Interfaces\ServiceConfigBuilder};
 
 class MyPackage extends BasePackage
 {
@@ -119,25 +114,26 @@ class MyPackage extends BasePackage
         return __DIR__;
     }
 
-    public function initialize(ServiceConfig $config): void
+    public function initialize(ServiceConfigBuilder $config): void
     {
-        // Called during bootstrap — register parameter resolvers, argument processors, etc.
-        $config->addParameterResolver(service(MyResolver::class));
+        // Called only when the config is built (not when it comes from the cache) — register parameter resolvers,
+        // argument processors, etc. They are registered by class name and instantiated without arguments.
+        $config->addParameterResolver(MyResolver::class);
 
         parent::initialize($config);
     }
 
     public function ready(): void
     {
-        // Called after all packages have been initialized
-        // Use for cross-package wiring that requires other packages to be ready
+        // Called on every request, after the config has been loaded or built
+        // Use for setup that requires live services, or that can't be cached
         service(SomeRegistry::class)->register(service(MyHandler::class));
     }
 
     public function postInstall(): void
     {
-        // Called by composer post-update scripts
-        medas()->serviceManager()->cachePrimer->prime();
+        // Called by the post-install script after composer install/update
+        service(MigrationRunner::class)->runPending();
     }
 }
 ```
@@ -145,11 +141,8 @@ class MyPackage extends BasePackage
 **Manual type binding — resolving a specific implementation for a type:**
 
 ```php
-// In ServiceConfig, before the container is built
+// In the ServiceConfigBuilder, e.g. in a package's initialize()
 $config->addTypeBinding(ApcuCache::class, CacheInterface::class);
-
-// At runtime, after the container is built
-$serviceManager->bindImplementation(service(ApcuCache::class), CacheInterface::class);
 ```
 
 **Manual parameter binding — inject a specific value for a parameter:**
@@ -187,18 +180,16 @@ php bin/medas service-manager:list-services Invoice
 php bin/medas service-manager:clear-caches
 ```
 
-Clears the service manager's own config cache and all filesystem cache directories registered under `var/dirs-to-clear/`.
+Empties every directory registered under `var/dirs-to-clear/` (like the post-install script does), then calls `clear()` on every cache registered with the cache manager. Emptying the registered directories is what reaches caches outside this command-line process: it removes the file caches' entries, and the APCu cache's generation marker, so the web server's APCu cache starts a new generation (see `medas-cache`). Registered paths that are a file system root, the project root or one of its parents are skipped.
 
 ### Backend user context
 
-**Config caching** — the `ServiceConfig` (including the full service mapping) is serialized and cached. This means after the first request, the file system is not scanned again. The cache must be manually invalidated after making changes (adding or removing `#[Service]` classes, registering new packages, etc.):
+**Config caching** — the `ServiceConfig` (including the full service mapping) is serialized and cached. This means after the first request, the file system is not scanned again. The cache must be cleared after making changes (adding or removing `#[Service]` classes, registering new packages, etc.):
 
 ```bash
 php bin/medas service-manager:clear-caches
 # or
-composer update  # triggers postInstall() → CachePrimer::prime()
+composer update  # runs the post-install scripts, which clear the caches
 ```
 
-**Shutdown persistence** — if the config was freshly built (cache miss) or the service mapping was mutated via `bindImplementation()`, the config is written to cache in a PHP shutdown function. This is more reliable than `__destruct()` because shutdown functions run at a predictable point before the GC tears down the object graph.
-
-**`var/dirs-to-clear/`** — filesystem caches register themselves here so `clear-caches` knows which directories to wipe. Each entry is a SHA1-named file containing the cache base directory path.
+**`var/dirs-to-clear/`** — file system caches (and the APCu cache's generation directory) register their directories here, so the post-install script `clear-cache-dirs.sh` knows which directories to empty. Each entry is a SHA1-named file containing the directory path.

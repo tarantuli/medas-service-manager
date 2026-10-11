@@ -85,7 +85,7 @@ class ServiceManager implements ServiceManagerInterface
     }
 
     /**
-     * Called only when there is no cached config — builds a fresh one via the user-supplied initializer closure.
+     * Called only when there is no cached config — builds a fresh one via the user-supplied initialiser closure.
      * Owns the full bootstrap sequence: object instantiator, core services, package initialize() and ready().
      */
     private function buildFreshConfig(\Closure $initializer): ServiceConfig
@@ -142,7 +142,8 @@ class ServiceManager implements ServiceManagerInterface
     {
         $objectInstantiator = new ($this->config->objectInstantiatorClass)(
             $this->config->parameterResolvers,
-            $this->config->argumentProcessors
+            $this->config->argumentProcessors,
+            $this->config->isDev,
         );
 
         $this->services[$this->config->objectInstantiatorClass] = $objectInstantiator;

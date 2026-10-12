@@ -9,6 +9,11 @@ use Medas\ServiceManager\{ServiceConfig, ServiceManager};
 
 class ExceptionHandlerManager
 {
+    private ServiceManager|null $serviceManager = null;
+
+    /** @var string[] */
+    private array $handlerClasses = [];
+
     /** @var ExceptionHandler[]|null */
     private array|null $resolvedHandlers = null;
 
@@ -19,20 +24,29 @@ class ExceptionHandlerManager
         set_exception_handler($this->handle(...));
     }
 
-    public function resolveHandlers(ServiceManager $serviceManager, ServiceConfig $config): void
+    // The handlers are only resolved when the first exception arrives: together with their
+    // own dependencies (loggers, mailers, their config options) they are dozens of services,
+    // and a request that throws nothing needs none of them.
+    public function prepareHandlers(ServiceManager $serviceManager, ServiceConfig $config): void
     {
-        $this->resolvedHandlers = [];
-
-        foreach ($config->exceptionHandlers as $class) {
-            $this->resolvedHandlers[] = $serviceManager->resolve($class);
-        }
+        $this->serviceManager = $serviceManager;
+        $this->handlerClasses = $config->exceptionHandlers;
     }
 
     public function handle(\Throwable $exception): void
     {
         $handled = false;
 
-        foreach ($this->resolvedHandlers as $handler) {
+        try {
+            $handlers = $this->handlers();
+        }
+        catch (\Throwable) {
+            // A handler that can't be built must not hide the exception it was meant to
+            // handle: that one is still printed below, as an unhandled exception.
+            $handlers = [];
+        }
+
+        foreach ($handlers as $handler) {
             if ($handler->handleException($exception)) {
                 // Don't short circuit if the exception was handled.
                 // Multiple handlers are allowed to handle the same exception.
@@ -59,5 +73,21 @@ class ExceptionHandlerManager
 
             defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);
         }
+    }
+
+    /** @return ExceptionHandler[] */
+    private function handlers(): array
+    {
+        if ($this->resolvedHandlers === null) {
+            $resolved = [];
+
+            foreach ($this->handlerClasses as $class) {
+                $resolved[] = $this->serviceManager->resolve($class);
+            }
+
+            $this->resolvedHandlers = $resolved;
+        }
+
+        return $this->resolvedHandlers;
     }
 }

@@ -53,8 +53,9 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
 
         $this->instantiateObjectInstantiator();
 
-        // Resolve the detailed exception handler after the object instantiator is ready.
-        $exceptionHandlerManager->resolveHandlers($this, $this->config);
+        // The detailed exception handlers can only be resolved once the object instantiator
+        // is ready; they are resolved when the first exception arrives.
+        $exceptionHandlerManager->prepareHandlers($this, $this->config);
 
         // ready() must run on every request: the config may come from cache, but anything
         // ready() does requires live service resolution and can therefore never itself be cached.

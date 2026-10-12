@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\ErrorHandling;
 
-use Medas\Core\Interfaces\ErrorHandler;
+use Medas\Core\Interfaces\ErrorPolicy;
 
 /**
- * Shared scaffolding for error handlers. Subclasses define which PHP error severities
+ * Shared scaffolding for error policy setters. Subclasses define which PHP error severities
  * should be promoted to exceptions by implementing {@see shouldThrow()}.
  */
-abstract readonly class BaseErrorHandler implements ErrorHandler
+abstract readonly class BaseErrorPolicy implements ErrorPolicy
 {
     /**
      * Returns true when the given PHP error severity should be promoted to an exception.
@@ -38,10 +38,10 @@ abstract readonly class BaseErrorHandler implements ErrorHandler
 
         if ($error !== null && $error['type'] === E_ERROR) {
             $message = sprintf(
-                "[fatal error] %s in %s on line %d\n",
+                "[fatal error] %s in %s on line %d",
                 $error['message'],
                 $error['file'],
-                $error['line'],
+                $error['line']
             );
 
             defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);

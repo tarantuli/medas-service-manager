@@ -24,6 +24,6 @@ class ServiceManagerPackage extends BasePackage
 
     public function postInstall(): void
     {
-        medas()->serviceManager()->cachePrimer->prime();
+        new CachePrimer(medas()->serviceManager(), service(Cache\CacheManager::class))->prime();
     }
 }

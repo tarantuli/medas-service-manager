@@ -4,41 +4,48 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\{Interfaces\ParameterResolver, ParameterResolverResult};
-use Medas\ServiceManager\ServiceConfig;
+use Medas\Core\{
+    Attributes\Service,
+    CompiledValue,
+    HandlesByCompiling,
+    Interfaces\CompilableParameterResolver,
+    ParameterResolverResult
+};
 
-readonly class ManualBindingFinder implements ParameterResolver
+#[Service]
+readonly class ManualBindingFinder implements CompilableParameterResolver
 {
-    public function __construct(
-        private ServiceConfig $config,
-    )
-    {
-        // This service is *not* instantiated automatically,
-        // so don't add more dependencies, expecting them to be injected.
-    }
+    use HandlesByCompiling;
 
     public function priority(): int
     {
         return -50;
     }
 
-    public function handle(\ReflectionParameter|\ReflectionProperty $parameter): ParameterResolverResult
+    public function compile(\ReflectionParameter|\ReflectionProperty $parameter): CompiledValue|null
     {
         if ($parameter instanceof \ReflectionProperty) {
-            return new ParameterResolverResult(false);
+            return null;
         }
 
-        $bindings = $this->config->manualBindings();
-        $className = $parameter->getDeclaringClass()->name;
+        $bindings = sm()->config->manualBindings;
+
+        // Parameters of closures and functions have no declaring class, so they can't have a binding
+        $className = $parameter->getDeclaringClass()?->name;
         $methodName = $parameter->getDeclaringFunction()->name;
 
-        if (isset($bindings[$className][$methodName][$parameter->name])) {
-            return new ParameterResolverResult(
-                true,
-                $bindings[$className][$methodName][$parameter->name],
-            );
+        if ($className === null || !isset($bindings[$className][$methodName][$parameter->name])) {
+            return null;
         }
 
-        return new ParameterResolverResult(false);
+        return new CompiledValue($bindings[$className][$methodName][$parameter->name]);
+    }
+
+    /**
+     * @param CompiledValue $compiled
+     */
+    public function resolveCompiled(object $compiled): ParameterResolverResult
+    {
+        return new ParameterResolverResult(true, $compiled->value);
     }
 }

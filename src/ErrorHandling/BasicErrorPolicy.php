@@ -10,7 +10,7 @@ use Medas\Core\Attributes\Service;
  * Throws exceptions only for fatal error severities. Suitable for production.
  */
 #[Service]
-readonly class BasicErrorHandler extends BaseErrorHandler
+readonly class BasicErrorPolicy extends BaseErrorPolicy
 {
     protected function shouldThrow(int $severity): bool
     {

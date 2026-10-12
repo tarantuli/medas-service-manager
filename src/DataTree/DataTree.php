@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\DataTree;
 
-use Medas\ServiceManager\Exceptions\IndexNotFoundInDataTree;
+use Medas\ServiceManager\Exceptions\{HistoryNotAvailableInDataTree, IndexNotFoundInDataTree};
 
 class DataTree
 {
@@ -13,14 +13,29 @@ class DataTree
 
     private array $values = [];
 
-    /** @var History[] */
+    /** @var History[] Debug-only record of which sources wrote each value; never serialized. */
     private array $history = [];
+
+    /** False once restored from serialized form: history from before that point is gone, so a partial record would mislead. */
+    private bool $recordsHistory = true;
 
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $index => $value) {
             $this->set($index, $value, 'default');
         }
+    }
+
+    public function __serialize(): array
+    {
+        return ['values' => $this->values];
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $this->values = $data['values'];
+        $this->history = [];
+        $this->recordsHistory = false;
     }
 
     public function set(string $index, mixed $value, string $source = 'runtime'): self
@@ -41,7 +56,10 @@ class DataTree
         }
 
         $values[$lastPath] = $value;
-        $history[$lastPath][] = new History($source, $value);
+
+        if ($this->recordsHistory) {
+            $history[$lastPath][] = new History($source, $value);
+        }
 
         return $this;
     }
@@ -96,24 +114,28 @@ class DataTree
     /** @return History[] */
     public function getHistory(string $index): array
     {
-        $result = $this->find($index);
-
-        if ($result === null) {
+        if ($this->find($index) === null) {
             throw new IndexNotFoundInDataTree($index);
         }
 
-        return $result[1];
+        if (!$this->recordsHistory) {
+            throw new HistoryNotAvailableInDataTree($index);
+        }
+
+        $history = $this->history;
+
+        foreach ($this->indexToPath($index) as $subPath) {
+            $history = $history[$subPath];
+        }
+
+        return $history;
     }
 
     public function getSource(string $index): string
     {
-        $result = $this->find($index);
+        $history = $this->getHistory($index);
 
-        if ($result === null) {
-            throw new IndexNotFoundInDataTree($index);
-        }
-
-        return $result[1][array_key_last($result[1])]->source;
+        return $history[array_key_last($history)]->source;
     }
 
     public function getElse(string $index, mixed $fallback): mixed
@@ -124,33 +146,37 @@ class DataTree
     }
 
     /**
-     * Traverses the tree for $index and returns a [value, history] pair, or null when not found.
-     * All public accessors delegate here instead of relying on shared mutable state.
+     * Traverses the tree for $index and returns [value], or null when not found.
+     * The value is wrapped so that a stored null can be told apart from "not found".
      *
-     * @return array{0: mixed, 1: History[]}|null
+     * @return array{0: mixed}|null
      */
     private function find(string $index): array|null
     {
-        $path = $this->indexToPath($index);
-        $values = &$this->values;
-        $history = $this->history;
+        $values = $this->values;
 
-        foreach ($path as $subPath) {
-            if (!array_key_exists($subPath, $values)) {
+        foreach ($this->indexToPath($index) as $subPath) {
+            // A scalar leaf has no children, so a deeper index is simply not found
+            if (!is_array($values) || !array_key_exists($subPath, $values)) {
                 return null;
             }
 
-            $values = &$values[$subPath];
-            $history = $history[$subPath];
+            // By-value walk: references would force copy-on-write separation of shared subtrees
+            $values = $values[$subPath];
         }
 
-        return [$values, $history];
+        return [$values];
     }
 
     private function indexToPath(string $index): array
     {
         if (isset(self::$pathCache[$index])) {
             return self::$pathCache[$index];
+        }
+
+        // Escaped dots are rare; without a backslash a plain split is equivalent and runs in C
+        if (!str_contains($index, '\\')) {
+            return self::$pathCache[$index] = explode('.', $index);
         }
 
         $paths = [];

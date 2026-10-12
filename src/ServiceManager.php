@@ -11,56 +11,31 @@ use Medas\Core\{
     Exceptions\ServiceNotFoundByType,
     Interfaces\Cache as CacheInterface,
     Interfaces\CacheManager as CacheManagerInterface,
+    Interfaces\InstantiatesLazily,
     Interfaces\ObjectInstantiator,
+    Interfaces\ResolvesLazily,
     Interfaces\ServiceManager as ServiceManagerInterface
 };
 
-class ServiceManager implements ServiceManagerInterface
+class ServiceManager implements ServiceManagerInterface, ResolvesLazily
 {
     private const string CONFIG_CACHE_KEY = ServiceConfig::class;
 
-    /**
-     * This method should only be called by "composer update" or similar command line scripts.
-     */
-    public static function postInstall(): void
-    {
-        service(CacheManagerInterface::class)->clearAll();
-
-        $registeredPackages = medas()->serviceManager()->config()->registeredPackages();
-
-        foreach ($registeredPackages as $package) {
-            $package->postInstall();
-        }
-    }
-
-    private readonly ServiceConfig $config;
+    public readonly ServiceConfig $config;
 
     /** @var object[] */
     private array $services = [];
 
-    private CacheManagerInterface $cacheManager;
-    public readonly CachePrimer $cachePrimer;
+    /** @var object[] Already-resolved services, by the type that was asked for. */
+    private array $resolvedByType = [];
 
-    /**
-     * Whether the config was loaded from cache (true) or freshly built (false).
-     * A freshly built config must always be persisted.
-     */
-    private bool $configWasCached = true;
-
-    /**
-     * Whether the mapping was mutated at runtime via bindImplementation().
-     * When true, the config must be persisted even if it was originally cached.
-     */
-    private bool $mappingDirty = false;
-
-    /** @var string[]|null Cached result of getServiceClassNames(); null means stale. */
-    private array|null $serviceClassNamesCache = null;
+    private array $activeResolves = [];
+    private readonly CacheManagerInterface $cacheManager;
 
     #[Entrypoint]
     public function __construct(
-        \Closure                $initializer,
-        CacheInterface|null     $cache = null,
-        private readonly string $panicLogPath = 'var/log/service-manager-panic.log',
+        \Closure            $initializer,
+        CacheInterface|null $cache = null,
     )
     {
         CorePackage::instance()->loadGlobalFunctions();
@@ -68,19 +43,23 @@ class ServiceManager implements ServiceManagerInterface
         $this->registerThisInstance();
         $this->initializeCacheManager($cache);
 
-        $this->cachePrimer = new CachePrimer($this, $this->cacheManager);
+        $this->config = $this->loadConfig($initializer);
 
-        $this->config = $this->cacheManager->get()->get(
-            self::CONFIG_CACHE_KEY,
-            fn() => $this->buildFreshConfig($initializer),
-        );
+        // Register the exception handler early so that it can register the exception handler early.
+        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager();
+        $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
 
-        // This should be instantiated *after* fetching the mapping through the config.
-        $this->initializeObjectInstantiator();
-        $this->config->errorHandler()->set();
-        $this->registerCoreServices();
-        $this->initializePackages();
-        $this->registerShutdownPersistence();
+        (new $this->config->errorPolicy)->set();
+
+        $this->instantiateObjectInstantiator();
+
+        // The detailed exception handlers can only be resolved once the object instantiator
+        // is ready; they are resolved when the first exception arrives.
+        $exceptionHandlerManager->prepareHandlers($this, $this->config);
+
+        // ready() must run on every request: the config may come from cache, but anything
+        // ready() does requires live service resolution and can therefore never itself be cached.
+        $this->readyPackages();
     }
 
     private function registerThisInstance(): void
@@ -93,100 +72,108 @@ class ServiceManager implements ServiceManagerInterface
     private function initializeCacheManager(CacheInterface|null $cache): void
     {
         $this->cacheManager = new Cache\CacheManager($this);
+        $this->services[Cache\CacheManager::class] = $this->cacheManager;
 
         if ($cache) {
             $this->cacheManager->register($cache);
         }
     }
 
-    /**
-     * Called only when there is no cached config — builds a fresh one via the user-supplied initializer closure.
-     */
-    private function buildFreshConfig(\Closure $initializer): ServiceConfig
+    private function loadConfig(\Closure $initializer): ServiceConfig
     {
-        $config = $initializer();
-
-        if (!$config instanceof ServiceConfig) {
-            throw new Exceptions\InitializerDidNotReturnServiceConfig($config);
-        }
-
-        $this->configWasCached = false;
-
-        return $config;
-    }
-
-    private function initializeObjectInstantiator(): void
-    {
-        $className = $this->config->objectInstantiatorClass();
-        $objectInstantiator = new ($className)($this);
-        medas()->setObjectInstantiator($this->services[$className] = $objectInstantiator);
-
-        $this->config->mapping()->set(ObjectInstantiator::class, $className);
-    }
-
-    private function registerCoreServices(): void
-    {
-        $this->bindImplementation($this, ServiceManagerInterface::class, self::class);
-        $this->bindImplementation($this->cacheManager, Cache\CacheManager::class);
-
-        $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager($this->config);
-
-        $this->bindImplementation(
-            $exceptionHandlerManager,
-            ErrorHandling\ExceptionHandlerManager::class
+        return $this->cacheManager->get()->get(
+            self::CONFIG_CACHE_KEY,
+            fn() => $this->buildFreshConfig($initializer),
         );
     }
 
-    private function initializePackages(): void
-    {
-        foreach ($this->config->registeredPackages() as $package) {
-            $package->initialize($this->config);
-        }
-
-        foreach ($this->config->registeredPackages() as $package) {
-            $package->ready();
-        }
-    }
-
     /**
-     * Registers a shutdown function to persist the config to cache when required.
-     *
-     * This is more reliable than __destruct() because shutdown functions run at a well-known
-     * point in the request lifecycle, before the GC tears down the object graph. A
-     * destructor offers no ordering guarantees — the CacheManager could be destroyed first,
-     * causing a silent error_log fallback that is hard to diagnose.
+     * Called only when there is no cached config — builds a fresh one via the user-supplied initialiser closure.
+     * Owns the full bootstrap sequence: object instantiator, core services, package initialize() and ready().
      */
-    private function registerShutdownPersistence(): void
+    private function buildFreshConfig(\Closure $initializer): ServiceConfig
     {
-        register_shutdown_function(function (): void {
-            if (!$this->configWasCached || $this->mappingDirty) {
-                try {
-                    $this->cacheManager->get()->set(self::CONFIG_CACHE_KEY, $this->config);
-                }
-                catch (\Exception $exception) {
-                    // A relative path is no problem; during bootstrap the working directory is set to the project root.
-                    error_log($exception->getMessage() . "\n", 3, $this->panicLogPath);
-                }
-            }
-        });
-    }
+        $builder = $initializer();
 
-    // -------------------------------------------------------------------------
-    // Public API
-    // -------------------------------------------------------------------------
-    public function config(): ServiceConfig
-    {
-        return $this->config;
+        if (!$builder instanceof ServiceConfigBuilder) {
+            throw new Exceptions\InitializerDidNotReturnServiceConfigBuilder($builder);
+        }
+
+        $this->bootstrapCoreServices($builder);
+        $this->initializePackages($builder);
+        $this->bootstrapObjectInstantiator($builder);
+
+        return $builder->build();
     }
 
     /**
-     * Returns the class names of all discoverable services.
+     * Registers core service instances (ServiceManager, CacheManager, ExceptionHandlerManager)
+     * into the service map and adds their type bindings to the builder.
+     */
+    private function bootstrapCoreServices(ServiceConfigBuilder $builder): void
+    {
+        $builder->addPackage(ServiceManagerPackage::instance());
+        $builder->addParameterResolver(Mapping\ManualBindingFinder::class);
+        $builder->addTypeBinding(self::class, ServiceManagerInterface::class, self::class);
+        $builder->addTypeBinding(Cache\CacheManager::class, Cache\CacheManager::class);
+    }
+
+    /**
+     * Calls initialize() on all registered packages so they can register resolvers, processors,
+     * and type bindings before build(). Only runs when the config is being freshly built —
+     * the results become part of the cached ServiceConfig.
+     */
+    private function initializePackages(ServiceConfigBuilder $builder): void
+    {
+        foreach ($builder->packageClasses() as $packageClass) {
+            $packageClass::instance()->initialize($builder);
+        }
+    }
+
+    /**
+     * Instantiates the configured ObjectInstantiator and registers it on medas() and in the service map.
+     * Also adds the type binding to the builder so it ends up in the final mapping.
+     */
+    private function bootstrapObjectInstantiator(ServiceConfigBuilder $builder): void
+    {
+        $className = $builder->objectInstantiatorClass;
+
+        $builder->addTypeBinding($className, ObjectInstantiator::class);
+    }
+
+    private function instantiateObjectInstantiator(): void
+    {
+        $objectInstantiator = new ($this->config->objectInstantiatorClass)(
+            $this->config->parameterResolvers,
+            $this->config->argumentProcessors,
+            $this->config->isDev,
+        );
+
+        $this->services[$this->config->objectInstantiatorClass] = $objectInstantiator;
+
+        medas()->setObjectInstantiator($objectInstantiator);
+    }
+
+    /**
+     * Calls ready() on all registered packages. Runs on every request, regardless of whether
+     * the config came from cache — ready() exists specifically for setup that requires live
+     * service resolution and therefore cannot be expressed as cacheable config.
+     */
+    private function readyPackages(): void
+    {
+        foreach ($this->config->packageClasses as $packageClass) {
+            $packageClass::instance()->ready();
+        }
+    }
+
+    /**
+     * Returns the class names of all discovered services.
      *
      * @return string[]
      */
     public function getServiceClassNames(): array
     {
-        return $this->serviceClassNamesCache ??= array_unique($this->config->mapping()->getAll());
+        return $this->config->mapping->getClassNames();
     }
 
     /**
@@ -196,20 +183,56 @@ class ServiceManager implements ServiceManagerInterface
     #[Entrypoint]
     public function resolve(string $type): object
     {
+        // Asked for before: the answer cannot change, because the mapping is fixed once
+        // the config is built and a service instance is never replaced. resolve() runs
+        // tens of thousands of times per request (every dispatch() and cache() goes
+        // through it), so this path must stay a single array lookup.
+        if (isset($this->resolvedByType[$type])) {
+            return $this->resolvedByType[$type];
+        }
+
+        return $this->resolveUnresolved($type, false);
+    }
+
+    /**
+     * Used for injecting dependencies: a service that hasn't been instantiated yet is registered and returned as a
+     * lazy object, so it (and its own dependencies) are only instantiated when the service is actually used. Later
+     * calls to resolve() return that same lazy object.
+     */
+    #[Entrypoint]
+    public function resolveLazy(string $type): object
+    {
+        if (isset($this->resolvedByType[$type])) {
+            return $this->resolvedByType[$type];
+        }
+
+        return $this->resolveUnresolved($type, true);
+    }
+
+    private function resolveUnresolved(string $type, bool $lazy): object
+    {
+        $this->activeResolves[$type] = true;
+
         if (null === $service = $this->findImplementingClass($type)) {
-            throw new ServiceNotFoundByType($type);
+            throw new ServiceNotFoundByType($type, array_keys($this->activeResolves));
         }
 
         if (!array_key_exists($service, $this->services)) {
-            $this->services[$service] = medas()->objectInstantiator()->instantiate($service);
+            $objectInstantiator = medas()->objectInstantiator();
+
+            $this->services[$service] = $lazy && $objectInstantiator instanceof InstantiatesLazily
+                ? $objectInstantiator->instantiateLazy($service)
+                : $objectInstantiator->instantiate($service);
         }
 
-        return $this->services[$service];
+        unset($this->activeResolves[$type]);
+
+        return $this->resolvedByType[$type] = $this->services[$service];
     }
 
     public function findImplementingClass(string $type): string|null
     {
-        $mapping = $this->config->mapping();
+        $mapping = $this->config->mapping;
 
         if ($mapping->has($type)) {
             return $mapping->get($type);
@@ -219,21 +242,5 @@ class ServiceManager implements ServiceManagerInterface
         }
 
         return null;
-    }
-
-    #[Entrypoint]
-    public function bindImplementation(object $implementation, string ...$forTypes): self
-    {
-        $this->services[$implementation::class] = $implementation;
-        $this->serviceClassNamesCache = null;
-
-        foreach ($forTypes as $forType) {
-            if ($this->config->mapping()->set($forType, $implementation::class)) {
-                // At least one mapping entry changed — the config must be persisted.
-                $this->mappingDirty = true;
-            }
-        }
-
-        return $this;
     }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\ConsoleCommands;
 
 use Medas\Console\{
+    Commands\Argument,
     Commands\BaseConsoleCommand,
     Commands\CommandInput,
     Commands\ConsoleCommandGroup,
+    Formats\Decoration,
     Formats\SafeColor,
-    Formats\Style,
     Printer,
     Text
 };
@@ -42,9 +43,11 @@ readonly class ListServices extends BaseConsoleCommand
         return 'Prints a list of registered services';
     }
 
-    public function maxArgumentCount(): int
+    public function arguments(): array
     {
-        return 1;
+        return [
+            new Argument('filter', required: false, default: null),
+        ];
     }
 
     public function process(CommandInput $input): void
@@ -59,7 +62,7 @@ readonly class ListServices extends BaseConsoleCommand
         usort($services, fn(string $a, string $b) => strcasecmp($a, $b));
 
         $printedSomething = false;
-        $filterValue = $input->getArgument(0) ?? null;
+        $filterValue = $input->getArgument('filter');
 
         foreach ($services as $service) {
             if (isset($filterValue) && !str_contains($service, $filterValue)) {
@@ -85,7 +88,7 @@ readonly class ListServices extends BaseConsoleCommand
             if (isset($filterValue)) {
                 $this->printer->printLine(
                     Text::create('   no services found that match: ', SafeColor::LightRed),
-                    Text::create($filterValue, Style::Bold),
+                    Text::create($filterValue, Decoration::Bold),
                 );
             }
             else {

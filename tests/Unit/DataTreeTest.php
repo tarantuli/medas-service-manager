@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Unit;
 
-use Medas\ServiceManager\{DataTree\DataTree, DataTree\History, Exceptions\IndexNotFoundInDataTree};
+use Medas\ServiceManager\{DataTree\DataTree, DataTree\History, Exceptions\HistoryNotAvailableInDataTree, Exceptions\IndexNotFoundInDataTree};
 use PHPUnit\Framework\TestCase;
 
 final class DataTreeTest extends TestCase
@@ -199,6 +199,71 @@ final class DataTreeTest extends TestCase
         $tree = new DataTree(['env' => 'test']);
 
         self::assertSame('default', $tree->getSource('env'));
+    }
+
+    // -------------------------------------------------------------------------
+    // Serialization (cache) drops history
+    // -------------------------------------------------------------------------
+    public function testSerializedTreeKeepsValues(): void
+    {
+        $tree = new DataTree(['db' => ['user' => 'test'], 'nullable' => null]);
+
+        $restored = unserialize(serialize($tree));
+
+        self::assertSame('test', $restored->get('db.user'));
+        self::assertTrue($restored->has('nullable'));
+        self::assertNull($restored->get('nullable'));
+    }
+
+    public function testSerializedFormContainsNoHistory(): void
+    {
+        $tree = new DataTree(['env' => 'test']);
+
+        self::assertStringNotContainsString(History::class, serialize($tree));
+    }
+
+    public function testRestoredTreeThrowsOnGetHistory(): void
+    {
+        $restored = unserialize(serialize(new DataTree(['env' => 'test'])));
+
+        $this->expectException(HistoryNotAvailableInDataTree::class);
+
+        $restored->getHistory('env');
+    }
+
+    public function testRestoredTreeThrowsOnGetSource(): void
+    {
+        $restored = unserialize(serialize(new DataTree(['env' => 'test'])));
+
+        $this->expectException(HistoryNotAvailableInDataTree::class);
+
+        $restored->getSource('env');
+    }
+
+    public function testRestoredTreeStillReportsMissingKeyFirst(): void
+    {
+        $restored = unserialize(serialize(new DataTree()));
+
+        $this->expectException(IndexNotFoundInDataTree::class);
+
+        $restored->getHistory('missing');
+    }
+
+    public function testRestoredTreeAcceptsNewValues(): void
+    {
+        $restored = unserialize(serialize(new DataTree(['env' => 'test'])));
+
+        $restored->set('env', 'dev');
+
+        self::assertSame('dev', $restored->get('env'));
+    }
+
+    public function testGetElseReturnsFallbackBelowScalarLeaf(): void
+    {
+        $tree = new DataTree(['env' => 'test']);
+
+        self::assertFalse($tree->has('env.deeper'));
+        self::assertSame('fallback', $tree->getElse('env.deeper', 'fallback'));
     }
 
     // -------------------------------------------------------------------------

@@ -15,8 +15,10 @@ class ServiceMapping
     /** @var array[][] */
     private array $allImplementors = [];
 
-    /** @var string[]|null Cached result of getAll(); null means stale. */
-    private array|null $filteredCache = null;
+    /** @var string[] */
+    private array $classNames = [];
+
+    private bool $classNamesNeedsRebuilding = false;
 
     public function set(string $type, string $className): bool
     {
@@ -26,7 +28,7 @@ class ServiceMapping
 
         $this->hasSingularMapping[$type] = true;
         $this->mapping[$type] = $className;
-        $this->filteredCache = null;
+        $this->classNamesNeedsRebuilding = true;
 
         return true;
     }
@@ -66,11 +68,16 @@ class ServiceMapping
             }
         }
 
-        $this->filteredCache = null;
+        $this->classNamesNeedsRebuilding = true;
     }
 
-    public function getAll(): array
+    public function getClassNames(): array
     {
-        return $this->filteredCache ??= array_filter($this->mapping, fn($v) => $v !== null);
+        if ($this->classNamesNeedsRebuilding) {
+            $this->classNames = array_unique(array_filter($this->mapping, fn($v) => $v !== null));
+            $this->classNamesNeedsRebuilding = false;
+        }
+
+        return $this->classNames;
     }
 }

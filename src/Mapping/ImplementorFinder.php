@@ -9,24 +9,9 @@ use Medas\Core\{Attributes\Service, Interfaces\ImplementorFinder as ImplementorF
 #[Service]
 class ImplementorFinder implements ImplementorFinderInterface
 {
-    /** @return object[] */
+    /** @return class-string[] */
     public function find(string $interface): array
     {
-        $serviceManager = medas()->serviceManager();
-        $implementors = [];
-
-        foreach ($serviceManager->getServiceClassNames() as $className) {
-            if (new \ReflectionClass($className)->isAbstract()) {
-                continue;
-            }
-
-            if (!is_a($className, $interface, allow_string: true)) {
-                continue;
-            }
-
-            $implementors[] = $serviceManager->resolve($className);
-        }
-
-        return $implementors;
+        return sm()->config->mapping->getImplementors($interface);
     }
 }

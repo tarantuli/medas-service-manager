@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Registry;
 
-use Medas\Core\Interfaces\{Package, ServiceConfig};
-use Medas\ServiceManager\Mapping\MappingManager;
+use Medas\Core\Interfaces\Package;
+use Medas\ServiceManager\{Mapping\MappingManager, ServiceConfigBuilder};
 
 /**
  * Owns the lifecycle of all registered packages:
@@ -29,9 +29,9 @@ class PackageRegistry
     /**
      * Registers a package and all of its transitive dependencies.
      *
-     * @param ServiceConfig $config Passed through to {@see Package::initialize()} when $doInitialize is true.
+     * @param ServiceConfigBuilder $builder Passed through to {@see Package::initialize()} when $doInitialize is true.
      */
-    public function add(Package $package, ServiceConfig $config, bool $doInitialize = false): self
+    public function add(Package $package, ServiceConfigBuilder $builder, bool $doInitialize = false): self
     {
         if (array_key_exists($package::class, $this->packages)) {
             return $this;
@@ -39,12 +39,12 @@ class PackageRegistry
 
         // Register dependencies first so they are always available when the dependant package initializes.
         foreach ($package->dependencies() as $dependency) {
-            $this->add($dependency, $config);
+            $this->add($dependency, $builder);
         }
 
-        if ($config->isDev()) {
+        if ($builder->isDev) {
             foreach ($package->devDependencies() as $dependency) {
-                $this->add($dependency, $config);
+                $this->add($dependency, $builder);
             }
         }
 
@@ -58,7 +58,7 @@ class PackageRegistry
         $this->mappingManager->addPackage($package);
 
         if ($doInitialize) {
-            $package->initialize($config);
+            $package->initialize($builder);
         }
 
         return $this;
@@ -69,7 +69,7 @@ class PackageRegistry
      *
      * @param Package[] $packages
      */
-    public function addMultiple(array $packages, ServiceConfig $config): self
+    public function addMultiple(array $packages, ServiceConfigBuilder $config): self
     {
         foreach ($packages as $package) {
             $this->add($package, $config);

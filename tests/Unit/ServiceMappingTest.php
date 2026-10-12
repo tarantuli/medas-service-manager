@@ -95,7 +95,7 @@ final class ServiceMappingTest extends TestCase
             ['InterfaceA', 'ClassC'],
         ]);
 
-        $all = $mapping->getAll();
+        $all = $mapping->getClassNames();
 
         self::assertArrayHasKey('InterfaceB', $all);
         self::assertArrayNotHasKey('InterfaceA', $all);
@@ -108,6 +108,6 @@ final class ServiceMappingTest extends TestCase
 
         $mapping->set('InterfaceA', 'ClassA');
 
-        self::assertArrayHasKey('InterfaceA', $mapping->getAll());
+        self::assertArrayHasKey('InterfaceA', $mapping->getClassNames());
     }
 }

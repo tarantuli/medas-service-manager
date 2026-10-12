@@ -131,16 +131,17 @@ class DataTree
      */
     private function find(string $index): array|null
     {
-        $path = $this->indexToPath($index);
-        $values = &$this->values;
+        $values = $this->values;
         $history = $this->history;
 
-        foreach ($path as $subPath) {
-            if (!array_key_exists($subPath, $values)) {
+        foreach ($this->indexToPath($index) as $subPath) {
+            // A scalar leaf has no children, so a deeper index is simply not found
+            if (!is_array($values) || !array_key_exists($subPath, $values)) {
                 return null;
             }
 
-            $values = &$values[$subPath];
+            // By-value walk: references would force copy-on-write separation of shared subtrees
+            $values = $values[$subPath];
             $history = $history[$subPath];
         }
 
@@ -151,6 +152,11 @@ class DataTree
     {
         if (isset(self::$pathCache[$index])) {
             return self::$pathCache[$index];
+        }
+
+        // Escaped dots are rare; without a backslash a plain split is equivalent and runs in C
+        if (!str_contains($index, '\\')) {
+            return self::$pathCache[$index] = explode('.', $index);
         }
 
         $paths = [];

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Unit;
 
-use Medas\ServiceManager\{DataTree\DataTree, DataTree\History, Exceptions\HistoryNotAvailableInDataTree, Exceptions\IndexNotFoundInDataTree};
+use Medas\ServiceManager\{
+    DataTree\DataTree,
+    DataTree\History,
+    Exceptions\HistoryNotAvailableInDataTree,
+    Exceptions\IndexNotFoundInDataTree
+};
 use PHPUnit\Framework\TestCase;
 
 final class DataTreeTest extends TestCase
@@ -207,7 +212,6 @@ final class DataTreeTest extends TestCase
     public function testSerializedTreeKeepsValues(): void
     {
         $tree = new DataTree(['db' => ['user' => 'test'], 'nullable' => null]);
-
         $restored = unserialize(serialize($tree));
 
         self::assertSame('test', $restored->get('db.user'));

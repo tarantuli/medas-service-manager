@@ -20,6 +20,12 @@ abstract readonly class BaseErrorPolicy implements ErrorPolicy
     public function set(): void
     {
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
+            // An error suppressed with @ (error_reporting() then excludes its severity) is left alone, as PHP's own
+            // handler does: code that suppresses an error deals with the outcome itself, e.g. a false return value
+            if (!(error_reporting() & $severity)) {
+                return false;
+            }
+
             if ($this->shouldThrow($severity)) {
                 throw new \ErrorException($message, $severity, $severity, $file, $line);
             }

@@ -7,13 +7,22 @@ namespace Medas\ServiceManager\Cache;
 use Medas\Core\Attributes\Service;
 
 /**
- * Empties the directories registered in var/dirs-to-clear: one file per directory, named after a hash of the path and
- * containing the path. File system caches register their directories there, and so does the APCu cache for its
- * generation markers - emptying that directory is the only way a command-line process can make the web server's APCu
- * cache start afresh.
+ * Empties the directories registered in `var/dirs-to-clear`, which holds one file per directory, named after a hash
+ * of the path and containing the path.
  *
- * The post-install script bin/post-install-scripts/clear-cache-dirs.php uses this too, so the clear-caches console
- * command clears the same caches as a composer install.
+ * File system caches register their directories there, and so does the APCu cache for its generation markers.
+ * Emptying that directory is the only way a command-line process can make the web server's APCu cache start afresh.
+ *
+ * The post-install script `bin/post-install-scripts/clear-cache-dirs.php` uses this too, so the `services:clear-caches`
+ * console command clears the same caches as a `composer install`.
+ *
+ * @assumes The working directory is the project root, which medas/core takes care of. The registry path is relative
+ *          to it.
+ * @sideEffect Deletes everything inside each registered directory, leaving the directories themselves in place.
+ *             Entries that can't be deleted, like files another process has open on Windows, are skipped silently.
+ * @notFor Registering directories; `CachePrimer` does that for file system caches.
+ * @see \Medas\ServiceManager\CachePrimer
+ * @see \Medas\ServiceManager\ConsoleCommands\ClearCaches
  */
 #[Service]
 readonly class DirectoriesToClear
@@ -28,7 +37,8 @@ readonly class DirectoriesToClear
     }
 
     /**
-     * Empties every registered directory, leaving the directories themselves in place.
+     * Empties every registered directory. Directories that don't exist, and file system roots, the working
+     * directory and its parents, are skipped as a safeguard against a corrupted or mistaken registration.
      *
      * @return string[] The directories that were emptied
      */

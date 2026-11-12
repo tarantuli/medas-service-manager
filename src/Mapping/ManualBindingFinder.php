@@ -12,6 +12,21 @@ use Medas\Core\{
     ParameterResolverResult
 };
 
+/**
+ * Supplies constructor and method arguments that were bound by hand with `ServiceConfigBuilder::addManualBinding()`,
+ * for parameters the object instantiator can't resolve on its own, like scalars.
+ *
+ * Bindings are looked up by class, method and parameter name.
+ *
+ * @assumes The `ServiceManager` is initialized; the bindings come from its configuration through `sm()`.
+ * @assumes Bindings are matched against the class that declares the method. For a subclass that inherits its
+ *          constructor, the binding must be registered for the parent class, and then applies to every subclass
+ *          that inherits it.
+ * @cache Bindings are part of the cached `ServiceConfig`, so a changed binding only takes effect after the caches
+ *        are cleared.
+ * @notFor Properties, closures and global functions, which can't have a binding.
+ * @see \Medas\ServiceManager\ServiceConfigBuilder
+ */
 #[Service]
 readonly class ManualBindingFinder implements CompilableParameterResolver
 {

@@ -8,12 +8,24 @@ use Medas\Console\Commands\{BaseConsoleCommand, CommandInput, ConsoleCommandGrou
 use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\Cache\{CacheManager, DirectoriesToClear};
 
+/**
+ * Console command `services:clear-caches` (alias `services:clear-cache`): clears every cache, including caches of other
+ * processes that this process can only reach through their registered directories, like the web server's APCu cache.
+ *
+ * @sideEffect Empties all directories registered in `var/dirs-to-clear`, then clears every registered cache that
+ *             implements `Clearable`.
+ */
 #[Service]
 readonly class ClearCaches extends BaseConsoleCommand
 {
     public function __construct(
+        /** Clears the caches this process has registered. */
         private CacheManager       $cacheManager,
+
+        /** Empties the cache directories registered by any process, so other processes start afresh too. */
         private DirectoriesToClear $directoriesToClear,
+
+        /** The `services` group this command is listed under. */
         private Group              $group,
     )
     {

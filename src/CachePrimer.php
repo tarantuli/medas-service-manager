@@ -44,7 +44,9 @@ readonly class CachePrimer
         foreach ($this->cacheManager->getAll() as $cache) {
             if ($cache instanceof FileSystemCache && $cache->clearCacheOnInstall()) {
                 // A relative path is no problem, because during bootstrap the working directory is set to the project root.
-                $pathToDirectoryToClear = 'var/dirs-to-clear/' . sha1($cache->baseDirectory());
+                $pathToDirectoryToClear = $this->dirsToClearPath
+                    . '/'
+                    . sha1($cache->baseDirectory());
 
                 if (!file_exists($pathToDirectoryToClear)) {
                     if (!$ensuredPath) {

@@ -17,6 +17,22 @@ abstract readonly class BaseErrorPolicy implements ErrorPolicy
      */
     abstract protected function shouldThrow(int $severity): bool;
 
+    /** The severities that stop the script before an error handler runs, so only a shutdown function sees them */
+    private const array FATAL_SEVERITIES = [
+        E_ERROR,
+        E_PARSE,
+        E_CORE_ERROR,
+        E_COMPILE_ERROR,
+    ];
+
+    /**
+     * Installs this policy as PHP's error handler. Errors suppressed with `@` are left to PHP, because code that
+     * suppresses an error deals with the outcome itself.
+     *
+     * @sideEffect Replaces the current error handler, and sets `error_reporting()` to `E_ALL`.
+     * @sideEffect Registers a shutdown function that writes a fatal error (`E_ERROR`, `E_PARSE`, `E_CORE_ERROR` or
+     *             `E_COMPILE_ERROR`) to `STDERR`, or to the error log when there's no `STDERR`.
+     */
     public function set(): void
     {
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
@@ -42,7 +58,7 @@ abstract readonly class BaseErrorPolicy implements ErrorPolicy
     {
         $error = error_get_last();
 
-        if ($error !== null && $error['type'] === E_ERROR) {
+        if ($error !== null && in_array($error['type'], self::FATAL_SEVERITIES, true)) {
             $message = sprintf(
                 "[fatal error] %s in %s on line %d",
                 $error['message'],

@@ -17,6 +17,27 @@ use Medas\Core\{
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
+/**
+ * Registry of named caches. Packages fetch a cache by name instead of creating
+ * their own, so the application decides where cached data is stored.
+ *
+ * Until the application registers a cache, `'default'` is a `NoopCache`, so
+ * caching is effectively switched off.
+ *
+ * @assumes The `ServiceManager` creates this instance itself during bootstrap.
+ *          It isn't autowired, so new constructor dependencies won't be injected.
+ * @assumes The `'memory'` cache can only be created on demand when some package
+ *          provides a `MemoryCache` implementation.
+ * @sideEffect `get()` registers a `NoopCache` as `'default'`, or a `MemoryCache`
+ *             as `'memory'`, the first time either is requested without having
+ *             been registered.
+ * @sideEffect `clearAll()` clears every registered cache that implements
+ *             `Clearable`.
+ * @state Keeps the registered caches for the lifetime of the process. Registering
+ *        a cache under an existing name replaces the previous one.
+ * @notFor Storing or reading values; use the `Cache` returned by `get()` for that.
+ * @see \Medas\ServiceManager\CachePrimer
+ */
 #[Service]
 class CacheManager implements CacheManagerInterface
 {
@@ -24,6 +45,7 @@ class CacheManager implements CacheManagerInterface
     private array $caches = [];
 
     public function __construct(
+        /** Finds the `MemoryCache` implementation when `'memory'` is first requested. */
         private readonly ServiceManager $serviceManager,
     )
     {
@@ -32,10 +54,13 @@ class CacheManager implements CacheManagerInterface
     }
 
     /**
-     * Returns the cache with the given name. If no name is given, the name "default" is used.
+     * Returns the cache with the given name. If no name is given, the name `'default'` is used.
      *
-     * If no cache with the name "default" exists, a NoopCache will be created. This cache does nothing, always
-     * returning the value from the setter. If no cache with the name "memory" exists, a MemoryCache will be created.
+     * If no cache with the name `'default'` exists, a `NoopCache` will be created. This cache does nothing, always
+     * returning the value from the setter. If no cache with the name `'memory'` exists, a `MemoryCache` will be
+     * created.
+     *
+     * @throws CacheNotFoundByName When no cache with that name is registered and none can be created.
      */
     public function get(string|null $name = null): Cache
     {

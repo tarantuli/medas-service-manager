@@ -6,7 +6,16 @@ namespace Medas\ServiceManager\ErrorHandling;
 
 use Medas\Core\{Attributes\Service, Interfaces\ExceptionHandler, StringMaker};
 
-/** @deprecated use CliExceptionPrinter from medas-logging instead */
+/**
+ * Exception handler for the command line: prints the stack trace, oldest call first, with the arguments of each call,
+ * followed by the location and message of the exception.
+ *
+ * Long strings are cut off at 156 characters, arrays are printed as JSON, and objects as their class and object ID.
+ *
+ * @sideEffect Writes to `STDERR`.
+ * @notFor Other environments than the command line. It returns `false` there, so other handlers get the exception.
+ * @deprecated Use `CliExceptionPrinter` from medas-logging instead.
+ */
 #[Service]
 readonly class CliExceptionHandler implements ExceptionHandler
 {

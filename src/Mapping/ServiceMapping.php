@@ -18,10 +18,23 @@ class ServiceMapping
     /** @var string[] */
     private array $classNames = [];
 
+    /** @var bool[] Types bound with set(), which discovered services can't override */
+    private array $boundTypes = [];
+
     private bool $classNamesNeedsRebuilding = false;
 
+    /**
+     * Binds a type to a class by hand. The binding wins over discovered services, whether they were discovered
+     * before or after, and the class is added to the implementors of the type.
+     *
+     * @return bool Whether the mapping changed
+     */
     public function set(string $type, string $className): bool
     {
+        $this->boundTypes[$type] = true;
+
+        $this->addImplementor($type, $className);
+
         if (($this->mapping[$type] ?? null) === $className) {
             return false;
         }
@@ -56,6 +69,13 @@ class ServiceMapping
     public function addFromPackage(array $mapping): void
     {
         foreach ($mapping as [$type, $className]) {
+            // A type bound by hand keeps its binding; the discovered class only becomes one of its implementors
+            if (isset($this->boundTypes[$type])) {
+                $this->addImplementor($type, $className);
+
+                continue;
+            }
+
             if (!array_key_exists($type, $this->allImplementors)) {
                 $this->allImplementors[$type] = [$className];
                 $this->hasSingularMapping[$type] = true;
@@ -69,6 +89,13 @@ class ServiceMapping
         }
 
         $this->classNamesNeedsRebuilding = true;
+    }
+
+    private function addImplementor(string $type, string $className): void
+    {
+        if (!in_array($className, $this->allImplementors[$type] ?? [], true)) {
+            $this->allImplementors[$type][] = $className;
+        }
     }
 
     public function getClassNames(): array

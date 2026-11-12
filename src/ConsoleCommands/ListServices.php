@@ -17,12 +17,23 @@ use Medas\Console\{
 use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\ServiceManager;
 
+/**
+ * Console command `services:list [filter]`: prints the class names of all registered services, sorted
+ * alphabetically. The optional filter keeps only the names that contain it, matching case-sensitively.
+ *
+ * @sideEffect Prints to the console.
+ */
 #[Service]
 readonly class ListServices extends BaseConsoleCommand
 {
     public function __construct(
+        /** The `services` group this command is listed under. */
         private Group          $group,
+
+        /** Prints the list. */
         private Printer        $printer,
+
+        /** Supplies the class names of the registered services. */
         private ServiceManager $serviceManager,
     )
     {

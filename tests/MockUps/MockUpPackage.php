@@ -27,7 +27,8 @@ class MockUpPackage extends BasePackage
 
     public function initialize(ServiceConfigBuilder $config): void
     {
-        medas()->serviceManager()->bindImplementation(service(DefaultLogger::class), Logger::class);
+        // Logger has two implementations, so without this binding it couldn't be resolved
+        $config->addTypeBinding(DefaultLogger::class, Logger::class);
 
         parent::initialize($config);
     }

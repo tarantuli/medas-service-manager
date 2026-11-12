@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManagerTest\Functional;
 
-use Medas\Core\Interfaces\CacheManager;
-use Medas\ServiceManager\{Exceptions\ServiceNotFoundByType, ServiceManager};
+use Medas\Core\Exceptions\ServiceNotFoundByType;
+use Medas\ServiceManager\{Cache\CacheManager, CachePrimer, ServiceManager};
 use Medas\ServiceManagerTest\MockUps\{
     AnotherLogger,
     DefaultLogger,
     Logger,
     MockCache,
+    MockServiceDependingOnItself,
     MockServiceWithDefaultLogger,
     MockServiceWithNullOption,
     MockServiceWithPreferredLogger
@@ -20,71 +21,69 @@ final class ServiceManagerTest extends BaseTestClass
 {
     public function testCreateManager(): void
     {
-        $manager = medas()->serviceManager();
-
-        $this->assertInstanceOf(ServiceManager::class, $manager);
+        $this->assertInstanceOf(ServiceManager::class, $this->serviceManager());
     }
 
     public function testServiceNotFound(): void
     {
-        $manager = medas()->serviceManager();
-
         $this->expectException(ServiceNotFoundByType::class);
 
         /** @noinspection PhpUndefinedClassInspection */
-        $manager->resolve(NonExistingClass::class);
+        $this->serviceManager()->resolve(NonExistingClass::class);
     }
 
     public function testServiceIsFound(): void
     {
-        $manager = $this->loadMockUps();
-        $service = $manager->resolve(Logger::class);
+        $service = $this->serviceManager()->resolve(Logger::class);
 
         $this->assertInstanceOf(DefaultLogger::class, $service);
     }
 
     public function testServiceInstantiatedWithDefaultInjection(): void
     {
-        $manager = $this->loadMockUps();
-
         /** @var $service MockServiceWithDefaultLogger */
-        $service = $manager->resolve(MockServiceWithDefaultLogger::class);
+        $service = $this->serviceManager()->resolve(MockServiceWithDefaultLogger::class);
 
         $this->assertInstanceOf(DefaultLogger::class, $service->getLogger());
     }
 
     public function testServiceInstantiatedWithPreferredInjection(): void
     {
-        $manager = $this->loadMockUps();
-
         /** @var $service MockServiceWithPreferredLogger */
-        $service = $manager->resolve(MockServiceWithPreferredLogger::class);
+        $service = $this->serviceManager()->resolve(MockServiceWithPreferredLogger::class);
 
         $this->assertInstanceOf(AnotherLogger::class, $service->getLogger());
     }
 
     public function testServiceWithNullOption(): void
     {
-        $manager = $this->loadMockUps();
-
         /** @var $service MockServiceWithNullOption */
-        $service = $manager->resolve(MockServiceWithNullOption::class);
+        $service = $this->serviceManager()->resolve(MockServiceWithNullOption::class);
 
         $this->assertInstanceOf(MockServiceWithNullOption::class, $service);
     }
 
+    public function testServiceDependingOnItselfHasOneInstance(): void
+    {
+        $manager = $this->serviceManager();
+
+        /** @var $service MockServiceDependingOnItself */
+        $service = $manager->resolve(MockServiceDependingOnItself::class);
+
+        $this->assertSame($service, $service->itself());
+        $this->assertSame($service, $manager->resolve(MockServiceDependingOnItself::class));
+    }
+
     public function testCachePriming(): void
     {
-        $manager = $this->loadMockUps();
+        $manager = $this->serviceManager();
+        $cacheManager = $manager->resolve(CacheManager::class);
 
-        $manager->resolve(CacheManager::class)->register(new MockCache());
+        // Priming only happens with a persistent cache. A name of its own leaves the 'default' cache to other tests.
+        $cacheManager->register(new MockCache(), 'mock');
 
-        ob_start();
+        $this->expectOutputString('cache is primed');
 
-        $manager->cachePrimer->prime();
-
-        $output = ob_get_clean();
-
-        self::assertEquals('cache is primed', $output);
+        new CachePrimer($manager, $cacheManager)->prime();
     }
 }

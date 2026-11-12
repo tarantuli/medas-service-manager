@@ -51,7 +51,7 @@ class DataTreeTest extends TestCase
 
         // Value history
         $expectedHistory = [
-            new History('default', 'test'),
+            new History('defaults', 'test'),
             new History('runtime', 'dev'),
         ];
 

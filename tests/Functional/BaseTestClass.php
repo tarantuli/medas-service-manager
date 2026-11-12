@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\ServiceManager\ServiceManager;
-use Medas\ServiceManagerTest\MockUps\MockUpPackage;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseTestClass extends TestCase
 {
-    protected function loadMockUps(): ServiceManager
+    /**
+     * The service manager built in `phpunit.bootstrap.php`, which has the mock-ups registered.
+     */
+    protected function serviceManager(): ServiceManager
     {
-        $manager = medas()->serviceManager();
-
-        $manager->config->addPackage(MockUpPackage::instance(), true);
-
-        return $manager;
+        return medas()->serviceManager();
     }
 }

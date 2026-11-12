@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Medas\ServiceManagerTest\Functional;
 
 use Medas\Core\Interfaces\CacheManager;
-use Medas\ServiceManager\Mapping\ImplementorFinder;
+use Medas\ServiceManager\{Cache\CacheManager as CacheManagerService, Mapping\ImplementorFinder};
 use PHPUnit\Framework\TestCase;
 
 class ImplementorFinderTest extends TestCase
 {
     public function testFindImplementors(): void
     {
-        self::assertInstanceOf(
-            CacheManager::class,
-            service(ImplementorFinder::class)->find(CacheManager::class)[0]
+        // find() returns class names, not instances
+        self::assertContains(
+            CacheManagerService::class,
+            service(ImplementorFinder::class)->find(CacheManager::class)
         );
     }
 }

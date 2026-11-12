@@ -203,7 +203,7 @@ final class DataTreeTest extends TestCase
     {
         $tree = new DataTree(['env' => 'test']);
 
-        self::assertSame('default', $tree->getSource('env'));
+        self::assertSame('defaults', $tree->getSource('env'));
     }
 
     // -------------------------------------------------------------------------

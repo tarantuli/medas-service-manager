@@ -264,9 +264,14 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
             if (!array_key_exists($service, $this->services)) {
                 $objectInstantiator = medas()->objectInstantiator();
 
-                $this->services[$service] = $lazy && $objectInstantiator instanceof InstantiatesLazily
+                $instance = $lazy && $objectInstantiator instanceof InstantiatesLazily
                     ? $objectInstantiator->instantiateLazy($service)
                     : $objectInstantiator->instantiate($service);
+
+                // A service that depends on itself, directly or through other services, is asked for lazily while
+                // it's being instantiated, and that registers a lazy object for it. Keeping that one means there's
+                // only one instance, at the cost of its constructor running again when the lazy object is first used.
+                $this->services[$service] ??= $instance;
             }
         }
 

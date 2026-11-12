@@ -6,6 +6,14 @@ namespace Medas\ServiceManager;
 
 use Medas\Core\Interfaces\{FileSystemCache, PrimesCache};
 
+/**
+ * Prepares the caches after a `composer install` or `composer update`: lets services fill their caches in advance,
+ * and registers the cache directories that `DirectoriesToClear` empties on the next install or
+ * `services:clear-caches`.
+ *
+ * @assumes The working directory is the project root. The registry path is relative to it.
+ * @see \Medas\ServiceManager\Cache\DirectoriesToClear
+ */
 readonly class CachePrimer
 {
     public function __construct(
@@ -16,6 +24,14 @@ readonly class CachePrimer
     {
     }
 
+    /**
+     * @sideEffect When a persistent cache is registered, resolves every service that implements `PrimesCache`, and
+     *             calls `primeCache()` on it.
+     * @sideEffect Writes a registration file for every file system cache that wants to be cleared on install, unless
+     *             it's already registered.
+     *
+     * @throws \RuntimeException When the registry directory or a registration file can't be written.
+     */
     public function prime(): void
     {
         if ($this->cacheManager->hasPersistentCache()) {

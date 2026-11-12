@@ -11,7 +11,8 @@ use Medas\Core\{Attributes\Service, Interfaces\ImplementorFinder as ImplementorF
  * implementations other packages provide, like handlers or plugins.
  *
  * That includes every non-abstract class with `#[Service]` in one of the registered packages, and every class
- * bound to the type with `ServiceConfigBuilder::addTypeBinding()`.
+ * bound to the type with `ServiceConfigBuilder::addTypeBinding()`. A service that extends another service isn't
+ * listed for that parent class, only for its interfaces and its other parent classes.
  *
  * @assumes The `ServiceManager` is initialized; the list comes from its configuration through `sm()`.
  * @cache The service mapping is part of the cached `ServiceConfig`, so a newly added service is only found after

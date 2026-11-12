@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
+/**
+ * Loads the classes in a package directory through the Composer autoloader, using the PSR-4 mapping in the
+ * package's `composer.json`.
+ *
+ * @assumes `composer.json` is in the parent of the directory, like `src` next to `composer.json`. Without it, or
+ *          without a PSR-4 mapping in it, nothing is loaded, so the package has no services.
+ * @sideEffect Triggers an `E_USER_WARNING` when `composer.json` is missing or unreadable, or has no PSR-4
+ *             mapping.
+ * @sideEffect Autoloads every class, interface, trait and enum whose file is in the directory. A file whose path
+ *             doesn't match its class name according to PSR-4 isn't loaded.
+ * @notFor Test packages; `UnsafeFileLoader` loads those.
+ */
 readonly class Psr4FileLoader
 {
     private FileFinder $fileFinder;
@@ -27,19 +39,19 @@ readonly class Psr4FileLoader
         $composerJson = dirname($directoryReal) . DIRECTORY_SEPARATOR . 'composer.json';
 
         if (!is_file($composerJson)) {
-            return false;
+            return $this->warn($directory, "there's no $composerJson");
         }
 
         $composer = json_decode((string) file_get_contents($composerJson), true);
 
         if (!is_array($composer)) {
-            return false;
+            return $this->warn($directory, "$composerJson can't be read as JSON");
         }
 
         $psr4 = $composer['autoload']['psr-4'] ?? [];
 
         if (!is_array($psr4) || $psr4 === []) {
-            return false;
+            return $this->warn($directory, "$composerJson has no PSR-4 autoload mapping");
         }
 
         $loadedAny = false;
@@ -55,6 +67,22 @@ readonly class Psr4FileLoader
         }
 
         return $loadedAny;
+    }
+
+    /**
+     * Warns that the package's services can't be discovered. A warning, not an exception, because a package without
+     * services works fine otherwise.
+     *
+     * @return false So callers can return the result directly
+     */
+    private function warn(string $directory, string $reason): bool
+    {
+        trigger_error(
+            sprintf('No services can be discovered in %s, because %s', $directory, $reason),
+            E_USER_WARNING
+        );
+
+        return false;
     }
 
     private function processPath(

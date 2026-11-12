@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
+/**
+ * Maps every type to the service class it resolves to, and keeps all implementors of each type.
+ *
+ * A type resolves to a class when it's bound by hand, or when exactly one discovered service provides it. A type
+ * that several discovered services provide, without a binding, doesn't resolve: `ServiceManager` throws
+ * `MultipleImplementorsFound` for it.
+ *
+ * @state Part of the cached `ServiceConfig`, so it only holds plain arrays.
+ */
 class ServiceMapping
 {
     /** @var string[] */
@@ -46,16 +55,25 @@ class ServiceMapping
         return true;
     }
 
+    /**
+     * @assumes `has()` returned `true` for the type.
+     */
     public function get(string $type): string
     {
         return $this->mapping[$type];
     }
 
+    /**
+     * Whether the type resolves to one class.
+     */
     public function has(string $type): bool
     {
         return ($this->hasSingularMapping[$type] ?? false) === true;
     }
 
+    /**
+     * Whether several discovered services provide the type, without a binding to decide between them.
+     */
     public function hasMultiple(string $type): bool
     {
         return ($this->hasSingularMapping[$type] ?? null) === false;
@@ -66,6 +84,9 @@ class ServiceMapping
         return $this->allImplementors[$type] ?? [];
     }
 
+    /**
+     * @param array{string, class-string}[] $mapping Pairs of a type and a service class, from `ServiceFinder`.
+     */
     public function addFromPackage(array $mapping): void
     {
         foreach ($mapping as [$type, $className]) {
@@ -98,6 +119,9 @@ class ServiceMapping
         }
     }
 
+    /**
+     * @return string[] The classes that at least one type resolves to.
+     */
     public function getClassNames(): array
     {
         if ($this->classNamesNeedsRebuilding) {

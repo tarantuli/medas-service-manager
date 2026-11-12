@@ -7,6 +7,15 @@ namespace Medas\ServiceManager\Mapping;
 use Medas\Core\Interfaces\Package;
 use Medas\ServiceManager\{Cache\CacheManager, ServiceManager};
 
+/**
+ * Discovers the services of each package as it's added, and collects them, with the type bindings, in one
+ * `ServiceMapping`.
+ *
+ * `ServiceManager` and `CacheManager` are bound to themselves from the start, because `ServiceManager` creates both
+ * itself.
+ *
+ * @see ServiceFinder
+ */
 class MappingManager
 {
     private ServiceFinder $serviceFinder;
@@ -34,6 +43,9 @@ class MappingManager
         }
     }
 
+    /**
+     * @sideEffect Loads every class file in the package's source directory.
+     */
     public function addPackage(Package $package): void
     {
         $this->mapping->addFromPackage($this->serviceFinder->find(

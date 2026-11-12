@@ -8,12 +8,13 @@ use Medas\Core\Interfaces\Package;
 use Medas\ServiceManager\{Mapping\MappingManager, ServiceConfigBuilder};
 
 /**
- * Owns the lifecycle of all registered packages:
- *   - Guards against duplicate registrations
- *   - Recursively registers dependencies before the dependant package
- *   - Keeps the list sorted by descending priority
- *   - Notifies the MappingManager so service discovery covers every package directory
- *   - Optionally initializes a package immediately (used when adding packages after bootstrap)
+ * Keeps track of the registered packages:
+ *
+ * - It registers each package once.
+ * - It registers the dependencies of a package before the package itself, and dev dependencies too in dev mode.
+ * - It keeps the list sorted by descending priority.
+ * - It passes every package to the `MappingManager`, so its services are discovered.
+ * - It can initialise a package right away, for packages added after bootstrap.
  */
 class PackageRegistry
 {
@@ -29,7 +30,7 @@ class PackageRegistry
     /**
      * Registers a package and all of its transitive dependencies.
      *
-     * @param ServiceConfigBuilder $builder Passed through to {@see Package::initialize()} when $doInitialize is true.
+     * @param ServiceConfigBuilder $builder Passed to `Package::initialize()` when `$doInitialize` is `true`.
      */
     public function add(Package $package, ServiceConfigBuilder $builder, bool $doInitialize = false): self
     {
@@ -37,7 +38,7 @@ class PackageRegistry
             return $this;
         }
 
-        // Register dependencies first so they are always available when the dependant package initializes.
+        // Register dependencies first so they are always available when the dependant package initialises.
         foreach ($package->dependencies() as $dependency) {
             $this->add($dependency, $builder);
         }
@@ -52,7 +53,7 @@ class PackageRegistry
 
         uasort(
             $this->packages,
-            fn(Package $a, Package $b) => -$a->priority() <=> $b->priority(),
+            fn(Package $a, Package $b) => $b->priority() <=> $a->priority(),
         );
 
         $this->mappingManager->addPackage($package);

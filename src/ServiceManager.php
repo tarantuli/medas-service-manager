@@ -17,6 +17,27 @@ use Medas\Core\{
     Interfaces\ServiceManager as ServiceManagerInterface
 };
 
+/**
+ * The dependency injection container: builds the service configuration during bootstrap, and resolves services by
+ * type for the rest of the process.
+ *
+ * Bootstrap happens in the constructor:
+ *
+ * 1. It registers itself, and a `CacheManager` with the given cache as `'default'`.
+ * 2. It loads the `ServiceConfig` from that cache. Only when there's none, it calls the initialiser, which returns a
+ *    configured `ServiceConfigBuilder`, and then `initialize()` on every package.
+ * 3. It installs the exception handler and the error policy, and creates the object instantiator.
+ * 4. It calls `ready()` on every package. That happens every time, whether the config was cached or not.
+ *
+ * @assumes There's one instance per process. It registers itself through `medas()`, which is where `sm()` and
+ *          `service()` find it.
+ * @sideEffect The constructor replaces the global exception handler and error handler, and sets
+ *             `error_reporting()`.
+ * @state Keeps every service it instantiates for the lifetime of the process, so there's one instance of each.
+ * @cache The whole `ServiceConfig` is cached in the `'default'` cache. Changes to packages, services, bindings,
+ *        parameter resolvers or argument processors only take effect after the caches are cleared.
+ * @see ServiceConfigBuilder
+ */
 class ServiceManager implements ServiceManagerInterface, ResolvesLazily
 {
     private const string CONFIG_CACHE_KEY = ServiceConfig::class;
@@ -32,6 +53,14 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
     private array $activeResolves = [];
     private readonly CacheManagerInterface $cacheManager;
 
+    /**
+     * @param \Closure            $initializer Returns a configured `ServiceConfigBuilder`. Only called when there's no
+     *                                         cached config.
+     * @param CacheInterface|null $cache       Registered as the `'default'` cache, which also holds the config. Without
+     *                                         it, the config is built again in every process.
+     *
+     * @throws Exceptions\InitializerDidNotReturnServiceConfigBuilder When the initializer returns something else.
+     */
     #[Entrypoint]
     public function __construct(
         \Closure            $initializer,
@@ -45,7 +74,8 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
 
         $this->config = $this->loadConfig($initializer);
 
-        // Register the exception handler early so that it can register the exception handler early.
+        // Install the exception handler now; its detailed handlers can only be resolved once the object
+        // instantiator is ready, below
         $exceptionHandlerManager = new ErrorHandling\ExceptionHandlerManager();
         $this->services[ErrorHandling\ExceptionHandlerManager::class] = $exceptionHandlerManager;
 
@@ -119,7 +149,7 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
     }
 
     /**
-     * Calls initialize() on all registered packages so they can register resolvers, processors,
+     * Calls initialize() on all registered packages so they can register resolvers, processors
      * and type bindings before build(). Only runs when the config is being freshly built —
      * the results become part of the cached ServiceConfig.
      */
@@ -177,8 +207,14 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
     }
 
     /**
-     * The return value is an object of type `$type`.
-     * (Return type is specified in PhpStorm in .phpstorm.meta.php)
+     * Returns the service for `$type`, and instantiates it the first time. Every later call for the same type returns
+     * the same instance.
+     *
+     * The return value is an object of type `$type`, which PhpStorm knows from `.phpstorm.meta.php`.
+     *
+     * @throws ServiceNotFoundByType When no service provides `$type`.
+     * @throws MultipleImplementorsFound When several services provide `$type`, and no type binding decides between
+     *                                   them.
      */
     #[Entrypoint]
     public function resolve(string $type): object
@@ -197,7 +233,13 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
     /**
      * Used for injecting dependencies: a service that hasn't been instantiated yet is registered and returned as a
      * lazy object, so it (and its own dependencies) are only instantiated when the service is actually used. Later
-     * calls to resolve() return that same lazy object.
+     * calls to `resolve()` return that same lazy object.
+     *
+     * Without an object instantiator that implements `InstantiatesLazily`, the service is instantiated right away.
+     *
+     * @throws ServiceNotFoundByType When no service provides `$type`.
+     * @throws MultipleImplementorsFound When several services provide `$type`, and no type binding decides between
+     *                                   them.
      */
     #[Entrypoint]
     public function resolveLazy(string $type): object
@@ -213,23 +255,34 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
     {
         $this->activeResolves[$type] = true;
 
-        if (null === $service = $this->findImplementingClass($type)) {
-            throw new ServiceNotFoundByType($type, array_keys($this->activeResolves));
+        // The resolve chain only lists types that are still being resolved, also after a failed resolve
+        try {
+            if (null === $service = $this->findImplementingClass($type)) {
+                throw new ServiceNotFoundByType($type, array_keys($this->activeResolves));
+            }
+
+            if (!array_key_exists($service, $this->services)) {
+                $objectInstantiator = medas()->objectInstantiator();
+
+                $this->services[$service] = $lazy && $objectInstantiator instanceof InstantiatesLazily
+                    ? $objectInstantiator->instantiateLazy($service)
+                    : $objectInstantiator->instantiate($service);
+            }
         }
 
-        if (!array_key_exists($service, $this->services)) {
-            $objectInstantiator = medas()->objectInstantiator();
-
-            $this->services[$service] = $lazy && $objectInstantiator instanceof InstantiatesLazily
-                ? $objectInstantiator->instantiateLazy($service)
-                : $objectInstantiator->instantiate($service);
+        finally{
+            unset($this->activeResolves[$type]);
         }
-
-        unset($this->activeResolves[$type]);
 
         return $this->resolvedByType[$type] = $this->services[$service];
     }
 
+    /**
+     * Returns the class that `$type` resolves to, without instantiating it, or `null` when no service provides it.
+     *
+     * @throws MultipleImplementorsFound When several services provide `$type`, and no type binding decides between
+     *                                   them.
+     */
     public function findImplementingClass(string $type): string|null
     {
         $mapping = $this->config->mapping;

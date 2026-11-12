@@ -7,8 +7,8 @@ namespace Medas\ServiceManager\ErrorHandling;
 use Medas\Core\Interfaces\ErrorPolicy;
 
 /**
- * Shared scaffolding for error policy setters. Subclasses define which PHP error severities
- * should be promoted to exceptions by implementing {@see shouldThrow()}.
+ * Base class for error policies: installs an error handler that turns an error into an `ErrorException` when
+ * `shouldThrow()` says so, and reports fatal errors at shutdown. Subclasses only decide which severities to throw.
  */
 abstract readonly class BaseErrorPolicy implements ErrorPolicy
 {

@@ -7,6 +7,16 @@ namespace Medas\ServiceManager\ErrorHandling;
 use Medas\Core\{Exceptions\TraceFormatter, Interfaces\ExceptionHandler};
 use Medas\ServiceManager\{ServiceConfig, ServiceManager};
 
+/**
+ * Installs the global exception handler, and passes every uncaught exception to the configured `ExceptionHandler`s.
+ * Every handler gets every exception. When none of them handles it, the exception is written with its trace to
+ * `STDERR`, or to the error log when there's no `STDERR`.
+ *
+ * @assumes `ServiceManager` creates it with `new` during bootstrap, before the object instantiator exists, so it
+ *          can't have injected dependencies.
+ * @sideEffect The constructor replaces the global exception handler.
+ * @state Resolves the handlers once, when the first exception arrives, and keeps them.
+ */
 class ExceptionHandlerManager
 {
     private ServiceManager|null $serviceManager = null;
@@ -24,15 +34,20 @@ class ExceptionHandlerManager
         set_exception_handler($this->handle(...));
     }
 
-    // The handlers are only resolved when the first exception arrives: together with their
-    // own dependencies (loggers, mailers, their config options) they are dozens of services,
-    // and a request that throws nothing needs none of them.
+    /**
+     * Sets the handlers to use. They're only resolved when the first exception arrives: together with their own
+     * dependencies, like loggers, mailers and their config options, they're dozens of services, and a request that
+     * throws nothing needs none of them.
+     */
     public function prepareHandlers(ServiceManager $serviceManager, ServiceConfig $config): void
     {
         $this->serviceManager = $serviceManager;
         $this->handlerClasses = $config->exceptionHandlers;
     }
 
+    /**
+     * When a handler can't be resolved, the exception is reported as unhandled, so it doesn't get lost.
+     */
     public function handle(\Throwable $exception): void
     {
         $handled = false;

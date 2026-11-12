@@ -6,6 +6,19 @@ namespace Medas\ServiceManager\DataTree;
 
 use Medas\ServiceManager\Exceptions\{HistoryNotAvailableInDataTree, IndexNotFoundInDataTree};
 
+/**
+ * A nested array of values, addressed by dot-separated indexes like `database.host`. A dot that's part of a key is
+ * escaped with a backslash: `paths.var\.log`.
+ *
+ * An index can also point to a branch, which is then returned as an array.
+ *
+ * Every write records its source, like `'defaults'` or `'runtime'`, so you can find out where a value came from.
+ *
+ * @state Records the history of every value until the tree is serialized. A tree restored from serialized data only
+ *        has its values, so `getHistory()` and `getSource()` throw.
+ * @performance Parsed indexes are memoized in a static cache shared by all trees, which grows with every distinct
+ *              index.
+ */
 class DataTree
 {
     /** @var array<string, string[]> Memoised parse results — the output depends only on the input string. */
@@ -19,10 +32,13 @@ class DataTree
     /** False once restored from serialized form: history from before that point is gone, so a partial record would mislead. */
     private bool $recordsHistory = true;
 
+    /**
+     * @param array $defaults Values by index, recorded with `'defaults'` as their source.
+     */
     public function __construct(array $defaults = [])
     {
         foreach ($defaults as $index => $value) {
-            $this->set($index, $value, 'default');
+            $this->set($index, $value, 'defaults');
         }
     }
 
@@ -64,16 +80,25 @@ class DataTree
         return $this;
     }
 
+    /**
+     * Sets every leaf of the nested array `$values`, overwriting existing values.
+     */
     public function mergeArray(array $values, string $source = 'runtime'): self
     {
         return $this->setRecursively($values, $source);
     }
 
+    /**
+     * A stored `null` counts as present.
+     */
     public function has(string $index): bool
     {
         return $this->find($index) !== null;
     }
 
+    /**
+     * Sets every leaf of the nested array `$values` that has no value yet, with `'defaults'` as the source.
+     */
     public function mergeDefaults(array $values): self
     {
         return $this->setRecursively($values, source: 'defaults', doOverwrite: false);
@@ -100,6 +125,9 @@ class DataTree
         return $this;
     }
 
+    /**
+     * @throws IndexNotFoundInDataTree When nothing is stored at the index.
+     */
     public function get(string $index): mixed
     {
         $result = $this->find($index);
@@ -111,7 +139,12 @@ class DataTree
         return $result[0];
     }
 
-    /** @return History[] */
+    /**
+     * @return History[] Every write to the index, oldest first.
+     *
+     * @throws IndexNotFoundInDataTree When nothing is stored at the index.
+     * @throws HistoryNotAvailableInDataTree When the tree was restored from serialized data.
+     */
     public function getHistory(string $index): array
     {
         if ($this->find($index) === null) {
@@ -131,6 +164,12 @@ class DataTree
         return $history;
     }
 
+    /**
+     * The source of the last write to the index.
+     *
+     * @throws IndexNotFoundInDataTree When nothing is stored at the index.
+     * @throws HistoryNotAvailableInDataTree When the tree was restored from serialized data.
+     */
     public function getSource(string $index): string
     {
         $history = $this->getHistory($index);
@@ -138,6 +177,9 @@ class DataTree
         return $history[array_key_last($history)]->source;
     }
 
+    /**
+     * Returns `$fallback` when nothing is stored at the index. A stored `null` is returned as `null`.
+     */
     public function getElse(string $index, mixed $fallback): mixed
     {
         $found = $this->find($index);

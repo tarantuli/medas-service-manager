@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
+/**
+ * Loads a package directory by running `require_once` on every PHP file in it. `ServiceFinder` uses it for test
+ * packages, which `Package::isTestPackage()` marks.
+ *
+ * @sideEffect Runs every PHP file in the directory, including any code outside class declarations.
+ * @notFor Regular packages; `Psr4FileLoader` loads those through the autoloader.
+ */
 readonly class UnsafeFileLoader
 {
     private FileFinder $fileFinder;

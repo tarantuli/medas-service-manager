@@ -6,10 +6,16 @@ namespace Medas\ServiceManager;
 
 use Medas\Core\Interfaces\CacheManager;
 
+/**
+ * Runs the post-install steps of every package.
+ */
 class PostInstallRunner
 {
     /**
-     * This method should only be called by "composer update" or similar command line scripts.
+     * Only for `composer install`, `composer update` and similar command line scripts.
+     *
+     * @assumes The `ServiceManager` is initialized.
+     * @sideEffect Clears every cache first, then calls `postInstall()` on every package.
      */
     public function run(): void
     {

@@ -6,6 +6,9 @@ namespace Medas\ServiceManager\Exceptions;
 
 use Medas\Core\Exceptions\BaseException;
 
+/**
+ * @deprecated Not used anymore.
+ */
 class ClassDependsOnUnknownClass extends BaseException
 {
     public function __construct(string $sourceClass, string $dependsOn)

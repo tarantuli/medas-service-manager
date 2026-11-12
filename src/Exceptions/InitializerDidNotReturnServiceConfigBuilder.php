@@ -15,6 +15,6 @@ class InitializerDidNotReturnServiceConfigBuilder extends BaseException
 
     public function pattern(): string
     {
-        return 'the initializer should return a ServiceConfig object, but returned a(n) %s';
+        return 'the initializer should return a ServiceConfigBuilder object, but returned a(n) %s';
     }
 }

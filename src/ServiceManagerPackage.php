@@ -22,6 +22,9 @@ class ServiceManagerPackage extends BasePackage
         return __DIR__;
     }
 
+    /**
+     * Primes the caches and registers the cache directories, see `CachePrimer`.
+     */
     public function postInstall(): void
     {
         new CachePrimer(medas()->serviceManager(), service(Cache\CacheManager::class))->prime();

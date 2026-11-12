@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Medas\ServiceManager;
 
 /**
- * Plain, serializable configuration state produced by ServiceConfigBuilder.
- * Contains no bootstrap machinery — only the data ServiceManager needs at runtime.
+ * The configuration `ServiceManager` needs at runtime, produced by `ServiceConfigBuilder`. It holds plain data only,
+ * no bootstrap machinery, so it can be serialized and cached.
+ *
+ * @see ServiceConfigBuilder
  */
 readonly class ServiceConfig
 {

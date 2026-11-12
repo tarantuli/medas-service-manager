@@ -11,9 +11,16 @@ use Medas\Core\Interfaces\{
 };
 
 /**
- * Bootstrap-time builder for ServiceConfig.
- * Holds MappingManager and PackageRegistry — the machinery needed to discover and register
- * packages. Once bootstrap is complete, call build() to get a plain, serializable ServiceConfig.
+ * Collects the configuration during bootstrap: packages and their services, type bindings, manual bindings,
+ * parameter resolvers, argument processors and exception handlers. `ServiceManager` calls `build()` to turn it into
+ * a plain, serializable `ServiceConfig`.
+ *
+ * @assumes It's only used while the config is built: in the initializer closure given to `ServiceManager`, and in
+ *          `Package::initialize()`. Neither runs when the config comes from the cache, so everything configured here
+ *          ends up in the cached config.
+ * @sideEffect Adding a package loads every class file in it, and in the packages it depends on, to discover their
+ *             services.
+ * @see ServiceManager
  */
 class ServiceConfigBuilder implements ServiceConfigBuilderInterface
 {
@@ -35,6 +42,10 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
     /** @var array<string, array<string, array<string, mixed>>> */
     private array $manualBindings = [];
 
+    /**
+     * @param ErrorPolicy|null $errorPolicy Defaults to `BasicErrorPolicy`.
+     * @param bool             $isDev       Whether dev packages and dev dependencies are added.
+     */
     public function __construct(
         string           $objectInstantiatorClass,
         ErrorPolicy|null $errorPolicy = null,
@@ -63,6 +74,13 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         );
     }
 
+    /**
+     * Adds the package, after the packages it depends on, and discovers their services.
+     *
+     * @param bool $doInitialize Calls the package's `initialize()` right away. Packages added in the initializer
+     *                           closure don't need it: `ServiceManager` initializes all of them once the closure
+     *                           returns.
+     */
     public function addPackage(Package $package, bool $doInitialize = false): self
     {
         $this->packageRegistry->add($package, $this, $doInitialize);
@@ -77,6 +95,9 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * Like `addPackage()`, but only when `$isDev` is set.
+     */
     public function addDevPackage(Package $package, bool $doInitialize = false): ServiceConfigBuilderInterface
     {
         if ($this->isDev) {
@@ -101,6 +122,10 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         return array_keys($this->packageRegistry->all());
     }
 
+    /**
+     * @param string $exceptionHandler The class of an `ExceptionHandler`. Handlers are resolved when the first
+     *                                 exception arrives, and every handler gets every exception.
+     */
     public function addExceptionHandler(string $exceptionHandler): self
     {
         $this->exceptionHandlers[] = $exceptionHandler;
@@ -117,6 +142,10 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * Makes every type in `$forTypes` resolve to `$implementationClass`. A binding wins over discovered services, and
+     * `$implementationClass` is included when `ImplementorFinder` lists the implementors of those types.
+     */
     public function addTypeBinding(string $implementationClass, string ...$forTypes): self
     {
         foreach ($forTypes as $type) {
@@ -158,6 +187,13 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         return $this;
     }
 
+    /**
+     * Binds a value to one parameter, for `ManualBindingFinder` to supply when the class is instantiated or the
+     * method is called.
+     *
+     * @param string $class The class that declares the method. For a constructor inherited from a parent class,
+     *                      that's the parent class.
+     */
     public function addManualBinding(
         string $class,
         string $parameter,
@@ -169,12 +205,12 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
     }
 
     /**
-     * The parameter name is the name of the environment variable that contains the comma-separated list of test
-     * packages.
+     * Adds the test packages listed in an environment variable, as a comma-separated list of package classes. Class
+     * names that don't exist are skipped silently, and nothing happens when the variable isn't set.
      *
-     * You can call this method in the bootstrap closure that generates a ServiceConfigBuilder:
+     * Call it in the initialiser closure:
      *
-     * <code>
+     * ```php
      * $sm = new ServiceManager(function () use ($isDev): ServiceConfigBuilder {
      *     $config = new ServiceConfigBuilder(ObjectInstantiator::class, isDev: $isDev);
      *
@@ -183,7 +219,9 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
      *
      *     return $config;
      * });
-     * </code>
+     * ```
+     *
+     * @param string $envName The name of the environment variable.
      */
     public function addTestPackages(string $envName): void
     {

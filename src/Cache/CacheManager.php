@@ -12,8 +12,7 @@ use Medas\Core\{
     Interfaces\Clearable,
     Interfaces\MemoryCache,
     Interfaces\NonPersistentCache,
-    Interfaces\ServiceManager,
-    Serializers\NoopSerializer
+    Interfaces\ServiceManager
 };
 use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
 
@@ -79,7 +78,7 @@ class CacheManager implements CacheManagerInterface
                 throw new CacheNotFoundByName('memory');
             }
 
-            $this->register(new $className(new NoopSerializer()), 'memory');
+            $this->register(new $className(), 'memory');
         }
 
         if (!array_key_exists($name, $this->caches)) {

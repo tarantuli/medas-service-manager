@@ -274,8 +274,7 @@ class ServiceManager implements ServiceManagerInterface, ResolvesLazily
                 $this->services[$service] ??= $instance;
             }
         }
-
-        finally{
+        finally {
             unset($this->activeResolves[$type]);
         }
 

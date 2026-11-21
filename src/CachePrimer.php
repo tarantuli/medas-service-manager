@@ -12,7 +12,7 @@ use Medas\Core\Interfaces\{FileSystemCache, PrimesCache};
  * `services:clear-caches`.
  *
  * @assumes The working directory is the project root. The registry path is relative to it.
- * @see \Medas\ServiceManager\Cache\DirectoriesToClear
+ * @see Cache\DirectoriesToClear
  */
 readonly class CachePrimer
 {

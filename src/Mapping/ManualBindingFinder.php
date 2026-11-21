@@ -11,6 +11,7 @@ use Medas\Core\{
     Interfaces\CompilableParameterResolver,
     ParameterResolverResult
 };
+use Medas\ServiceManager\ServiceConfigBuilder;
 
 /**
  * Supplies constructor and method arguments that were bound by hand with `ServiceConfigBuilder::addManualBinding()`,
@@ -25,7 +26,7 @@ use Medas\Core\{
  * @cache Bindings are part of the cached `ServiceConfig`, so a changed binding only takes effect after the caches
  *        are cleared.
  * @notFor Properties, closures and global functions, which can't have a binding.
- * @see \Medas\ServiceManager\ServiceConfigBuilder
+ * @see ServiceConfigBuilder
  */
 #[Service]
 readonly class ManualBindingFinder implements CompilableParameterResolver

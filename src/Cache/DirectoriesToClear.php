@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Medas\ServiceManager\Cache;
 
 use Medas\Core\Attributes\Service;
+use Medas\ServiceManager\{CachePrimer, ConsoleCommands\ClearCaches};
 
 /**
  * Empties the directories registered in `var/dirs-to-clear`, which holds one file per directory, named after a hash
@@ -21,8 +22,8 @@ use Medas\Core\Attributes\Service;
  * @sideEffect Deletes everything inside each registered directory, leaving the directories themselves in place.
  *             Entries that can't be deleted, like files another process has open on Windows, are skipped silently.
  * @notFor Registering directories; `CachePrimer` does that for file system caches.
- * @see \Medas\ServiceManager\CachePrimer
- * @see \Medas\ServiceManager\ConsoleCommands\ClearCaches
+ * @see CachePrimer
+ * @see ClearCaches
  */
 #[Service]
 readonly class DirectoriesToClear

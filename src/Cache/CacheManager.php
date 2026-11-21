@@ -14,7 +14,7 @@ use Medas\Core\{
     Interfaces\NonPersistentCache,
     Interfaces\ServiceManager
 };
-use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
+use Medas\ServiceManager\{CachePrimer, Exceptions\CacheNotFoundByName};
 
 /**
  * Registry of named caches. Packages fetch a cache by name instead of creating
@@ -35,7 +35,7 @@ use Medas\ServiceManager\Exceptions\CacheNotFoundByName;
  * @state Keeps the registered caches for the lifetime of the process. Registering
  *        a cache under an existing name replaces the previous one.
  * @notFor Storing or reading values; use the `Cache` returned by `get()` for that.
- * @see \Medas\ServiceManager\CachePrimer
+ * @see CachePrimer
  */
 #[Service]
 class CacheManager implements CacheManagerInterface

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Medas\ServiceManager\Mapping;
 
-use Medas\Core\{Attributes\Service, Interfaces\ImplementorFinder as ImplementorFinderInterface};
+use Medas\Core\{
+    Attributes\Service,
+    CachedImplementorList,
+    Interfaces\ImplementorFinder as ImplementorFinderInterface
+};
 
 /**
- * Lists every service that is, extends or implements a given type. This is how a package finds all the
+ * Lists every service that is, extends, or implements a given type. This is how a package finds all the
  * implementations other packages provide, like handlers or plugins.
  *
  * That includes every non-abstract class with `#[Service]` in one of the registered packages, and every class
@@ -19,7 +23,7 @@ use Medas\Core\{Attributes\Service, Interfaces\ImplementorFinder as ImplementorF
  *        the caches are cleared.
  * @notFor Resolving one service; use `ServiceManager::resolve()`, which throws when a type has more than one
  *         implementation.
- * @see \Medas\Core\CachedImplementorList
+ * @see CachedImplementorList
  */
 #[Service]
 class ImplementorFinder implements ImplementorFinderInterface

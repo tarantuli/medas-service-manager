@@ -9,7 +9,7 @@ use Medas\Core\Attributes\Service;
 use Medas\ServiceManager\Cache\{CacheManager, DirectoriesToClear};
 
 /**
- * Console command `services:clear-caches` (alias `services:clear-cache`): clears every cache, including caches of other
+ * Console command `services:clear-caches` (alias `clear-cache`): clears every cache, including caches of other
  * processes that this process can only reach through their registered directories, like the web server's APCu cache.
  *
  * @sideEffect Empties all directories registered in `var/dirs-to-clear`, then clears every registered cache that

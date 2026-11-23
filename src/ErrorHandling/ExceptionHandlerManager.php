@@ -12,6 +12,9 @@ use Medas\ServiceManager\{ServiceConfig, ServiceManager};
  * Every handler gets every exception. When none of them handles it, the exception is written with its trace to
  * `STDERR`, or to the error log when there's no `STDERR`.
  *
+ * A handler that throws counts as not having handled the exception: the other handlers still get it, and the
+ * handler's own exception is reported too, so a broken logger or mailer can't hide the error it was meant to report.
+ *
  * @assumes `ServiceManager` creates it with `new` during bootstrap, before the object instantiator exists, so it
  *          can't have injected dependencies.
  * @sideEffect The constructor replaces the global exception handler.
@@ -55,17 +58,26 @@ class ExceptionHandlerManager
         try {
             $handlers = $this->handlers();
         }
-        catch (\Throwable) {
+        catch (\Throwable $failure) {
             // A handler that can't be built must not hide the exception it was meant to
             // handle: that one is still printed below, as an unhandled exception.
             $handlers = [];
+
+            $this->write($this->describeFailure('[Exception handlers could not be resolved]', $failure));
         }
 
         foreach ($handlers as $handler) {
-            if ($handler->handleException($exception)) {
-                // Don't short circuit if the exception was handled.
-                // Multiple handlers are allowed to handle the same exception.
-                $handled = true;
+            try {
+                if ($handler->handleException($exception)) {
+                    // Don't short circuit if the exception was handled.
+                    // Multiple handlers are allowed to handle the same exception.
+                    $handled = true;
+                }
+            }
+            catch (\Throwable $failure) {
+                // The other handlers still get the exception, and if none of them handles
+                // it, it's printed below as unhandled
+                $this->write($this->describeFailure('[Exception handler failed] ' . $handler::class, $failure));
             }
         }
 
@@ -86,7 +98,7 @@ class ExceptionHandlerManager
                 $trace
             );
 
-            defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);
+            $this->write($message);
         }
     }
 
@@ -104,5 +116,26 @@ class ExceptionHandlerManager
         }
 
         return $this->resolvedHandlers;
+    }
+
+    private function describeFailure(string $prefix, \Throwable $failure): string
+    {
+        return sprintf(
+            "%s: %s in %s on line %d — %s\n\n",
+            $prefix,
+            $failure::class,
+            $failure->getFile(),
+            $failure->getLine(),
+            $failure->getMessage()
+        );
+    }
+
+    /**
+     * Writes a report to `STDERR`, or to the error log when there's no `STDERR`. It's protected so tests can capture
+     * the reports.
+     */
+    protected function write(string $message): void
+    {
+        defined('STDERR') ? fwrite(STDERR, $message) : error_log($message);
     }
 }

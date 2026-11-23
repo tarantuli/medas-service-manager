@@ -12,7 +12,9 @@ use Medas\ServiceManager\{Mapping\MappingManager, ServiceConfigBuilder};
  *
  * - It registers each package once.
  * - It registers the dependencies of a package before the package itself, and dev dependencies too in dev mode.
- * - It keeps the list sorted by descending priority.
+ * - It keeps the list sorted by descending priority, which is the order in which `initialize()` and `ready()` are
+ *   called later. A dependency only comes before the packages that need it when its priority is at least as high, so
+ *   a dependency with a lower priority is initialised after them.
  * - It passes every package to the `MappingManager`, so its services are discovered.
  * - It can initialise a package right away, for packages added after bootstrap.
  */
@@ -38,7 +40,9 @@ class PackageRegistry
             return $this;
         }
 
-        // Register dependencies first so they are always available when the dependant package initialises.
+        // Register dependencies first, so their services are discovered before this package's. The list is sorted by
+        // priority below, so this only decides the order among packages with equal priority. Dependencies aren't
+        // initialised here, even when $doInitialize is set
         foreach ($package->dependencies() as $dependency) {
             $this->add($dependency, $builder);
         }

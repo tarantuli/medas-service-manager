@@ -56,7 +56,7 @@ class CacheManager implements CacheManagerInterface
      * Returns the cache with the given name. If no name is given, the name `'default'` is used.
      *
      * If no cache with the name `'default'` exists, a `NoopCache` will be created. This cache does nothing, always
-     * returning the value from the setter. If no cache with the name `'memory'` exists, a `MemoryCache` will be
+     * returning the value from the getter. If no cache with the name `'memory'` exists, a `MemoryCache` will be
      * created.
      *
      * @throws CacheNotFoundByName When no cache with that name is registered and none can be created.

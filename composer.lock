@@ -57,16 +57,16 @@
         },
         {
             "name": "morphp/medas-core",
-            "version": "v4.8.4",
+            "version": "v4.8.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-core.git",
-                "reference": "6461a02e7cc4520b312df881efd6def0188671ec"
+                "reference": "59cc30d8de19b99a4d1be60c8a5ffc3d7ccb916c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/6461a02e7cc4520b312df881efd6def0188671ec",
-                "reference": "6461a02e7cc4520b312df881efd6def0188671ec",
+                "url": "https://api.github.com/repos/tarantuli/medas-core/zipball/59cc30d8de19b99a4d1be60c8a5ffc3d7ccb916c",
+                "reference": "59cc30d8de19b99a4d1be60c8a5ffc3d7ccb916c",
                 "shasum": ""
             },
             "require": {
@@ -99,10 +99,10 @@
                 "medas"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-core/tree/v4.8.4",
+                "source": "https://github.com/tarantuli/medas-core/tree/v4.8.5",
                 "issues": "https://github.com/tarantuli/medas-core/issues"
             },
-            "time": "2026-11-12T11:14:19+00:00"
+            "time": "2026-11-23T09:09:21+00:00"
         },
         {
             "name": "psr/event-dispatcher",
@@ -158,16 +158,16 @@
     "packages-dev": [
         {
             "name": "morphp/medas-object-instantiator",
-            "version": "v4.0.13",
+            "version": "v4.0.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tarantuli/medas-object-instantiator.git",
-                "reference": "53f0d98ebbe6a1f964a9ec127835ad8c84357482"
+                "reference": "75ff840e5d5ade580767c3c61e103fd1565ac0ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tarantuli/medas-object-instantiator/zipball/53f0d98ebbe6a1f964a9ec127835ad8c84357482",
-                "reference": "53f0d98ebbe6a1f964a9ec127835ad8c84357482",
+                "url": "https://api.github.com/repos/tarantuli/medas-object-instantiator/zipball/75ff840e5d5ade580767c3c61e103fd1565ac0ab",
+                "reference": "75ff840e5d5ade580767c3c61e103fd1565ac0ab",
                 "shasum": ""
             },
             "require": {
@@ -200,10 +200,10 @@
                 "services"
             ],
             "support": {
-                "source": "https://github.com/tarantuli/medas-object-instantiator/tree/v4.0.13",
+                "source": "https://github.com/tarantuli/medas-object-instantiator/tree/v4.0.14",
                 "issues": "https://github.com/tarantuli/medas-object-instantiator/issues"
             },
-            "time": "2026-11-12T12:04:21+00:00"
+            "time": "2026-11-12T15:53:17+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -763,16 +763,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "10.5.66",
+            "version": "10.5.67",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "747c9889613d0b3ffa08b74272e50ed3b8fa6d72"
+                "reference": "1f3e67dd433817bddfc64afab63977cc4b011374"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/747c9889613d0b3ffa08b74272e50ed3b8fa6d72",
-                "reference": "747c9889613d0b3ffa08b74272e50ed3b8fa6d72",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1f3e67dd433817bddfc64afab63977cc4b011374",
+                "reference": "1f3e67dd433817bddfc64afab63977cc4b011374",
                 "shasum": ""
             },
             "require": {
@@ -844,7 +844,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.66"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.67"
             },
             "funding": [
                 {
@@ -852,7 +852,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-05T05:46:26+00:00"
+            "time": "2026-11-13T11:07:03+00:00"
         },
         {
             "name": "sebastian/cli-parser",

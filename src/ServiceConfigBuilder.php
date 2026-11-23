@@ -199,9 +199,11 @@ class ServiceConfigBuilder implements ServiceConfigBuilderInterface
         string $parameter,
         mixed  $value,
         string $method = '__construct',
-    ): void
+    ): self
     {
         $this->manualBindings[$class][$method][$parameter] = $value;
+
+        return $this;
     }
 
     /**
